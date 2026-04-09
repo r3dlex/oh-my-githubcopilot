@@ -1,0 +1,9 @@
+                        Oh My Copilot · Multi-Agent Orchestration Plugin
+
+                              ·  ·      ·
+                         ·    \  |  /    ·
+                       ·  ○───OMP────○  ·
+                         ·    /  |  \    ·
+                           ·  agents  ·
+                             ·    ·
+                               · · · ·
