@@ -22,6 +22,13 @@ const KEYWORD_MAP: Record<string, string> = {
   "swarm:": "swarm",
   "pipeline:": "pipeline",
   "plan:": "plan",
+  // Aliases (shortcut commands)
+  "setup:": "setup",
+  "ralplan:": "ralplan",
+  "ultraqa:": "ultraqa",
+  "mcp:": "mcp-setup",
+  "ultrawork:": "ultrawork",
+  "ecomode:": "ecomode",
 };
 
 export interface HookInput {
