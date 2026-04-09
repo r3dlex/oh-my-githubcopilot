@@ -1,0 +1,58 @@
+{
+  "name": "oh-my-copilot",
+  "version": "1.0.0",
+  "description": "Multi-agent orchestration for GitHub Copilot CLI. 18 agents, 30+ skills, parallel execution, HUD, PSM, SWE-bench.",
+  "author": {
+    "name": "r3dlex"
+  },
+  "repository": "https://github.com/r3dlex/oh-my-copilot",
+  "license": "MIT",
+  "keywords": [
+    "orchestration",
+    "multi-agent",
+    "autopilot",
+    "swe-bench",
+    "hud",
+    "copilot-cli"
+  ],
+  "type": "module",
+  "main": "dist/index.mjs",
+  "bin": {
+    "omp": "./bin/omp.mjs"
+  },
+  "scripts": {
+    "build": "node --import tsx esbuild.config.mts",
+    "dev": "node --import tsx --watch esbuild.config.mts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src/",
+    "format": "prettier --write src/",
+    "typecheck": "tsc --noEmit",
+    "sync-claude-plugin": "cp .github/plugin/plugin.json .claude-plugin/plugin.json",
+    "prepublishOnly": "npm run build && npm run sync-claude-plugin",
+    "archgate:init": "npx archgate init --editor claude",
+    "archgate:check": "npx archgate check"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "better-sqlite3": "^11.0.0",
+    "simple-git": "^3.0.0",
+    "yaml": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.0.0",
+    "@types/node": "^22.0.0",
+    "@vitest/coverage-v8": "^2.1.9",
+    "archgate": "^0.27.0",
+    "esbuild": "^0.24.0",
+    "eslint": "^9.0.0",
+    "prettier": "^3.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.0.0"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}
