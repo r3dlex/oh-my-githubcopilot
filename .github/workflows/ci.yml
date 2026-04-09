@@ -10,6 +10,8 @@ jobs:
           node-version: "22"
           cache: "npm"
       - run: npm ci
+      - run: npx tsc --version
+      - run: npx tsc --noEmit --showConfig
       - run: npm run typecheck
       - name: Run archgate check
         run: |
