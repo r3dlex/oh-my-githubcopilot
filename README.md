@@ -128,7 +128,7 @@ const state = await state.read();
 
 ---
 
-## Love this project? Sponsor
+## 💛 Love this project? [Sponsor r3dlex](https://github.com/sponsors/r3dlex)
 
 If OMP saves you time, consider sponsoring the maintainer:
 
