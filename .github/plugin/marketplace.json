@@ -1,0 +1,16 @@
+{
+  "name": "oh-my-copilot",
+  "owner": { "name": "r3dlex" },
+  "metadata": {
+    "description": "Agent orchestration engine for GitHub Copilot CLI",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "oh-my-copilot",
+      "description": "Full suite: 18 agents, 30+ skills, HUD, PSM, SWE-bench",
+      "version": "1.0.0",
+      "source": "."
+    }
+  ]
+}

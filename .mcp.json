@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "1.0",
+  "mcpServers": {
+    "oh-my-copilot": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["./dist/mcp/server.mjs"],
+      "env": {
+        "OMP_STATE_DB": "~/.omp/state/omp.db",
+        "OMP_FLEET_DB": "~/.omp/fleet/fleet.db",
+        "OMP_LOG_LEVEL": "info"
+      }
+    }
+  }
+}
