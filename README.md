@@ -1,12 +1,33 @@
 # oh-my-copilot (OMP)
 
-Multi-agent orchestration for GitHub Copilot CLI.
+<p align="center">
+  <img src="assets/logo.svg" alt="Oh My Copilot" width="200"/>
+</p>
+
+<p align="center">
+  Multi-agent orchestration for GitHub Copilot CLI — powered by 18 specialized agents, 30+ skills, and a real-time HUD.
+</p>
 
 [![npm version](https://img.shields.io/npm/v/oh-my-copilot?color=red)](https://npmjs.com/package/oh-my-copilot)
 [![npm downloads](https://img.shields.io/npm/dm/oh-my-copilot?color=blue)](https://npmjs.com/package/oh-my-copilot)
 [![License: MIT](https://img.shields.io/npm/l/oh-my-copilot?color=green)](LICENSE)
+[![Sponsor](https://img.shields.io/static/v1?label=Sponsor&message=r3dlex&color=EA4949&logo=github-sponsors)](https://github.com/sponsors/r3dlex)
 
 ---
+
+## Why OMP?
+
+Every software team has work that spans implementation, architecture, security review, testing, and DevOps — all at once. OMP orchestrates specialized agents so every dimension gets attention, in parallel, without you herding cats.
+
+| What you get | Why it matters |
+|--------------|----------------|
+| **18 agents** | Executor, architect, planner, reviewer, debugger, designer, data, performance, security, and more — each tuned to a different craft |
+| **30+ skills** | `autopilot`, `ralph`, `ultrawork`, `team`, `ecomode`, `swarm`, `pipeline`, `plan` — trigger with a slash command |
+| **6 hooks** | Keyword detection, delegation routing, model selection, token tracking, HUD emission, stop-continuation |
+| **MCP server** | 10 built-in tools for extended capabilities |
+| **HUD display** | Real-time session context and progress tracking |
+| **PSM** | Plugin State Manager with SQLite persistence across sessions |
+| **SWE-bench** | Benchmark harness for reproducible evaluation |
 
 ## Quick Start
 
@@ -20,18 +41,6 @@ omc setup
 # Start using OMP skills
 /omc-setup
 ```
-
-## Key Features
-
-| Feature | Description |
-|---------|-------------|
-| **18 Agents** | Specialized subagents for executor, architect, planner, reviewer, debugger, and more |
-| **30+ Skills** | autopilot, ralph, ultrawork, team, ecomode, swarm, pipeline, plan |
-| **6 Hooks** | Keyword detection, delegation enforcement, model routing, token tracking, HUD emission, stop-continuation |
-| **PSM** | Plugin State Manager with SQLite persistence |
-| **MCP Server** | 10 tools for extended capabilities |
-| **HUD Display** | Real-time session context and progress tracking |
-| **SWE-bench** | Benchmark harness for reproducible evaluation |
 
 ## Architecture
 
@@ -110,5 +119,13 @@ const state = await state.read();
 - GitHub Copilot CLI
 
 ---
+
+## Love this project? Sponsor
+
+If OMP saves you time, consider sponsoring the maintainer:
+
+[![Sponsor r3dlex](https://github.githubassets.com/assets/images/modules/sponsors/modules/SponsorButton--glyph-sm-b5211212fc9306694a295e37672660c1.gif)](https://github.com/sponsors/r3dlex)
+
+Every sponsorship helps keep development going.
 
 MIT License | [GitHub](https://github.com/r3dlex/oh-my-copilot)
