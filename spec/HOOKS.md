@@ -1,0 +1,219 @@
+# OMP Hooks Specification
+
+## 1. Overview
+
+Hooks are lightweight middleware functions that intercept and augment each agent cycle. OMP ships with six hooks that run at specific trigger points. All hooks must complete within a 200ms performance budget.
+
+## 2. hooks.json Schema
+
+```json
+{
+  "schemaVersion": "1.0",
+  "hooks": [
+    {
+      "id": "<hook-id>",
+      "entry": "./src/hooks/<hook-id>.ts",
+      "trigger": "<trigger-point>",
+      "timeoutMs": 200,
+      "priority": <number>
+    }
+  ]
+}
+```
+
+`trigger` must be one of: `pre-cycle`, `post-cycle`, `pre-message`, `post-message`.
+`priority` is an integer (higher runs first; ties broken by registration order).
+
+## 3. Hook Registration
+
+Hooks are registered in `hooks.json` at the project root. The Copilot CLI invokes hooks in priority order at each trigger point. If a hook throws, execution continues to the next hook but the failure is logged.
+
+## 4. The Six Hooks
+
+### 4.1 keyword-detector
+
+**Trigger**: `pre-cycle`
+**Priority**: 100 (runs first)
+
+Scans the incoming message for magic keywords. On match, activates the corresponding skill and sets `activeMode` in the session state.
+
+```typescript
+interface KeywordMatch {
+  keyword: string;        // e.g. "autopilot:", "ralph:", "ulw:"
+  skillId: string;        // e.g. "autopilot", "ralph", "ultrawork"
+  position: number;       // character offset in message
+}
+```
+
+Detection is case-sensitive for `:`-suffixed forms (e.g. `autopilot:`), case-insensitive for slash forms (e.g. `/AUTOPILOT`).
+
+### 4.2 delegation-enforcer
+
+**Trigger**: `pre-cycle`
+**Priority**: 90
+
+Intercepts orchestrator tool calls. Ensures the orchestrator never uses Read, Write, Edit, or Bash for direct implementation. If a violation is detected, reroutes the call to the appropriate agent and logs the enforcement event.
+
+```typescript
+interface EnforcementEvent {
+  agentId: string;
+  toolAttempted: string;  // e.g. "Write"
+  reroutedTo: string;     // e.g. "executor"
+  reason: string;
+}
+```
+
+### 4.3 model-router
+
+**Trigger**: `pre-cycle`
+**Priority**: 80
+
+Selects the model tier for the current cycle based on:
+- Explicit mode (autopilot/ralph/ultrawork/etc.)
+- Token budget remaining
+- Task complexity estimate
+- Skill requirements
+
+```typescript
+interface ModelSelection {
+  model: 'opus' | 'sonnet' | 'haiku';
+  reason: string;
+  overrides: string[];   // e.g. ["skill:security requires opus"]
+}
+```
+
+### 4.4 token-tracker
+
+**Trigger**: `post-message`
+**Priority**: 70
+
+Tracks cumulative token usage per session. Emits warnings at configurable thresholds:
+- 60% used: informational message
+- 80% used: warning + suggestion to enable ecomode
+- 90% used: critical + auto-enable ecomode unless overridden
+
+```typescript
+interface TokenUpdate {
+  sessionId: string;
+  used: number;
+  limit: number;
+  percentage: number;
+  warningLevel: 'none' | 'info' | 'warn' | 'critical';
+}
+```
+
+### 4.5 hud-emitter
+
+**Trigger**: `post-cycle`
+**Priority**: 60
+
+Pushes the current session state to the HUD on every agent cycle completion. Emits only changed fields to minimize overhead.
+
+```typescript
+interface HudEmit {
+  sessionId: string;
+  activeMode: ExecutionMode | null;
+  contextPct: number;    // estimated context utilization %
+  tokensUsed: number;
+  tokensTotal: number;
+  agentsActive: string[]; // IDs of currently running agents
+  lastAgent: string;
+  lastOutput: string;     // truncated to 200 chars
+  taskProgress: number;    // 0-100
+}
+```
+
+### 4.6 stop-continuation
+
+**Trigger**: `post-message`
+**Priority**: 50
+
+Evaluates whether the current message constitutes a completion signal. Signals include:
+- Explicit "done", "complete", "finished" from user
+- `modeComplete: true` from a skill
+- All tasks in TaskList marked `completed`
+- No pending agent delegations
+
+```typescript
+interface StopSignal {
+  shouldStop: boolean;
+  reason: string;
+  confidence: number;   // 0.0-1.0
+}
+```
+
+## 5. HookInput / HookOutput Interfaces
+
+```typescript
+interface HookInput {
+  sessionId: string;
+  cycleIndex: number;
+  message: string;
+  context: string;
+  activeMode: ExecutionMode | null;
+  tokenBudget: number;
+  hudState: HudState;
+  toolCalls: ToolCall[];
+  agentId: string;
+  timestamp: number;
+}
+
+interface HookOutput {
+  hookId: string;
+  status: 'ok' | 'skip' | 'error';
+  latencyMs: number;
+  mutations: HookMutation[];
+  log: string[];
+}
+
+type HookMutation =
+  | { type: 'set_mode'; mode: ExecutionMode | null }
+  | { type: 'set_model'; model: 'opus' | 'sonnet' | 'haiku' }
+  | { type: 'reroute_tool'; toolCall: ToolCall; toAgent: string }
+  | { type: 'set_token_budget'; budget: number }
+  | { type: 'emit_hud'; hudEmit: HudEmit }
+  | { type: 'stop'; reason: string }
+  | { type: 'log'; level: 'info' | 'warn' | 'error'; message: string };
+
+interface ToolCall {
+  id: string;
+  tool: string;
+  params: Record<string, unknown>;
+  agentId: string;
+}
+```
+
+## 6. Performance Budget
+
+All hooks must complete within **200ms** (hard limit). Hooks that may exceed this budget (e.g. network calls in `researcher`) must be implemented as async with explicit timeout:
+
+```typescript
+async function keywordDetector(input: HookInput): Promise<HookOutput> {
+  const timeout = 180; // leave 20ms buffer for framework overhead
+  const result = await Promise.race([
+    performDetection(input),
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Hook timeout')), timeout)
+    )
+  ]);
+  // ...
+}
+```
+
+If a hook times out, the cycle continues without the hook's effects and an error is logged. Persistent timeouts (3 consecutive) trigger a warning to the user.
+
+## 7. Writing Custom Hooks
+
+To add a custom hook:
+
+1. Create `src/hooks/<hook-id>.ts` implementing `HookFunction`
+2. Register in `hooks.json` with trigger point and priority
+3. Add to `plugin.json` hooks array
+4. Rebuild with `npm run build:hooks`
+
+Custom hooks must export:
+```typescript
+export const hook: HookFunction = async (input: HookInput): Promise<HookOutput> => {
+  // implementation
+};
+```
