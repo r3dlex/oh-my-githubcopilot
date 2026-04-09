@@ -40,22 +40,22 @@ Every OMP plugin must have a `plugin.json` at the project root:
     { "id": "integration",   "entry": "./dist/agents/integration.js" }
   ],
   "skills": [
-    { "id": "autopilot",  "entry": "./dist/skills/autopilot.js" },
-    { "id": "ralph",      "entry": "./dist/skills/ralph.js" },
-    { "id": "ultrawork",  "entry": "./dist/skills/ultrawork.js" },
-    { "id": "team",       "entry": "./dist/skills/team.js" },
-    { "id": "ecomode",    "entry": "./dist/skills/ecomode.js" },
-    { "id": "swarm",      "entry": "./dist/skills/swarm.js" },
-    { "id": "pipeline",   "entry": "./dist/skills/pipeline.js" },
-    { "id": "plan",       "entry": "./dist/skills/plan.js" }
+    "./skills/autopilot",
+    "./skills/ralph",
+    "./skills/ultrawork",
+    "./skills/team",
+    "./skills/ecomode",
+    "./skills/swarm",
+    "./skills/pipeline",
+    "./skills/plan"
   ],
   "hooks": [
-    { "id": "keyword-detector",    "entry": "./dist/hooks/keyword-detector.js" },
-    { "id": "delegation-enforcer","entry": "./dist/hooks/delegation-enforcer.js" },
-    { "id": "model-router",       "entry": "./dist/hooks/model-router.js" },
-    { "id": "token-tracker",      "entry": "./dist/hooks/token-tracker.js" },
-    { "id": "hud-emitter",        "entry": "./dist/hooks/hud-emitter.js" },
-    { "id": "stop-continuation",  "entry": "./dist/hooks/stop-continuation.js" }
+    { "id": "keyword-detector",    "entry": "./dist/hooks/keyword-detector.mjs" },
+    { "id": "delegation-enforcer","entry": "./dist/hooks/delegation-enforcer.mjs" },
+    { "id": "model-router",       "entry": "./dist/hooks/model-router.mjs" },
+    { "id": "token-tracker",      "entry": "./dist/hooks/token-tracker.mjs" },
+    { "id": "hud-emitter",        "entry": "./dist/hooks/hud-emitter.mjs" },
+    { "id": "stop-continuation",  "entry": "./dist/hooks/stop-continuation.mjs" }
   ],
   "permissions": ["filesystem", "network", "exec"],
   "peerDependencies": {
@@ -88,8 +88,8 @@ The `marketplace.json` file at the project root enables discovery by the Copilot
       },
       "entryPoints": {
         "cli": "./dist/cli/index.js",
-        "hooks": "./dist/hooks/bundle.js",
-        "mcp": "./dist/mcp/server.js"
+        "hooks": "./dist/hooks/keyword-detector.mjs",
+        "mcp": "./dist/mcp/server.mjs"
       },
       "schemaVersion": "1.0",
       "minCliVersion": "1.0.0",
