@@ -27,6 +27,29 @@ for (const entry of hookEntries) {
   console.log(`Built hook: dist/hooks/${name}.mjs`);
 }
 
+const skillEntries = [
+  "src/skills/setup.mts",
+  "src/skills/mcp-setup.mts",
+];
+
+// Skills: individual bundles (each must be standalone)
+for (const entry of skillEntries) {
+  const name = entry.replace("src/skills/", "").replace(".mts", "");
+  await build({
+    entryPoints: [entry],
+    bundle: true,
+    platform: "node",
+    target: "node22",
+    format: "esm",
+    outdir: "dist/skills",
+    outExtension: { ".js": ".mjs" },
+    external: ["better-sqlite3"],
+    sourcemap: true,
+    minify: false,
+  });
+  console.log(`Built skill: dist/skills/${name}.mjs`);
+}
+
 // MCP server: single bundle
 await build({
   entryPoints: ["src/mcp/server.mts"],

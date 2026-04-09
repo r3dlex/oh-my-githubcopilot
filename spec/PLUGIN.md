@@ -15,47 +15,36 @@ Every OMP plugin must have a `plugin.json` at the project root:
   "version": "1.0.0",
   "description": "Multi-agent orchestration plugin for GitHub Copilot CLI",
   "entryPoints": {
-    "cli": "./dist/cli/index.js",
-    "hooks": "./dist/hooks/bundle.js",
-    "mcp": "./dist/mcp/server.js"
+    "cli": "./bin/omp.mjs",
+    "mcp": "./dist/mcp/server.mjs"
   },
   "agents": [
-    { "id": "orchestrator", "entry": "./dist/agents/orchestrator.js" },
-    { "id": "explorer",     "entry": "./dist/agents/explorer.js" },
-    { "id": "planner",      "entry": "./dist/agents/planner.js" },
-    { "id": "executor",     "entry": "./dist/agents/executor.js" },
-    { "id": "verifier",     "entry": "./dist/agents/verifier.js" },
-    { "id": "writer",       "entry": "./dist/agents/writer.js" },
-    { "id": "reviewer",     "entry": "./dist/agents/reviewer.js" },
-    { "id": "designer",     "entry": "./dist/agents/designer.js" },
-    { "id": "researcher",   "entry": "./dist/agents/researcher.js" },
-    { "id": "tester",       "entry": "./dist/agents/tester.js" },
-    { "id": "debugger",     "entry": "./dist/agents/debugger.js" },
-    { "id": "architect",    "entry": "./dist/agents/architect.js" },
-    { "id": "devops",       "entry": "./dist/agents/devops.js" },
-    { "id": "security",     "entry": "./dist/agents/security.js" },
-    { "id": "data",         "entry": "./dist/agents/data.js" },
-    { "id": "mobile",       "entry": "./dist/agents/mobile.js" },
-    { "id": "performance",  "entry": "./dist/agents/performance.js" },
-    { "id": "integration",   "entry": "./dist/agents/integration.js" }
-  ],
-  "skills": [
-    "./skills/autopilot",
-    "./skills/ralph",
-    "./skills/ultrawork",
-    "./skills/team",
-    "./skills/ecomode",
-    "./skills/swarm",
-    "./skills/pipeline",
-    "./skills/plan"
+    { "id": "orchestrator" },
+    { "id": "explorer" },
+    { "id": "planner" },
+    { "id": "executor" },
+    { "id": "verifier" },
+    { "id": "writer" },
+    { "id": "reviewer" },
+    { "id": "designer" },
+    { "id": "researcher" },
+    { "id": "tester" },
+    { "id": "debugger" },
+    { "id": "architect" },
+    { "id": "devops" },
+    { "id": "security" },
+    { "id": "data" },
+    { "id": "mobile" },
+    { "id": "performance" },
+    { "id": "integration" }
   ],
   "hooks": [
     { "id": "keyword-detector",    "entry": "./dist/hooks/keyword-detector.mjs" },
     { "id": "delegation-enforcer","entry": "./dist/hooks/delegation-enforcer.mjs" },
-    { "id": "model-router",       "entry": "./dist/hooks/model-router.mjs" },
+    { "id": "stop-continuation",  "entry": "./dist/hooks/stop-continuation.mjs" },
     { "id": "token-tracker",      "entry": "./dist/hooks/token-tracker.mjs" },
-    { "id": "hud-emitter",        "entry": "./dist/hooks/hud-emitter.mjs" },
-    { "id": "stop-continuation",  "entry": "./dist/hooks/stop-continuation.mjs" }
+    { "id": "model-router",       "entry": "./dist/hooks/model-router.mjs" },
+    { "id": "hud-emitter",        "entry": "./dist/hooks/hud-emitter.mjs" }
   ],
   "permissions": ["filesystem", "network", "exec"],
   "peerDependencies": {
@@ -63,6 +52,8 @@ Every OMP plugin must have a `plugin.json` at the project root:
   }
 }
 ```
+
+> **Note:** Skills are not yet registered in `plugin.json`. Skill bundles exist in `dist/skills/` (`setup.mjs`, `mcp-setup.mjs`) and will be registered in `plugin.json` once the skill loading mechanism is implemented. Source skills live in `src/skills/` (`.mts`).
 
 ## 3. Marketplace Distribution
 
@@ -87,8 +78,7 @@ The `marketplace.json` file at the project root enables discovery by the Copilot
         "email": "omp@oh-my-copilot.dev"
       },
       "entryPoints": {
-        "cli": "./dist/cli/index.js",
-        "hooks": "./dist/hooks/keyword-detector.mjs",
+        "cli": "./bin/omp.mjs",
         "mcp": "./dist/mcp/server.mjs"
       },
       "schemaVersion": "1.0",
