@@ -11,8 +11,11 @@ jobs:
           cache: "npm"
       - run: npm ci
       - run: npx tsc --version
-      - run: npx tsc --noEmit --showConfig
-      - run: npm run typecheck
+      - run: npx tsc --noEmit -p .
+      - run: npx archgate --version
+      - run: npx archgate check
+      - run: npm run build
+      - run: npm test -- --coverage
       - name: Run archgate check
         run: |
           npx archgate --version
