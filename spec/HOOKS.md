@@ -26,7 +26,9 @@ Hooks are lightweight middleware functions that intercept and augment each agent
 
 ## 3. Hook Registration
 
-Hooks are registered in `hooks.json` at the project root. The Copilot CLI invokes hooks in priority order at each trigger point. If a hook throws, execution continues to the next hook but the failure is logged.
+Hooks are registered at **build time** in `esbuild.config.mts` via the `hookEntries` array. Running `npm run build` compiles each hook source to `dist/hooks/<name>.mjs` and regenerates `hooks/hooks.json` as the runtime manifest. The Copilot CLI reads `hooks/hooks.json` at runtime via the `"hooks": "./hooks/hooks.json"` string in plugin.json.
+
+At runtime, the Copilot CLI invokes hooks in priority order at each trigger point. If a hook throws, execution continues to the next hook but the failure is logged.
 
 ## 4. The Six Hooks
 
@@ -207,9 +209,8 @@ If a hook times out, the cycle continues without the hook's effects and an error
 To add a custom hook:
 
 1. Create `src/hooks/<hook-id>.ts` implementing `HookFunction`
-2. Register in `hooks.json` with trigger point and priority
-3. Add to `plugin.json` hooks array
-4. Rebuild with `npm run build:hooks`
+2. Add the hook entry to `hookEntries` in `esbuild.config.mts`
+3. Rebuild with `npm run build` (regenerates `hooks/hooks.json` and `dist/hooks/<hook-id>.mjs`)
 
 Custom hooks must export:
 ```typescript
