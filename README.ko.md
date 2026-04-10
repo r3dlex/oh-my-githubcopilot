@@ -1,6 +1,9 @@
 [English](README.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [Português](README.pt.md) | [Русский](README.ru.md) | [Türkçe](README.tr.md) | [Tiếng Việt](README.vi.md) | [中文](README.zh.md)
 
 # oh-my-copilot
+<p align="center">
+  <img src="assets/omp-banner.png" alt="Oh My Copilot" width="200"/>
+</p>
 
 [![npm version](https://img.shields.io/npm/v/oh-my-copilot?color=cb3837)](https://www.npmjs.com/package/oh-my-copilot)
 [![npm downloads](https://img.shields.io/npm/dm/oh-my-copilot?color=blue)](https://www.npmjs.com/package/oh-my-copilot)
@@ -8,6 +11,9 @@
 
 **Oh-My-Copilot (OMP)** 은 GitHub Copilot에 모던한 워크플로 오케스트레이션과 에이전트 AI 기능을 추가하는 플러그인 및 확장 기능입니다.
 
+<p align="center">
+  <img src="assets/buddy-swarm.png" alt="OMP swarm mode" width="600"/>
+</p>
 ---
 
 ## 빠른 시작
@@ -19,6 +25,9 @@ npm install -g oh-my-copilot
 # 설정
 omp setup
 ```
+<p align="center">
+  <img src="assets/buddy-playful.png" alt="OMP in action" width="600"/>
+</p>
 
 ---
 
