@@ -21,7 +21,7 @@ Delegate specialized work to the appropriate agent. Verify outcomes before claim
 
 ## Magic Keywords
 
-Trigger OMC skill modes via slash commands: `autopilot:`, `ralph:`, `ulw:`, `team:`, `eco:`, `swarm:`, `pipeline:`, `plan:`
+Trigger OMP skill modes via slash commands: `autopilot:`, `ralph:`, `ulw:`, `team:`, `eco:`, `swarm:`, `pipeline:`, `plan:`
 
 ## Quick Reference
 

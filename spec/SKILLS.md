@@ -80,7 +80,7 @@ Execution mode skills are top-level workflows that take over session orchestrati
 | 17 | `verify` | Verify that a change really works before claiming completion. Runs diagnostics and evidence collection. |
 | 18 | `simplify` | Review changed code for reuse, quality, and efficiency; fix issues found. |
 | 19 | `debug` | Diagnose the current session or repo state using logs, traces, state, and focused reproduction. |
-| 20 | `ask` | Process-first advisor routing for Claude, Codex, or Gemini via `omc ask`; captures artifacts. |
+| 20 | `ask` | Process-first advisor routing for Claude, Codex, or Gemini via `omp ask`; captures artifacts. |
 | 21 | `ccg` | Claude-Codex-Gemini tri-model orchestration via `/ask codex` + `/ask gemini`; Claude synthesizes results. |
 | 22 | `skill` | Manage local skills — list, add, remove, search, edit, setup wizard. |
 | 23 | `skillify` | Turn a repeatable workflow into a reusable OMP skill draft. |

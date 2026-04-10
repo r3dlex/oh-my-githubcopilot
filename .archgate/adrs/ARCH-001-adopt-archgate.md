@@ -9,7 +9,7 @@ rules: false
 
 ## Context
 
-oh-my-copilot is a multi-agent orchestration plugin for GitHub Copilot CLI with 18 agents, 30+ skills, and a growing plugin architecture. Architectural decisions have previously been tracked in `spec/*.md` files and `.omc/plans/` documents without automated enforcement.
+oh-my-copilot is a multi-agent orchestration plugin for GitHub Copilot CLI with 18 agents, 30+ skills, and a growing plugin architecture. Architectural decisions have previously been tracked in `spec/*.md` files and `.omp/plans/` documents without automated enforcement.
 
 ## Decision
 
@@ -26,7 +26,7 @@ Adopt archgate/cli as the ADR governance and architectural rule enforcement tool
 - `archgate` is a devDependency — reproducible via `npm ci`
 - CI runs `npx archgate check` as a blocking gate after `typecheck`
 - `.archgate/adrs/` is the canonical location for implemented architectural decisions
-- `.omc/plans/` continues to be used for future/not-yet-implemented decisions
+- `.omp/plans/` continues to be used for future/not-yet-implemented decisions
 
 ## Compliance and Enforcement
 

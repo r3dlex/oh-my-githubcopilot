@@ -17,7 +17,7 @@
 
 ## Why OMP?
 
-Every software team has work that spans implementation, architecture, security review, testing, and DevOps — all at once. OMP orchestrates specialized agents so every dimension gets attention, in parallel, without you herding cats.
+Every software team juggles implementation, architecture, security review, testing, and DevOps — all simultaneously. OMP orchestrates specialized agents so every dimension gets expert attention, in parallel, without you herding cats.
 
 | What you get | Why it matters |
 |--------------|----------------|
@@ -40,10 +40,10 @@ Every software team has work that spans implementation, architecture, security r
 npm install -g oh-my-copilot
 
 # Initialize (creates ~/.omp/ config)
-omc setup
+omp setup
 
 # Start using OMP skills
-/omc-setup
+/omp-setup
 ```
 
 <p align="center">

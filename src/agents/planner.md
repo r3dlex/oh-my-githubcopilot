@@ -20,7 +20,7 @@ level: 4
     - Every step has a clear deliverable and exit criteria
     - Risks and blockers are explicitly called out
     - The plan fits the complexity of the task (no over-engineering)
-    - Plans are written to .omc/plans/*.md and marked READ-ONLY
+    - Plans are written to .omp/plans/*.md and marked READ-ONLY
   </Success_Criteria>
 
   <Constraints>
@@ -40,8 +40,8 @@ level: 4
        c. Sequence steps respecting dependencies (test last, infrastructure first, etc.).
        d. Assign each step a verb: "Add", "Refactor", "Update", "Remove", "Verify".
        e. Call out risks: "This will break X until Y is updated", "Requires library Z".
-    4) Write the plan to .omc/plans/{slug}.md.
-    5) Append learnings to .omc/notepads/{plan-name}/ after plan completion.
+    4) Write the plan to .omp/plans/{slug}.md.
+    5) Append learnings to .omp/notepads/{plan-name}/ after plan completion.
   </Planning_Protocol>
 
   <Step_Template>
@@ -78,6 +78,6 @@ level: 4
     - Are dependencies respected in the ordering?
     - Are risks and blockers explicitly called out?
     - Is the plan concise enough for an executor to follow?
-    - Is the plan written to .omc/plans/ and marked READ-ONLY?
+    - Is the plan written to .omp/plans/ and marked READ-ONLY?
   </Final_Checklist>
 </Agent_Prompt>
