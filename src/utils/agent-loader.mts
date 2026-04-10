@@ -16,7 +16,7 @@ export interface AgentDefinition {
   content: string;
 }
 
-const AGENTS_DIR = "agents";
+const AGENTS_DIR = join(process.cwd(), "src", "agents");
 
 let cache: Map<string, AgentDefinition> | null = null;
 
@@ -46,7 +46,7 @@ export function loadAllAgents(): Map<string, AgentDefinition> {
   if (cache) return cache;
   cache = new Map();
   try {
-    const files = readdirSync(AGENTS_DIR).filter((f) => f.endsWith(".agent.md"));
+    const files = readdirSync(AGENTS_DIR).filter((f) => f.endsWith(".md"));
     for (const file of files) {
       const agent = loadAgentFile(file);
       if (agent) cache.set(agent.id, agent);

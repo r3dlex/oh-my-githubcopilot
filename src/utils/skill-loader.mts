@@ -17,7 +17,8 @@ export interface SkillDefinition {
 }
 
 const SKILL_DIRS = [
-  "agents/skills",
+  "skills",
+  join(process.cwd(), "src", "skills"),
   join(process.env["HOME"] || "", ".copilot", "skills"),
 ];
 

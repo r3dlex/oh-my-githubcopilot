@@ -13,6 +13,7 @@ import Database from "better-sqlite3";
 import { readFileSync, mkdirSync } from "fs";
 import { homedir } from "os";
 import { join, dirname } from "path";
+import { randomUUID } from "crypto";
 
 // --- Database Setup ---
 function getDbPath(): string {
@@ -101,7 +102,7 @@ const TOOLS = [
           enum: [
             "orchestrator", "explorer", "planner", "executor", "verifier",
             "writer", "reviewer", "designer", "researcher", "tester",
-            "debugger", "architect", "devops", "security", "data",
+            "debugger", "architect", "git-master", "security-reviewer", "data",
             "mobile", "performance", "integration",
           ],
         },
@@ -182,38 +183,46 @@ async function handleCallTool(name: string, args: Record<string, unknown>) {
       return { content: [{ type: "text", text: JSON.stringify(sessions[0] || null, null, 2) }] };
     }
     case "omp_save_session": {
-      return { content: [{ type: "text", text: JSON.stringify({ status: "ok" }) }] };
+      const sessionId = (args.sessionId as string) || randomUUID();
+      const stateJson = (args.stateJson as string) || JSON.stringify({});
+      const now = Date.now();
+      db.prepare(
+        "INSERT OR REPLACE INTO sessions (id, worktree_id, state_json, created_at, updated_at) VALUES (?, ?, ?, ?, ?)"
+      ).run(sessionId, args.worktreeId || null, stateJson, now, now);
+      return { content: [{ type: "text", text: JSON.stringify({ status: "ok", sessionId }) }] };
     }
     case "omp_list_sessions": {
       const sessions = db.prepare("SELECT id, created_at, updated_at FROM sessions ORDER BY updated_at DESC").all();
       return { content: [{ type: "text", text: JSON.stringify(sessions, null, 2) }] };
     }
     case "omp_get_agents": {
-      const agents = [
-        { id: "orchestrator", tier: "high", role: "Delegation coordinator" },
-        { id: "architect", tier: "high", role: "System design" },
-        { id: "executor", tier: "standard", role: "General implementation" },
-        { id: "explorer", tier: "fast", role: "Codebase analysis" },
-        { id: "analyst", tier: "standard", role: "Quality metrics" },
-        { id: "planner", tier: "high", role: "Task decomposition" },
-        { id: "debugger", tier: "standard", role: "Root cause analysis" },
-        { id: "verifier", tier: "standard", role: "Test execution" },
-        { id: "reviewer-style", tier: "standard", role: "Style review" },
-        { id: "reviewer-security", tier: "high", role: "Security review" },
-        { id: "reviewer-performance", tier: "standard", role: "Performance review" },
-        { id: "test-engineer", tier: "standard", role: "Test creation" },
-        { id: "dependency-expert", tier: "standard", role: "Dependency audits" },
-        { id: "build-fixer", tier: "standard", role: "CI/build fixes" },
-        { id: "git-master", tier: "standard", role: "Git strategy" },
-        { id: "writer", tier: "fast", role: "Documentation" },
-        { id: "designer", tier: "standard", role: "UI/UX design" },
-        { id: "critic", tier: "high", role: "Final review" },
-      ];
-      return { content: [{ type: "text", text: JSON.stringify(agents, null, 2) }] };
+      try {
+        const { loadAllAgents } = await import("../utils/agent-loader.mts");
+        const agentsMap = loadAllAgents();
+        const agents = Array.from(agentsMap.values()).map((a) => ({
+          id: a.id,
+          tier: a.modelTier,
+          role: a.description,
+        }));
+        return { content: [{ type: "text", text: JSON.stringify(agents, null, 2) }] };
+      } catch {
+        return { content: [{ type: "text", text: JSON.stringify({ error: "Failed to load agents" }) }] };
+      }
     }
     case "omp_delegate_task": {
-      // Stub — actual delegation goes through orchestrator
-      return { content: [{ type: "text", text: JSON.stringify({ delegated: args.agentId, task: args.task }) }] };
+      try {
+        const { loadAllAgents } = await import("../utils/agent-loader.mts");
+        const agentsMap = loadAllAgents();
+        const agentId = args.agentId as string;
+        const agent = agentsMap.get(agentId);
+        if (agent) {
+          return { content: [{ type: "text", text: JSON.stringify({ status: "routed", agentId, tier: agent.modelTier, tools: agent.tools }) }] };
+        } else {
+          return { content: [{ type: "text", text: JSON.stringify({ status: "not_found", agentId }) }] };
+        }
+      } catch {
+        return { content: [{ type: "text", text: JSON.stringify({ status: "error", agentId: args.agentId }) }] };
+      }
     }
     case "omp_activate_skill": {
       return { content: [{ type: "text", text: JSON.stringify({ skillId: args.skillId || args.keyword, activated: true }) }] };

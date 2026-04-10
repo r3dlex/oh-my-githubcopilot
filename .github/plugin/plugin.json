@@ -8,7 +8,7 @@
   "repository": "https://github.com/r3dlex/oh-my-copilot",
   "license": "MIT",
   "keywords": ["orchestration", "multi-agent", "autopilot", "swe-bench", "hud"],
-  "agents": ["./agents"],
+  "agents": ["./src/agents"],
   "skills": [
     "./skills/autopilot",
     "./skills/ralph",

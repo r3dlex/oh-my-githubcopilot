@@ -68,7 +68,7 @@ export async function runInstance(
       predictions: [],
       references: [],
     };
-  } catch (err) {
+  } catch {
     return {
       instance_id: instance.instance_id,
       status: "error",

@@ -21,7 +21,7 @@ const KEYWORD_MAP: Record<string, string> = {
   "eco:": "ecomode",
   "swarm:": "swarm",
   "pipeline:": "pipeline",
-  "plan:": "plan",
+  "plan:": "omp-plan",
   // Aliases (shortcut commands)
   "setup:": "setup",
   "ralplan:": "ralplan",
@@ -29,6 +29,26 @@ const KEYWORD_MAP: Record<string, string> = {
   "mcp:": "mcp-setup",
   "ultrawork:": "ultrawork",
   "ecomode:": "ecomode",
+  // Phase 1.1 skill stubs (19 total from plugin.json)
+  "/autopilot": "autopilot",
+  "/ralph": "ralph",
+  "/ulw": "ultrawork",
+  "/team": "team",
+  "/eco": "ecomode",
+  "/swarm": "swarm",
+  "/pipeline": "pipeline",
+  "/deep-interview": "deep-interview",
+  "/omp-plan": "omp-plan",
+  "/omp-setup": "omp-setup",
+  "/hud": "hud",
+  "/wiki": "wiki",
+  "/learner": "learner",
+  "/note": "note",
+  "/trace": "trace",
+  "/release": "release",
+  "/configure-notifications": "configure-notifications",
+  "/psm": "psm",
+  "/swe-bench": "swe-bench",
 };
 
 export interface HookInput {
