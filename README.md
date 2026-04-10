@@ -1,7 +1,7 @@
 # oh-my-copilot (OMP)
 
 <p align="center">
-  <img src="assets/omp-banner.png" alt="Oh My Copilot" width="200"/>
+  <img src="assets/omp-banner.png" alt="Oh My Copilot" width="100%"/>
 </p>
 
 <p align="center">

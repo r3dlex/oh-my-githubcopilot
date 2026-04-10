@@ -2,7 +2,7 @@
 
 # oh-my-copilot
 <p align="center">
-  <img src="assets/omp-banner.png" alt="Oh My Copilot" width="200"/>
+  <img src="assets/omp-banner.png" alt="Oh My Copilot" width="100%"/>
 </p>
 
 [![npm version](https://img.shields.io/npm/v/oh-my-copilot?color=cb3837)](https://www.npmjs.com/package/oh-my-copilot)
