@@ -12,7 +12,7 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm run build
-      - run: npm test
+      - run: npm test -- --forceExit
       - name: Run archgate check
         run: |
           npx archgate --version
@@ -30,7 +30,7 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm run build
-      - run: npm test -- --coverage
+      - run: npm test -- --coverage --forceExit
 
   pnpm-package:
     runs-on: ubuntu-latest
