@@ -4,6 +4,10 @@
  */
 
 export interface HudMetrics {
+  version: string;
+  activeModel: string;
+  sessionDurationMs: number;
+  cumulativeAgentsUsed: number;
   tokensEstimated: number;
   tokenBudget: number;
   contextPct: number;

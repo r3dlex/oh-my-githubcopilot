@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  Multi-agent orchestration for GitHub Copilot CLI — powered by 18 specialized agents, 30+ skills, and a real-time HUD.
+  Multi-agent orchestration for GitHub Copilot CLI — powered by 18 specialized agents, 21 skills, and a real-time HUD.
 </p>
 
 [![npm version](https://img.shields.io/npm/v/oh-my-copilot?color=red)](https://npmjs.com/package/oh-my-copilot)
@@ -22,7 +22,7 @@ Every software team juggles implementation, architecture, security review, testi
 | What you get | Why it matters |
 |--------------|----------------|
 | **18 agents** | Executor, architect, planner, reviewer, debugger, designer, data, performance, security, and more — each tuned to a different craft |
-| **30+ skills** | `autopilot`, `ralph`, `ultrawork`, `team`, `ecomode`, `swarm`, `pipeline`, `plan` — trigger with a slash command |
+| **21 skills** | `autopilot`, `ralph`, `ultrawork`, `team`, `ecomode`, `swarm`, `pipeline`, `plan` — trigger with a slash command |
 | **6 hooks** | Keyword detection, delegation routing, model selection, token tracking, HUD emission, stop-continuation |
 | **MCP server** | 10 built-in tools for extended capabilities |
 | **HUD display** | Real-time session context and progress tracking |

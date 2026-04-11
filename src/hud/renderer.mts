@@ -3,9 +3,11 @@
  * Formats HudState into ANSI or plain text status lines.
  */
 
+
 export interface HudState {
   sessionId: string;
   activeMode: string | null;
+  activeModel: string;
   contextPct: number;
   tokensUsed: number;
   tokensTotal: number;
@@ -16,8 +18,11 @@ export interface HudState {
   startedAt: number;
   updatedAt: number;
   version: string;
-  model: string;
   status: HudStatus;
+  sessionDurationMs: number;
+  cumulativeAgentsUsed: number;
+  toolsUsed: Set<string>;
+  skillsUsed: Set<string>;
 }
 
 export type HudStatus = "idle" | "running" | "waiting" | "complete" | "error" | "eco";
@@ -58,32 +63,34 @@ function reset(): string {
 
 /**
  * Render HUD line with ANSI color codes.
+ * Format: [OMP v1.0.0] mode | model | ctx:N% | tok:~Nk/Nk | Nm | tools:N/N | skills:N/N | agents:N/N | N% status
  */
 export function renderAnsi(state: HudState): string {
   const age = formatAge(state.startedAt);
   const tokens = formatTokens(state.tokensUsed);
   const ctx = state.contextPct;
   const mode = state.activeMode || "-";
-  const model = state.model || "sonnet";
+  const model = state.activeModel || "sonnet";
   const icon = STATUS_ICONS[state.status] || "●";
 
   const ctxClr = ctxColor(ctx);
-  const ctxStr = `${ctxClr}ctx: ${ctx}%${reset()}`;
-  const tokenStr = `tkn: ${tokens}/${state.tokensTotal}`;
+  const ctxStr = `${ctxClr}ctx:${ctx}%${reset()}`;
+  const tokenStr = `tok:~${tokens}/${state.tokensTotal}`;
   const modeStr = mode === "-" ? "-" : `\x1b[36m${mode}${reset()}`; // cyan for active modes
 
-  return `OMP v${state.version} | ${model} | ${tokenStr} | ${ctxStr} | session: ${age} | ${modeStr} | ${icon} ${state.status}`;
+  return `[OMP v${state.version}] ${modeStr} | ${model} | ${ctxStr} | ${tokenStr} | ${age} | tools:${state.toolsUsed?.size || 0} | skills:${state.skillsUsed?.size || 0} | agents:${state.cumulativeAgentsUsed} | ${icon} ${state.status}`;
 }
 
 /**
  * Render HUD line as plain text (no ANSI codes).
+ * Format: [OMP v1.0.0] mode | model | ctx:N% | tok:~Nk/Nk | Nm | tools:N/N | skills:N/N | agents:N/N | N% status
  */
 export function renderPlain(state: HudState): string {
   const age = formatAge(state.startedAt);
   const tokens = formatTokens(state.tokensUsed);
   const ctx = state.contextPct;
   const mode = state.activeMode || "-";
-  const model = state.model || "sonnet";
+  const model = state.activeModel || "sonnet";
 
-  return `OMP v${state.version} | ${model} | tkn: ~${tokens}/${state.tokensTotal} | ctx: ${ctx}% | session: ${age} | mode: ${mode} | ${state.status}`;
+  return `[OMP v${state.version}] ${mode} | ${model} | ctx:${ctx}% | tok:~${tokens}/${state.tokensTotal} | ${age} | tools:${state.toolsUsed?.size || 0} | skills:${state.skillsUsed?.size || 0} | agents:${state.cumulativeAgentsUsed} | ${state.status}`;
 }

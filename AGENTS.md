@@ -14,14 +14,14 @@ The orchestrator is the top-level coordinator. It:
 
 The orchestrator **never writes code, docs, or configs directly**. It always delegates to a specialized agent.
 
-## Agent Registry (18 Agents)
+## Agent Registry (24 Agents)
 
 | # | ID | Tier | Tools | Role |
 |---|-----|------|-------|------|
 | 1 | `orchestrator` | high | TaskList, SendMessage, Glob, Grep | Top-level coordinator; never writes |
 | 2 | `explorer` | standard | Glob, Grep, Read | Fast codebase surveys, pattern finding |
 | 3 | `planner` | high | Read, Write, TaskCreate | Architecture, sequencing, risk assessment |
-| 4 | `executor` | high | Read, Write, Edit, Bash | Implementation, refactoring, complex changes |
+| 4 | `executor` | standard | Read, Write, Edit, Bash | Implementation, refactoring, complex changes |
 | 5 | `verifier` | standard | Bash, Read, Glob | Testing, diagnostics, evidence collection |
 | 6 | `writer` | standard | Read, Write, Glob | Documentation, README, API docs |
 | 7 | `reviewer` | high | Read, Glob, Grep, LSP | Code review, quality gates |
@@ -30,12 +30,18 @@ The orchestrator **never writes code, docs, or configs directly**. It always del
 | 10 | `tester` | standard | Bash, Read, Write | Test writing, execution, CI integration |
 | 11 | `debugger` | high | Bash, Read, LSP, Grep | Error diagnosis, crash analysis |
 | 12 | `architect` | high | Read, Write, Glob | System design, cross-cutting concerns |
-| 13 | `devops` | standard | Bash, Read, Write | Build, deploy, CI/CD pipelines |
-| 14 | `security` | high | Grep, Glob, Read | Vulnerability scanning, dependency audit |
-| 15 | `data` | standard | Bash, Read, Write | Data migration, schema, DB scripts |
-| 16 | `mobile` | high | Bash, Read, Write | Mobile-specific builds, platform guidelines |
-| 17 | `performance` | high | Bash, Read, LSP | Profiling, benchmarks, optimization |
-| 18 | `integration` | standard | Bash, Read, Write | API integration, service wiring |
+| 13 | `devops` | standard | Bash, Read, Write | Build pipeline, CI/CD, containers, deployment |
+| 14 | `security-reviewer` | high | Grep, Glob, Read | Vulnerability scanning, dependency audit |
+| 15 | `simplifier` | high | Read, Edit, Grep | Code reuse, quality, efficiency improvements |
+| 16 | `test-engineer` | standard | Bash, Read, Write | Test authoring, coverage analysis |
+| 17 | `critic` | high | Read, Grep, Write | Plan review, gap analysis, improvement suggestions |
+| 18 | `tracer` | high | Bash, Read, Grep | Causal investigation, root cause analysis |
+| 19 | `scientist` | high | Read, Write, Bash | Experimental design, hypothesis testing |
+| 20 | `code-reviewer` | standard | Read, Glob, LSP | PR reviews, style enforcement |
+| 21 | `document-specialist` | standard | Read, Write, Grep | Technical docs, API docs, guides |
+| 22 | `qa-tester` | standard | Bash, Read, Write | QA testing, regression verification |
+| 23 | `git-master` | standard | Bash, Read, Grep | Atomic commits, history management |
+| 24 | `analyst` | high | Read, Grep | Requirements analysis, gap identification |
 
 ## Delegation Rules
 

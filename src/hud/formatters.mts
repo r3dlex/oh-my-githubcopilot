@@ -29,6 +29,26 @@ export function formatDuration(ms: number): string {
 }
 
 /**
+ * Format a duration in milliseconds to short form (e.g., "1m 23s").
+ */
+export function formatDurationShort(ms: number): string {
+  if (ms < 1000) return `${Math.round(ms)}ms`;
+  if (ms < 60_000) return `${(ms / 1000).toFixed(0)}s`;
+  const mins = Math.floor(ms / 60_000);
+  const secs = Math.round(ms % 60_000 / 1000);
+  return `${mins}m${secs}s`;
+}
+
+/**
+ * Format tokens with ~ prefix and short notation.
+ */
+export function formatTokensShort(tokens: number): string {
+  if (tokens >= 1_000_000) return `~${(tokens / 1_000_000).toFixed(1)}M`;
+  if (tokens >= 1_000) return `~${(tokens / 1_000).toFixed(1)}k`;
+  return `~${tokens}`;
+}
+
+/**
  * Format a percentage with optional color code.
  */
 export function formatPct(value: number, opts: FormatOptions = {}): string {

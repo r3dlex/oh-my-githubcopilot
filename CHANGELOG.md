@@ -6,7 +6,7 @@ Initial release of **oh-my-copilot (OMP)** — a multi-agent orchestration layer
 
 ### Highlights
 
-- **18 OMP agents** via Claude Code subagents for specialized delegation (executor, architect, planner, document-specialist, researcher, designer, reviewer, verifier, test-engineer, security-reviewer, performance-analyst, debug-agent, code-reviewer, infra-specialist, data-modeler, api-designer, ux-specialist, integration-tester)
+- **24 OMP agents** via Claude Code subagents for specialized delegation (orchestrator, explorer, planner, executor, verifier, writer, reviewer, designer, researcher, tester, debugger, architect, devops, security-reviewer, simplifier, test-engineer, critic, tracer, scientist, code-reviewer, document-specialist, qa-tester, git-master, analyst)
 - **6 hooks** powering the orchestration pipeline (keyword-detector, delegation-enforcer, model-router, token-tracker, hud-emitter, stop-continuation)
 - **PSM (Plugin State Manager)** with SQLite persistence for cross-session state
 - **MCP server** exposing 10 tools for extended capabilities

@@ -67,7 +67,7 @@ entry: ./src/agents/executor.ts
 | 1 | `orchestrator` | high | TaskList, SendMessage, Glob, Grep | Top-level coordinator. Analyzes requests, delegates to agents, verifies output. Never writes. |
 | 2 | `explorer` | standard | Glob, Grep, Read | Fast codebase surveys. Finds file patterns, identifies structure. Returns file paths and summaries. |
 | 3 | `planner` | high | Read, Write, TaskCreate | Architecture design, task sequencing, risk assessment, implementation roadmaps. |
-| 4 | `executor` | high | Read, Write, Edit, Bash | All code implementation: features, refactors, multi-file edits. Verifies changes compile. |
+| 4 | `executor` | standard | Read, Write, Edit, Bash | Implementation and complex multi-file changes. Verifies output before returning. |
 | 5 | `verifier` | standard | Bash, Read, Glob | Runs tests, collects diagnostics evidence, validates command outputs, marks tasks complete. |
 | 6 | `writer` | standard | Read, Write, Glob | Technical documentation: README, API docs, guides, code comments. Matches existing style. |
 | 7 | `reviewer` | high | Read, Glob, Grep, LSP | Code review, quality gates, style enforcement. Uses LSP for precision. |
@@ -77,11 +77,17 @@ entry: ./src/agents/executor.ts
 | 11 | `debugger` | high | Bash, Read, LSP, Grep | Error diagnosis, crash analysis, stack trace interpretation, fix targeting. |
 | 12 | `architect` | high | Read, Write, Glob | System design, cross-cutting concerns, technology selection, scalability assessment. |
 | 13 | `devops` | standard | Bash, Read, Write | Build pipeline, CI/CD configuration, containerization, deployment scripts. |
-| 14 | `security` | high | Grep, Glob, Read | Vulnerability scanning, dependency audit, secrets detection, security policy review. |
-| 15 | `data` | standard | Bash, Read, Write | Database migrations, schema changes, data transformations, ETL scripts. |
-| 16 | `mobile` | high | Bash, Read, Write | Mobile-specific builds, platform guidelines (iOS/Android), mobile CI. |
-| 17 | `performance` | high | Bash, Read, LSP | Profiling, benchmark execution, optimization targeting, performance regression detection. |
-| 18 | `integration` | standard | Bash, Read, Write | API integration, service wiring, third-party SDK configuration, webhook handling. |
+| 14 | `security-reviewer` | high | Grep, Glob, Read | Vulnerability scanning, dependency audit, secrets detection, security policy review. |
+| 15 | `simplifier` | high | Read, Edit, Grep | Code reuse analysis, quality improvements, efficiency refactoring. |
+| 16 | `test-engineer` | standard | Bash, Read, Write | Test authoring, coverage analysis, test infrastructure setup. |
+| 17 | `critic` | high | Read, Grep, Write | Plan review, gap analysis, improvement suggestions, quality gates. |
+| 18 | `tracer` | high | Bash, Read, Grep | Causal investigation, root cause analysis, trace-driven debugging. |
+| 19 | `scientist` | high | Read, Write, Bash | Experimental design, hypothesis testing, data analysis. |
+| 20 | `code-reviewer` | standard | Read, Glob, LSP | PR reviews, style enforcement, pull request analysis. |
+| 21 | `document-specialist` | standard | Read, Write, Grep | Technical documentation, API docs, guides, instructional content. |
+| 22 | `qa-tester` | standard | Bash, Read, Write | QA testing, regression verification, test plan execution. |
+| 23 | `git-master` | standard | Bash, Read, Grep | Atomic commits, history management, branch strategy, commit archaeology. |
+| 24 | `analyst` | high | Read, Grep | Requirements analysis, gap identification, acceptance criteria definition. |
 
 ## 5. Delegation Enforcement
 

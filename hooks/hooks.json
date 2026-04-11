@@ -4,42 +4,42 @@
     {
       "id": "keyword-detector",
       "entry": "./dist/hooks/keyword-detector.mjs",
-      "trigger": "pre-cycle",
+      "trigger": "UserPromptSubmitted",
       "timeoutMs": 200,
       "priority": 100
     },
     {
       "id": "delegation-enforcer",
       "entry": "./dist/hooks/delegation-enforcer.mjs",
-      "trigger": "pre-cycle",
+      "trigger": "PreToolUse",
       "timeoutMs": 200,
       "priority": 90
     },
     {
       "id": "model-router",
       "entry": "./dist/hooks/model-router.mjs",
-      "trigger": "pre-cycle",
+      "trigger": "PreToolUse",
       "timeoutMs": 200,
       "priority": 80
     },
     {
       "id": "token-tracker",
       "entry": "./dist/hooks/token-tracker.mjs",
-      "trigger": "post-message",
+      "trigger": "PostToolUse",
       "timeoutMs": 200,
       "priority": 70
     },
     {
       "id": "hud-emitter",
       "entry": "./dist/hooks/hud-emitter.mjs",
-      "trigger": "post-cycle",
+      "trigger": "PostToolUse",
       "timeoutMs": 200,
       "priority": 60
     },
     {
       "id": "stop-continuation",
       "entry": "./dist/hooks/stop-continuation.mjs",
-      "trigger": "post-message",
+      "trigger": "PostToolUse",
       "timeoutMs": 200,
       "priority": 50
     }

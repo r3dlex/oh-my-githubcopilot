@@ -7,20 +7,25 @@ The HUD (Heads-Up Display) provides real-time session status to the user without
 ## 2. HUD Format Template
 
 ```
-[OMP] <mode> | ctx <contextPct>% | tok <tokensUsed>/<tokensTotal> | agent:<lastAgent> | <taskProgress>% | <status>
+[OMP v1.0.0] <mode> | <model> | ctx:<contextPct>% | tok:~<tokensUsed>/<tokensTotal> | <duration> | tools:<count> | skills:<count> | agents:<count> | <status>
 ```
 
 | Field | Example | Description |
 |-------|---------|-------------|
 | `mode` | `autopilot` | Current execution mode, or `-` if none |
+| `model` | `sonnet` | Active model identifier |
 | `contextPct` | `67` | Estimated context window utilization % |
-| `tokensUsed` | `67200` | Tokens consumed this session |
-| `tokensTotal` | `100000` | Model context window size |
-| `lastAgent` | `executor` | ID of most recently active agent |
-| `taskProgress` | `42` | Estimated % of current task complete |
+| `tokensUsed` | `67k` | Tokens consumed this session (short form with ~) |
+| `tokensTotal` | `200k` | Model context window size |
+| `duration` | `3m` | Session elapsed time |
+| `tools` | `12` | Count of unique tools used |
+| `skills` | `5` | Count of unique skills invoked |
+| `agents` | `3` | Count of cumulative agents used |
 | `status` | `running` | Current session status |
 
-Status values: `running`, `waiting`, `complete`, `error`, `eco`
+Example: `[OMP v1.0.0] autopilot | sonnet | ctx:67% | tok:~67k/200k | 3m | tools:12 | skills:5 | agents:3 | ● running`
+
+Status values: `idle`, `running`, `waiting`, `complete`, `error`, `eco`
 
 ## 3. HudState TypeScript Interface
 
@@ -28,16 +33,22 @@ Status values: `running`, `waiting`, `complete`, `error`, `eco`
 interface HudState {
   sessionId: string;
   activeMode: ExecutionMode | null;
-  contextPct: number;        // 0-100, estimated from token usage
+  activeModel: string;          // NEW: active model identifier
+  contextPct: number;           // 0-100, estimated from token usage
   tokensUsed: number;
   tokensTotal: number;
   agentsActive: string[];
   lastAgent: string;
-  lastOutput: string;        // last agent output, max 200 chars
-  taskProgress: number;      // 0-100
+  lastOutput: string;           // last agent output, max 200 chars
+  taskProgress: number;         // 0-100
   status: HudStatus;
-  startedAt: number;         // unix timestamp ms
+  startedAt: number;            // unix timestamp ms
   updatedAt: number;
+  version: string;
+  sessionDurationMs: number;    // NEW: session duration in ms
+  cumulativeAgentsUsed: number; // NEW: count of cumulative agents used
+  toolsUsed: Set<string>;       // NEW: unique tools used
+  skillsUsed: Set<string>;      // NEW: unique skills invoked
 }
 
 type HudStatus = 'idle' | 'running' | 'waiting' | 'complete' | 'error' | 'eco';

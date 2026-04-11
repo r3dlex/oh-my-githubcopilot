@@ -1,14 +1,14 @@
 {
   "name": "oh-my-copilot",
-  "description": "Multi-agent orchestration for GitHub Copilot CLI. 18 agents, 30+ skills, parallel execution, HUD, PSM, SWE-bench.",
+  "description": "Multi-agent orchestration for GitHub Copilot CLI. 18 agents, 21 skills, parallel execution, HUD, PSM, SWE-bench.",
   "version": "1.0.0",
   "author": {
     "name": "r3dlex"
   },
   "repository": "https://github.com/r3dlex/oh-my-copilot",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "keywords": ["orchestration", "multi-agent", "autopilot", "swe-bench", "hud"],
-  "agents": ["./src/agents"],
+  "agents": ["./agents", "./src/agents"],
   "skills": [
     "./skills/autopilot",
     "./skills/ralph",
@@ -28,7 +28,9 @@
     "./skills/release",
     "./skills/configure-notifications",
     "./skills/psm",
-    "./skills/swe-bench"
+    "./skills/swe-bench",
+    "./skills/mcp-setup",
+    "./skills/setup"
   ],
   "hooks": "./hooks/hooks.json",
   "mcp": "./.mcp.json"

@@ -11,6 +11,12 @@ export default defineConfig({
       include: ["src/**/*.mts"],
       exclude: ["src/**/*.d.mts"],
       thresholds: {
+        global: {
+          lines: 80,
+          functions: 80,
+          branches: 80,
+          statements: 80,
+        },
         files: {
           "src/benchmark/**": {
             lines: 90,

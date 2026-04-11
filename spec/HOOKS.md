@@ -21,7 +21,7 @@ Hooks are lightweight middleware functions that intercept and augment each agent
 }
 ```
 
-`trigger` must be one of: `pre-cycle`, `post-cycle`, `pre-message`, `post-message`.
+`trigger` must be one of: `UserPromptSubmitted`, `PreToolUse`, `PostToolUse`.
 `priority` is an integer (higher runs first; ties broken by registration order).
 
 ## 3. Hook Registration
@@ -34,7 +34,7 @@ At runtime, the Copilot CLI invokes hooks in priority order at each trigger poin
 
 ### 4.1 keyword-detector
 
-**Trigger**: `pre-cycle`
+**Trigger**: `UserPromptSubmitted`
 **Priority**: 100 (runs first)
 
 Scans the incoming message for magic keywords. On match, activates the corresponding skill and sets `activeMode` in the session state.
@@ -51,7 +51,7 @@ Detection is case-sensitive for `:`-suffixed forms (e.g. `autopilot:`), case-ins
 
 ### 4.2 delegation-enforcer
 
-**Trigger**: `pre-cycle`
+**Trigger**: `PreToolUse`
 **Priority**: 90
 
 Intercepts orchestrator tool calls. Ensures the orchestrator never uses Read, Write, Edit, or Bash for direct implementation. If a violation is detected, reroutes the call to the appropriate agent and logs the enforcement event.
@@ -67,7 +67,7 @@ interface EnforcementEvent {
 
 ### 4.3 model-router
 
-**Trigger**: `pre-cycle`
+**Trigger**: `PreToolUse`
 **Priority**: 80
 
 Selects the model tier for the current cycle based on:
@@ -86,7 +86,7 @@ interface ModelSelection {
 
 ### 4.4 token-tracker
 
-**Trigger**: `post-message`
+**Trigger**: `PostToolUse`
 **Priority**: 70
 
 Tracks cumulative token usage per session. Emits warnings at configurable thresholds:
@@ -106,7 +106,7 @@ interface TokenUpdate {
 
 ### 4.5 hud-emitter
 
-**Trigger**: `post-cycle`
+**Trigger**: `PostToolUse`
 **Priority**: 60
 
 Pushes the current session state to the HUD on every agent cycle completion. Emits only changed fields to minimize overhead.
@@ -127,7 +127,7 @@ interface HudEmit {
 
 ### 4.6 stop-continuation
 
-**Trigger**: `post-message`
+**Trigger**: `PostToolUse`
 **Priority**: 50
 
 Evaluates whether the current message constitutes a completion signal. Signals include:
@@ -203,6 +203,19 @@ async function keywordDetector(input: HookInput): Promise<HookOutput> {
 ```
 
 If a hook times out, the cycle continues without the hook's effects and an error is logged. Persistent timeouts (3 consecutive) trigger a warning to the user.
+
+## 6.1 Copilot CLI Event Mapping
+
+The following table maps OMP hook triggers to Copilot CLI native events:
+
+| OMP Hook | Copilot CLI Event | Description |
+|----------|-----------------|-------------|
+| `keyword-detector` | `UserPromptSubmitted` | Fires when user submits a prompt; scans for magic keywords |
+| `delegation-enforcer` | `PreToolUse` | Fires before each tool invocation; enforces delegation rules |
+| `model-router` | `PreToolUse` | Fires before each tool invocation; routes model based on task |
+| `token-tracker` | `PostToolUse` | Fires after each tool completion; tracks cumulative token usage |
+| `hud-emitter` | `PostToolUse` | Fires after each tool completion; updates HUD state |
+| `stop-continuation` | `PostToolUse` | Fires after each tool completion; evaluates stop signals |
 
 ## 7. Writing Custom Hooks
 
