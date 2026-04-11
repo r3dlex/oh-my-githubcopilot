@@ -1,7 +1,8 @@
 name: CI
 on: [push, pull_request]
+
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -10,8 +11,29 @@ jobs:
           node-version: "22"
           cache: "npm"
       - run: npm ci
-      - run: npm run typecheck
       - run: npm run build
+      - name: Tar artifact
+        run: tar czf ci-artifact.tar.gz --exclude='.git' --exclude='node_modules/.cache' . || true
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-artifact
+          path: ci-artifact.tar.gz
+          retention-days: 1
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ci-artifact
+          path: .
+      - name: Extract artifact
+        run: tar xzf ci-artifact.tar.gz && rm ci-artifact.tar.gz
+      - run: npm run typecheck
       - run: timeout 120 npm test < /dev/null || true
       - name: Run archgate check
         run: |
@@ -20,34 +42,37 @@ jobs:
 
   coverage:
     runs-on: ubuntu-latest
+    needs: build
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Download artifact
+        uses: actions/download-artifact@v4
         with:
-          node-version: "22"
-          cache: "npm"
-      - run: npm ci
-      - run: npm run typecheck
-      - run: npm run build
+          name: ci-artifact
+          path: .
+      - name: Extract artifact
+        run: tar xzf ci-artifact.tar.gz && rm ci-artifact.tar.gz
       - run: timeout 600 npm test -- --coverage < /dev/null || true
 
   pnpm-package:
     runs-on: ubuntu-latest
+    needs: build
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Download artifact
+        uses: actions/download-artifact@v4
         with:
-          node-version: "22"
-          cache: "npm"
+          name: ci-artifact
+          path: .
+      - name: Extract artifact
+        run: tar xzf ci-artifact.tar.gz && rm ci-artifact.tar.gz
       - name: Setup pnpm
         run: |
           corepack enable
           corepack prepare pnpm@latest --activate
       - name: Import lockfile
         run: pnpm import
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
       - name: Pack package
         run: pnpm pack
       - name: Upload package artifact
