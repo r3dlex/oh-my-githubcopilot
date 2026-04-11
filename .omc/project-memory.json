@@ -1,0 +1,464 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1775888707687,
+  "projectRoot": "/Users/andreburgstahler/Ws/Personal/oh-my-copilot",
+  "techStack": {
+    "languages": [
+      {
+        "name": "JavaScript/TypeScript",
+        "version": ">=22.0.0",
+        "confidence": "high",
+        "markers": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "tsconfig.json"
+        ]
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "esbuild",
+        "version": "0.24.0",
+        "category": "build"
+      },
+      {
+        "name": "vitest",
+        "version": "2.0.0",
+        "category": "testing"
+      }
+    ],
+    "packageManager": "npm",
+    "runtime": "Node.js 22.0.0"
+  },
+  "build": {
+    "buildCommand": "npm run build",
+    "testCommand": "npm test",
+    "lintCommand": "npm run lint",
+    "devCommand": "npm run dev",
+    "scripts": {
+      "build": "node --import tsx esbuild.config.mts",
+      "dev": "node --import tsx --watch esbuild.config.mts",
+      "test": "vitest run",
+      "test:watch": "vitest",
+      "test:coverage": "vitest run --coverage",
+      "lint": "eslint src/",
+      "format": "prettier --write src/",
+      "typecheck": "tsc --noEmit",
+      "sync-claude-plugin": "cp .github/plugin/plugin.json .claude-plugin/plugin.json",
+      "prepublishOnly": "npm run build && npm run sync-claude-plugin",
+      "archgate:init": "npx archgate init --editor claude",
+      "archgate:check": "npx archgate check"
+    }
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "assets",
+      "bin",
+      "spec",
+      "src",
+      "tests"
+    ],
+    "gitBranches": {
+      "defaultBranch": "main",
+      "branchingStrategy": null
+    }
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "assets": {
+      "path": "assets",
+      "purpose": "Static assets",
+      "fileCount": 6,
+      "lastAccessed": 1775888707678,
+      "keyFiles": [
+        "buddy-bang.png",
+        "buddy-playful.png",
+        "buddy-swarm.png",
+        "logo-grid.txt",
+        "logo.svg"
+      ]
+    },
+    "bin": {
+      "path": "bin",
+      "purpose": "Executable scripts",
+      "fileCount": 2,
+      "lastAccessed": 1775888707678,
+      "keyFiles": [
+        "omp.mjs",
+        "omp.mjs.map"
+      ]
+    },
+    "dist": {
+      "path": "dist",
+      "purpose": "Distribution/build output",
+      "fileCount": 0,
+      "lastAccessed": 1775888707679,
+      "keyFiles": []
+    },
+    "hooks": {
+      "path": "hooks",
+      "purpose": null,
+      "fileCount": 1,
+      "lastAccessed": 1775888707680,
+      "keyFiles": [
+        "hooks.json"
+      ]
+    },
+    "spec": {
+      "path": "spec",
+      "purpose": "Test specifications",
+      "fileCount": 9,
+      "lastAccessed": 1775888707680,
+      "keyFiles": [
+        "AGENTS_SPEC.md",
+        "BUILD.md",
+        "HOOKS.md",
+        "HUD.md",
+        "IMPLEMENTATION.md"
+      ]
+    },
+    "src": {
+      "path": "src",
+      "purpose": "Source code",
+      "fileCount": 1,
+      "lastAccessed": 1775888707680,
+      "keyFiles": [
+        "index.mts"
+      ]
+    },
+    "tests": {
+      "path": "tests",
+      "purpose": "Test files",
+      "fileCount": 0,
+      "lastAccessed": 1775888707680,
+      "keyFiles": []
+    },
+    "tests/utils": {
+      "path": "tests/utils",
+      "purpose": "Utility functions",
+      "fileCount": 2,
+      "lastAccessed": 1775888707681,
+      "keyFiles": [
+        "logger.test.mts",
+        "timer.test.mts"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "",
+      "accessCount": 19,
+      "lastAccessed": 1775923684345,
+      "type": "directory"
+    },
+    {
+      "path": "src/hud/renderer.mts",
+      "accessCount": 12,
+      "lastAccessed": 1775909198346,
+      "type": "file"
+    },
+    {
+      "path": "spec/HOOKS.md",
+      "accessCount": 10,
+      "lastAccessed": 1775904631600,
+      "type": "file"
+    },
+    {
+      "path": "README.md",
+      "accessCount": 7,
+      "lastAccessed": 1775904896108,
+      "type": "file"
+    },
+    {
+      "path": "package.json",
+      "accessCount": 6,
+      "lastAccessed": 1775923657803,
+      "type": "file"
+    },
+    {
+      "path": "spec/HUD.md",
+      "accessCount": 4,
+      "lastAccessed": 1775904571680,
+      "type": "file"
+    },
+    {
+      "path": "src/hud/formatters.mts",
+      "accessCount": 4,
+      "lastAccessed": 1775909183850,
+      "type": "file"
+    },
+    {
+      "path": "src/hud/metrics.mts",
+      "accessCount": 3,
+      "lastAccessed": 1775904543222,
+      "type": "file"
+    },
+    {
+      "path": "AGENTS.md",
+      "accessCount": 2,
+      "lastAccessed": 1775904581775,
+      "type": "file"
+    },
+    {
+      "path": "hooks/hooks.json",
+      "accessCount": 2,
+      "lastAccessed": 1775904594449,
+      "type": "file"
+    },
+    {
+      "path": "spec/AGENTS_SPEC.md",
+      "accessCount": 2,
+      "lastAccessed": 1775904601965,
+      "type": "file"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "accessCount": 2,
+      "lastAccessed": 1775904608622,
+      "type": "file"
+    },
+    {
+      "path": "LICENSE",
+      "accessCount": 2,
+      "lastAccessed": 1775904622797,
+      "type": "file"
+    },
+    {
+      "path": "tests/utils/logger.test.mts",
+      "accessCount": 2,
+      "lastAccessed": 1775904647056,
+      "type": "file"
+    },
+    {
+      "path": "src/skills/autopilot.mts",
+      "accessCount": 2,
+      "lastAccessed": 1775904661331,
+      "type": "file"
+    },
+    {
+      "path": "src/skills/ralph.mts",
+      "accessCount": 2,
+      "lastAccessed": 1775904661385,
+      "type": "file"
+    },
+    {
+      "path": "tests/benchmark/runner.test.mts",
+      "accessCount": 2,
+      "lastAccessed": 1775904773787,
+      "type": "file"
+    },
+    {
+      "path": "src/utils/yaml-parser.mts",
+      "accessCount": 2,
+      "lastAccessed": 1775909690442,
+      "type": "file"
+    },
+    {
+      "path": "src/agents/executor.md",
+      "accessCount": 1,
+      "lastAccessed": 1775904509582,
+      "type": "file"
+    },
+    {
+      "path": "src/agents/analyst.md",
+      "accessCount": 1,
+      "lastAccessed": 1775904509634,
+      "type": "file"
+    },
+    {
+      "path": "src/hooks/token-tracker.mts",
+      "accessCount": 1,
+      "lastAccessed": 1775904543449,
+      "type": "file"
+    },
+    {
+      "path": "src/psm/session.mts",
+      "accessCount": 1,
+      "lastAccessed": 1775904543513,
+      "type": "file"
+    },
+    {
+      "path": "src/hooks/model-router.mts",
+      "accessCount": 1,
+      "lastAccessed": 1775904543525,
+      "type": "file"
+    },
+    {
+      "path": "src/hooks/delegation-enforcer.mts",
+      "accessCount": 1,
+      "lastAccessed": 1775904543540,
+      "type": "file"
+    },
+    {
+      "path": "src/hooks/stop-continuation.mts",
+      "accessCount": 1,
+      "lastAccessed": 1775904543553,
+      "type": "file"
+    },
+    {
+      "path": "src/mcp/memory-store.mts",
+      "accessCount": 1,
+      "lastAccessed": 1775904543568,
+      "type": "file"
+    },
+    {
+      "path": "src/utils/skill-loader.mts",
+      "accessCount": 1,
+      "lastAccessed": 1775904543580,
+      "type": "file"
+    },
+    {
+      "path": "src/hooks/hud-emitter.mts",
+      "accessCount": 1,
+      "lastAccessed": 1775904543593,
+      "type": "file"
+    },
+    {
+      "path": "src/mcp/state-manager.mts",
+      "accessCount": 1,
+      "lastAccessed": 1775904543629,
+      "type": "file"
+    },
+    {
+      "path": "src/psm/worktree.mts",
+      "accessCount": 1,
+      "lastAccessed": 1775904543681,
+      "type": "file"
+    },
+    {
+      "path": "src/hooks/keyword-detector.mts",
+      "accessCount": 1,
+      "lastAccessed": 1775904543704,
+      "type": "file"
+    },
+    {
+      "path": "src/utils/agent-loader.mts",
+      "accessCount": 1,
+      "lastAccessed": 1775904543759,
+      "type": "file"
+    },
+    {
+      "path": "src/agents/git-master.md",
+      "accessCount": 1,
+      "lastAccessed": 1775904545599,
+      "type": "file"
+    },
+    {
+      "path": "src/agents/devops.md",
+      "accessCount": 1,
+      "lastAccessed": 1775904559961,
+      "type": "file"
+    },
+    {
+      "path": "spec/SKILLS.md",
+      "accessCount": 1,
+      "lastAccessed": 1775904624225,
+      "type": "file"
+    },
+    {
+      "path": "src/benchmark/runner.mts",
+      "accessCount": 1,
+      "lastAccessed": 1775904657635,
+      "type": "file"
+    },
+    {
+      "path": "src/skills/ultrawork.mts",
+      "accessCount": 1,
+      "lastAccessed": 1775904671271,
+      "type": "file"
+    },
+    {
+      "path": "src/skills/team.mts",
+      "accessCount": 1,
+      "lastAccessed": 1775904671333,
+      "type": "file"
+    },
+    {
+      "path": "src/skills/ecomode.mts",
+      "accessCount": 1,
+      "lastAccessed": 1775904671357,
+      "type": "file"
+    },
+    {
+      "path": "src/skills/swarm.mts",
+      "accessCount": 1,
+      "lastAccessed": 1775904671375,
+      "type": "file"
+    },
+    {
+      "path": "src/skills/pipeline.mts",
+      "accessCount": 1,
+      "lastAccessed": 1775904671412,
+      "type": "file"
+    },
+    {
+      "path": "src/skills/omp-plan.mts",
+      "accessCount": 1,
+      "lastAccessed": 1775904675848,
+      "type": "file"
+    },
+    {
+      "path": "src/skills/omp-setup.mts",
+      "accessCount": 1,
+      "lastAccessed": 1775904675878,
+      "type": "file"
+    },
+    {
+      "path": "src/skills/hud.mts",
+      "accessCount": 1,
+      "lastAccessed": 1775904675896,
+      "type": "file"
+    },
+    {
+      "path": "src/skills/deep-interview.mts",
+      "accessCount": 1,
+      "lastAccessed": 1775904675938,
+      "type": "file"
+    },
+    {
+      "path": "src/skills/wiki.mts",
+      "accessCount": 1,
+      "lastAccessed": 1775904675999,
+      "type": "file"
+    },
+    {
+      "path": "src/skills/mcp-setup.mts",
+      "accessCount": 1,
+      "lastAccessed": 1775904681857,
+      "type": "file"
+    },
+    {
+      "path": "src/skills/setup.mts",
+      "accessCount": 1,
+      "lastAccessed": 1775904682034,
+      "type": "file"
+    },
+    {
+      "path": "src/skills/note.mts",
+      "accessCount": 1,
+      "lastAccessed": 1775904682080,
+      "type": "file"
+    },
+    {
+      "path": "src/skills/configure-notifications.mts",
+      "accessCount": 1,
+      "lastAccessed": 1775904682128,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}
