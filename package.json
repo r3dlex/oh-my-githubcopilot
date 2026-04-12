@@ -20,6 +20,17 @@
   "bin": {
     "omp": "./bin/omp.mjs"
   },
+  "files": [
+    "dist/",
+    "bin/",
+    "skills/",
+    "hooks/",
+    "src/agents/",
+    ".claude-plugin/",
+    "AGENTS.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "node --import tsx esbuild.config.mts",
     "dev": "node --import tsx --watch esbuild.config.mts",
