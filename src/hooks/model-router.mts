@@ -61,11 +61,15 @@ export function processHook(input: HookInput): HookOutput {
     const agentTier = getAgentTier(agentId);
     const recommendation = TIER_RECOMMENDATIONS[agentTier] || TIER_RECOMMENDATIONS[DEFAULT_TIER];
 
+    const mutations: HookOutput["mutations"] = [
+      { type: "set_model", model: agentTierToModel(agentTier) },
+    ];
+
     return {
       status: "ok",
       latencyMs: Date.now() - start,
       additionalContext: recommendation,
-      mutations: [{ type: "set_model", model: agentTierToModel(agentTier) }],
+      mutations,
       log: [`${agentId} → tier: ${agentTier} → ${agentTierToModel(agentTier)}`],
     };
   } catch (err) {
@@ -97,10 +101,14 @@ function agentTierToModel(tier: string): "opus" | "sonnet" | "haiku" {
   return "sonnet";
 }
 
-// Main entry point
-const input: HookInput = JSON.parse(await readStdin());
-const output = processHook(input);
-console.log(JSON.stringify(output));
+// Main entry point — only runs when executed directly (not imported)
+import { fileURLToPath } from "url";
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  const input: HookInput = JSON.parse(await readStdin());
+  const output = processHook(input);
+  console.log(JSON.stringify(output));
+}
 
 async function readStdin(): Promise<string> {
   const chunks: string[] = [];

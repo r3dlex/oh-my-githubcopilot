@@ -10,6 +10,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from "fs";
 import { homedir } from "os";
 import { join } from "path";
+import { incrementSpending } from "../spending/tracker.mjs";
 
 export interface HookInput {
   hook_type: "PostToolUse";
@@ -49,7 +50,7 @@ export const MODEL_CONTEXTS = {
 
 const WARNING_THRESHOLDS = [60, 80, 90];
 
-function estimateTokens(input: unknown): number {
+export function estimateTokens(input: unknown): number {
   if (!input) return 0;
   try {
     const str = typeof input === "string" ? input : JSON.stringify(input);
@@ -135,6 +136,10 @@ export function processHook(input: HookInput): HookOutput {
       log.push(`Failed to write state: ${e}`);
     }
 
+    // Track premium request spending
+    const sessionId = input.session_id ?? `omp-${Date.now()}`;
+    try { incrementSpending(sessionId); } catch { /* non-blocking */ }
+
     return {
       status: "ok",
       latencyMs: Date.now() - start,
@@ -151,10 +156,14 @@ export function processHook(input: HookInput): HookOutput {
   }
 }
 
-// Main entry point
-const input: HookInput = JSON.parse(await readStdin());
-const output = processHook(input);
-console.log(JSON.stringify(output));
+// Main entry point — only runs when executed directly (not imported)
+import { fileURLToPath } from "url";
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  const input: HookInput = JSON.parse(await readStdin());
+  const output = processHook(input);
+  console.log(JSON.stringify(output));
+}
 
 async function readStdin(): Promise<string> {
   const chunks: string[] = [];

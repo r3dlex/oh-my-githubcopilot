@@ -23,6 +23,12 @@ export interface HudState {
   cumulativeAgentsUsed: number;
   toolsUsed: Set<string>;
   skillsUsed: Set<string>;
+  toolsTotal: number;
+  skillsTotal: number;
+  agentsTotal: number;
+  premiumRequests: number;
+  premiumRequestsTotal: number;
+  warningActive: boolean;
 }
 
 export type HudStatus = "idle" | "running" | "waiting" | "complete" | "error" | "eco";
@@ -78,7 +84,10 @@ export function renderAnsi(state: HudState): string {
   const tokenStr = `tok:~${tokens}/${state.tokensTotal}`;
   const modeStr = mode === "-" ? "-" : `\x1b[36m${mode}${reset()}`; // cyan for active modes
 
-  return `[OMP v${state.version}] ${modeStr} | ${model} | ${ctxStr} | ${tokenStr} | ${age} | tools:${state.toolsUsed?.size || 0} | skills:${state.skillsUsed?.size || 0} | agents:${state.cumulativeAgentsUsed} | ${icon} ${state.status}`;
+  const reqWarning = state.warningActive ? " !!" : "";
+  const reqStr = `req:${state.premiumRequests ?? 0}/${state.premiumRequestsTotal ?? 1500}${reqWarning}`;
+
+  return `[OMP v${state.version}] ${modeStr} | ${model} | ${ctxStr} | ${tokenStr} | ${reqStr} | ${age} | tools:${state.toolsUsed?.size || 0}/${state.toolsTotal ?? 13} | skills:${state.skillsUsed?.size || 0}/${state.skillsTotal ?? 21} | agents:${state.cumulativeAgentsUsed}/${state.agentsTotal ?? 23} | ${icon} ${state.status}`;
 }
 
 /**
@@ -92,5 +101,8 @@ export function renderPlain(state: HudState): string {
   const mode = state.activeMode || "-";
   const model = state.activeModel || "sonnet";
 
-  return `[OMP v${state.version}] ${mode} | ${model} | ctx:${ctx}% | tok:~${tokens}/${state.tokensTotal} | ${age} | tools:${state.toolsUsed?.size || 0} | skills:${state.skillsUsed?.size || 0} | agents:${state.cumulativeAgentsUsed} | ${state.status}`;
+  const reqWarningPlain = state.warningActive ? " !!" : "";
+  const reqStrPlain = `req:${state.premiumRequests ?? 0}/${state.premiumRequestsTotal ?? 1500}${reqWarningPlain}`;
+
+  return `[OMP v${state.version}] ${mode} | ${model} | ctx:${ctx}% | tok:~${tokens}/${state.tokensTotal} | ${reqStrPlain} | ${age} | tools:${state.toolsUsed?.size || 0}/${state.toolsTotal ?? 13} | skills:${state.skillsUsed?.size || 0}/${state.skillsTotal ?? 21} | agents:${state.cumulativeAgentsUsed}/${state.agentsTotal ?? 23} | ${state.status}`;
 }
