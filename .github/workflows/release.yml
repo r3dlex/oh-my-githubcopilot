@@ -174,6 +174,17 @@ jobs:
       - name: Pre-publish dry run (verify tarball contents)
         run: npm pack --dry-run
 
+      - name: Check npm token availability
+        id: check_npm_token
+        run: |
+          if [ -n "$NPM_TOKEN" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       # ── GitHub Packages (always, GITHUB_TOKEN) ──────────────────────────────
       - name: Setup Node for GitHub Packages
         uses: actions/setup-node@v4
@@ -221,19 +232,19 @@ jobs:
           fi
 
       - name: Publish to npmjs.com
-        if: ${{ secrets.NPM_TOKEN != '' && !inputs.dry-run && steps.npm_check.outputs.already_published != 'true' }}
+        if: ${{ steps.check_npm_token.outputs.available == 'true' && !inputs.dry-run && steps.npm_check.outputs.already_published != 'true' }}
         run: npm publish --provenance --access public --ignore-scripts --tag ${{ needs.build.outputs.npm_tag }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish to npmjs.com (dry run)
-        if: ${{ inputs.dry-run && secrets.NPM_TOKEN != '' }}
+        if: ${{ inputs.dry-run == true && steps.check_npm_token.outputs.available == 'true' }}
         run: npm publish --dry-run --ignore-scripts --tag ${{ needs.build.outputs.npm_tag }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: npmjs.com publish skipped (no NPM_TOKEN)
-        if: ${{ secrets.NPM_TOKEN == '' }}
+        if: ${{ steps.check_npm_token.outputs.available != 'true' }}
         run: echo "NPM_TOKEN not configured — skipping npmjs.com publish. Package is available on GitHub Packages only."
 
   github-release:
