@@ -49,6 +49,15 @@ const KEYWORD_MAP: Record<string, string> = {
   "/configure-notifications": "configure-notifications",
   "/psm": "psm",
   "/swe-bench": "swe-bench",
+  // v1.2 graph provider + spending skills
+  "graphify:":       "graphify",
+  "graphwiki:":      "graphwiki",
+  "graph:":          "graph-provider",
+  "spending:":       "spending",
+  "/graphify":       "graphify",
+  "/graphwiki":      "graphwiki",
+  "/graph-provider": "graph-provider",
+  "/spending":       "spending",
 };
 
 export interface HookInput {

@@ -165,7 +165,30 @@ Mode-specific colors:
 | `pipeline` | purple | `▶` |
 | `plan` | white | `◎` |
 
-## 8. HUD Events Emitted
+## 8. Spending Display Format
+
+The HUD displays premium request usage in the `req:N/M` format. This is the canonical format — **not** a dollar-based `$:` format. Dollar estimation is intentionally omitted: Copilot billing is premium-request-based, and dollar amounts require knowing the plan tier and overage rates, which adds configuration complexity for uncertain accuracy.
+
+```
+req:12/300   ← 12 premium requests used, 300 included in plan
+req:234/1500 !! ← "!!" warning indicator appears when ≥ warningThresholdPct of limit used
+```
+
+The `!!` warning threshold defaults to 80% of `premiumRequestsIncluded` and is configurable via `.omp/config.json`:
+
+```json
+{
+  "spending": {
+    "plan": "pro",
+    "premiumRequestsIncluded": 300,
+    "warningThresholdPct": 80
+  }
+}
+```
+
+Use `/omp:spending status` to inspect request counts and `/omp:spending reset` to clear the monthly counter.
+
+## 9. HUD Events Emitted
 
 The `hud-emitter` hook emits the following events:
 

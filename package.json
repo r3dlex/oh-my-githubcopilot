@@ -1,6 +1,6 @@
 {
   "name": "oh-my-copilot",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Multi-agent orchestration for GitHub Copilot CLI. 18 agents, 21 skills, parallel execution, HUD, PSM, SWE-bench.",
   "author": {
     "name": "r3dlex"

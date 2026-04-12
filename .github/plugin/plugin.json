@@ -8,7 +8,7 @@
   "repository": "https://github.com/r3dlex/oh-my-copilot",
   "license": "Apache-2.0",
   "keywords": ["orchestration", "multi-agent", "autopilot", "swe-bench", "hud"],
-  "agents": ["./agents", "./src/agents"],
+  "agents": ["./src/agents"],
   "skills": [
     "./skills/autopilot",
     "./skills/ralph",
@@ -30,7 +30,11 @@
     "./skills/psm",
     "./skills/swe-bench",
     "./skills/mcp-setup",
-    "./skills/setup"
+    "./skills/setup",
+    "./skills/graphify",
+    "./skills/graphwiki",
+    "./skills/graph-provider",
+    "./skills/spending"
   ],
   "hooks": "./hooks/hooks.json",
   "mcp": "./.mcp.json"
