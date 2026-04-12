@@ -21,7 +21,7 @@ Every software team juggles implementation, architecture, security review, testi
 
 | What you get | Why it matters |
 |--------------|----------------|
-| **18 agents** | Executor, architect, planner, reviewer, debugger, designer, data, performance, security, and more — each tuned to a different craft |
+| **23 agents** | Executor, architect, planner, reviewer, debugger, designer, security-reviewer, scientist, analyst, and more — each tuned to a different craft |
 | **21 skills** | `autopilot`, `ralph`, `ultrawork`, `team`, `ecomode`, `swarm`, `pipeline`, `plan` — trigger with a slash command |
 | **6 hooks** | Keyword detection, delegation routing, model selection, token tracking, HUD emission, stop-continuation |
 | **MCP server** | 10 built-in tools for extended capabilities |

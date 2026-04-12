@@ -7,7 +7,7 @@ export default defineConfig({
     include: ["tests/**/*.test.{mts,ts}"],
     coverage: {
       provider: "v8",
-      reporter: ["text", "lcov", "html"],
+      reporter: ["text"],
       include: ["src/**/*.mts"],
       exclude: ["src/**/*.d.mts"],
       thresholds: {
@@ -28,5 +28,10 @@ export default defineConfig({
       },
     },
     testTimeout: 10000,
+    pool: "vmThreads",
+    poolOptions: {
+      vmThreads: { singleThread: true },
+    },
+    teardownTimeout: 1000,
   },
 });

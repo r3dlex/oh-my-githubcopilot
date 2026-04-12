@@ -14,7 +14,7 @@ The orchestrator is the top-level coordinator. It:
 
 The orchestrator **never writes code, docs, or configs directly**. It always delegates to a specialized agent.
 
-## Agent Registry (24 Agents)
+## Agent Registry (23 Agents)
 
 | # | ID | Tier | Tools | Role |
 |---|-----|------|-------|------|
@@ -30,18 +30,17 @@ The orchestrator **never writes code, docs, or configs directly**. It always del
 | 10 | `tester` | standard | Bash, Read, Write | Test writing, execution, CI integration |
 | 11 | `debugger` | high | Bash, Read, LSP, Grep | Error diagnosis, crash analysis |
 | 12 | `architect` | high | Read, Write, Glob | System design, cross-cutting concerns |
-| 13 | `devops` | standard | Bash, Read, Write | Build pipeline, CI/CD, containers, deployment |
-| 14 | `security-reviewer` | high | Grep, Glob, Read | Vulnerability scanning, dependency audit |
-| 15 | `simplifier` | high | Read, Edit, Grep | Code reuse, quality, efficiency improvements |
-| 16 | `test-engineer` | standard | Bash, Read, Write | Test authoring, coverage analysis |
-| 17 | `critic` | high | Read, Grep, Write | Plan review, gap analysis, improvement suggestions |
-| 18 | `tracer` | high | Bash, Read, Grep | Causal investigation, root cause analysis |
-| 19 | `scientist` | high | Read, Write, Bash | Experimental design, hypothesis testing |
-| 20 | `code-reviewer` | standard | Read, Glob, LSP | PR reviews, style enforcement |
-| 21 | `document-specialist` | standard | Read, Write, Grep | Technical docs, API docs, guides |
-| 22 | `qa-tester` | standard | Bash, Read, Write | QA testing, regression verification |
-| 23 | `git-master` | standard | Bash, Read, Grep | Atomic commits, history management |
-| 24 | `analyst` | high | Read, Grep | Requirements analysis, gap identification |
+| 13 | `security-reviewer` | high | Grep, Glob, Read | Vulnerability scanning, dependency audit |
+| 14 | `simplifier` | high | Read, Edit, Grep | Code reuse, quality, efficiency improvements |
+| 15 | `test-engineer` | standard | Bash, Read, Write | Test authoring, coverage analysis |
+| 16 | `critic` | high | Read, Grep, Write | Plan review, gap analysis, improvement suggestions |
+| 17 | `tracer` | high | Bash, Read, Grep | Causal investigation, root cause analysis |
+| 18 | `scientist` | high | Read, Write, Bash | Experimental design, hypothesis testing |
+| 19 | `code-reviewer` | standard | Read, Glob, LSP | PR reviews, style enforcement |
+| 20 | `document-specialist` | standard | Read, Write, Grep | Technical docs, API docs, guides |
+| 21 | `qa-tester` | standard | Bash, Read, Write | QA testing, regression verification |
+| 22 | `git-master` | standard | Bash, Read, Grep | Atomic commits, history management |
+| 23 | `analyst` | high | Read, Grep | Requirements analysis, gap identification |
 
 ## Delegation Rules
 

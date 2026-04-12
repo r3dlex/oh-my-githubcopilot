@@ -1,3 +1,12 @@
+# oh-my-copilot v1.1.0
+
+## Changes
+
+- **HUD format change: tools:N → tools:N/M** — All count fields (tools, skills, agents) now display as used/total (e.g., `tools:12/13`, `skills:5/21`, `agents:3/23`). Users with tmux `status-right` parsing or scripts that read bare integers after `tools:`, `skills:`, or `agents:` must update their parsing to handle the `N/M` format.
+- Added `toolsTotal` (default 13), `skillsTotal` (default 21), and `agentsTotal` (default 23) fields to `HudState` and `HudMetrics`.
+
+---
+
 # oh-my-copilot v1.0.0: Initial Release
 
 ## Release Notes

@@ -103,6 +103,60 @@ describe("HUD renderer", () => {
     });
   });
 
+  describe("N/M format", () => {
+    it("should render tools in N/M format in renderAnsi", () => {
+      const state = createMockState();
+      const output = renderAnsi(state);
+      expect(output).toMatch(/tools:\d+\/\d+/);
+    });
+
+    it("should render skills in N/M format in renderAnsi", () => {
+      const state = createMockState();
+      const output = renderAnsi(state);
+      expect(output).toMatch(/skills:\d+\/\d+/);
+    });
+
+    it("should render agents in N/M format in renderAnsi", () => {
+      const state = createMockState();
+      const output = renderAnsi(state);
+      expect(output).toMatch(/agents:\d+\/\d+/);
+    });
+
+    it("should render tools in N/M format in renderPlain", () => {
+      const state = createMockState();
+      const output = renderPlain(state);
+      expect(output).toMatch(/tools:\d+\/\d+/);
+    });
+
+    it("should render skills in N/M format in renderPlain", () => {
+      const state = createMockState();
+      const output = renderPlain(state);
+      expect(output).toMatch(/skills:\d+\/\d+/);
+    });
+
+    it("should render agents in N/M format in renderPlain", () => {
+      const state = createMockState();
+      const output = renderPlain(state);
+      expect(output).toMatch(/agents:\d+\/\d+/);
+    });
+
+    it("should use default totals when not provided", () => {
+      const state = createMockState();
+      const output = renderPlain(state);
+      expect(output).toContain("tools:0/13");
+      expect(output).toContain("skills:0/21");
+      expect(output).toContain("agents:2/23");
+    });
+
+    it("should use provided totals when specified", () => {
+      const state = { ...createMockState(), toolsTotal: 20, skillsTotal: 30, agentsTotal: 10 };
+      const output = renderPlain(state);
+      expect(output).toContain("tools:0/20");
+      expect(output).toContain("skills:0/30");
+      expect(output).toContain("agents:2/10");
+    });
+  });
+
   describe("edge cases", () => {
     it("should format tokens at exact 1k boundary", () => {
       // Tokens just under, at, and over 1000

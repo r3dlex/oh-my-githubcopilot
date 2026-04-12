@@ -158,7 +158,13 @@ function processPostToolUse(input: HookInput): HookOutput {
   let state: SessionState;
 
   try {
-    state = JSON.parse(readFileSync(statePath, "utf-8"));
+    const raw = JSON.parse(readFileSync(statePath, "utf-8"));
+    state = {
+      ...raw,
+      tools_used: Array.isArray(raw.tools_used) ? raw.tools_used : [],
+      skills_used: Array.isArray(raw.skills_used) ? raw.skills_used : [],
+      agents_used: Array.isArray(raw.agents_used) ? raw.agents_used : [],
+    };
   } catch {
     // Fall back to session start behavior if no state
     return processSessionStart(input);
@@ -217,10 +223,14 @@ export function processHook(input: HookInput): HookOutput {
   };
 }
 
-// Main entry point
-const input: HookInput = JSON.parse(await readStdin());
-const output = processHook(input);
-console.log(JSON.stringify(output));
+// Main entry point — only runs when executed directly (not imported)
+import { fileURLToPath } from "url";
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  const input: HookInput = JSON.parse(await readStdin());
+  const output = processHook(input);
+  console.log(JSON.stringify(output));
+}
 
 async function readStdin(): Promise<string> {
   const chunks: string[] = [];

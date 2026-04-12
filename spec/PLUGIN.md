@@ -30,13 +30,7 @@ Every OMP plugin must have a `plugin.json` at the project root:
     { "id": "researcher" },
     { "id": "tester" },
     { "id": "debugger" },
-    { "id": "architect" },
-    { "id": "devops" },
-    { "id": "security" },
-    { "id": "data" },
-    { "id": "mobile" },
-    { "id": "performance" },
-    { "id": "integration" }
+    { "id": "architect" }
   ],
   "skills": [
     "./skills/autopilot",

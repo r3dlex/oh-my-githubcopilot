@@ -76,18 +76,17 @@ entry: ./src/agents/executor.ts
 | 10 | `tester` | standard | Bash, Read, Write | Test authoring, test execution, coverage analysis, CI integration. |
 | 11 | `debugger` | high | Bash, Read, LSP, Grep | Error diagnosis, crash analysis, stack trace interpretation, fix targeting. |
 | 12 | `architect` | high | Read, Write, Glob | System design, cross-cutting concerns, technology selection, scalability assessment. |
-| 13 | `devops` | standard | Bash, Read, Write | Build pipeline, CI/CD configuration, containerization, deployment scripts. |
-| 14 | `security-reviewer` | high | Grep, Glob, Read | Vulnerability scanning, dependency audit, secrets detection, security policy review. |
-| 15 | `simplifier` | high | Read, Edit, Grep | Code reuse analysis, quality improvements, efficiency refactoring. |
-| 16 | `test-engineer` | standard | Bash, Read, Write | Test authoring, coverage analysis, test infrastructure setup. |
-| 17 | `critic` | high | Read, Grep, Write | Plan review, gap analysis, improvement suggestions, quality gates. |
-| 18 | `tracer` | high | Bash, Read, Grep | Causal investigation, root cause analysis, trace-driven debugging. |
-| 19 | `scientist` | high | Read, Write, Bash | Experimental design, hypothesis testing, data analysis. |
-| 20 | `code-reviewer` | standard | Read, Glob, LSP | PR reviews, style enforcement, pull request analysis. |
-| 21 | `document-specialist` | standard | Read, Write, Grep | Technical documentation, API docs, guides, instructional content. |
-| 22 | `qa-tester` | standard | Bash, Read, Write | QA testing, regression verification, test plan execution. |
-| 23 | `git-master` | standard | Bash, Read, Grep | Atomic commits, history management, branch strategy, commit archaeology. |
-| 24 | `analyst` | high | Read, Grep | Requirements analysis, gap identification, acceptance criteria definition. |
+| 13 | `security-reviewer` | high | Grep, Glob, Read | Vulnerability scanning, dependency audit, secrets detection, security policy review. |
+| 14 | `simplifier` | high | Read, Edit, Grep | Code reuse analysis, quality improvements, efficiency refactoring. |
+| 15 | `test-engineer` | standard | Bash, Read, Write | Test authoring, coverage analysis, test infrastructure setup. |
+| 16 | `critic` | high | Read, Grep, Write | Plan review, gap analysis, improvement suggestions, quality gates. |
+| 17 | `tracer` | high | Bash, Read, Grep | Causal investigation, root cause analysis, trace-driven debugging. |
+| 18 | `scientist` | high | Read, Write, Bash | Experimental design, hypothesis testing, data analysis. |
+| 19 | `code-reviewer` | standard | Read, Glob, LSP | PR reviews, style enforcement, pull request analysis. |
+| 20 | `document-specialist` | standard | Read, Write, Grep | Technical documentation, API docs, guides, instructional content. |
+| 21 | `qa-tester` | standard | Bash, Read, Write | QA testing, regression verification, test plan execution. |
+| 22 | `git-master` | standard | Bash, Read, Grep | Atomic commits, history management, branch strategy, commit archaeology. |
+| 23 | `analyst` | high | Read, Grep | Requirements analysis, gap identification, acceptance criteria definition. |
 
 ## 5. Delegation Enforcement
 
@@ -142,7 +141,7 @@ interface AgentResult {
 
 | Condition | Escalate to |
 |-----------|-------------|
-| Security/vulnerability finding | `security` agent (mandatory `opus` tier) |
+| Security/vulnerability finding | `security-reviewer` agent (mandatory `opus` tier) |
 | Architecture ambiguity | `architect` agent |
 | 3+ failed delegation attempts | `architect` + `planner` jointly |
 | Token budget critical | Switch to `ecomode`; delegate to `verifier` for partial output |

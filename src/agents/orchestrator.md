@@ -45,12 +45,7 @@ level: 5
        - External docs, dependency research → researcher (sonnet)
        - Bug diagnosis, crash analysis → debugger (opus)
        - System design, cross-cutting concerns → architect (opus)
-       - Build/CI/CD → devops (sonnet)
-       - Vulnerability/secret scan → security (opus, mandatory)
-       - DB migrations, schema → data (sonnet)
-       - Mobile builds → mobile (opus)
-       - Profiling, optimization → performance (opus)
-       - API/wire integration → integration (sonnet)
+       - Vulnerability/secret scan → security-reviewer (opus, mandatory)
     2) Check for magic keywords → activate skill if found.
     3) Check model-router hook → adjust model tier if token budget is critical or context pressure > 80%.
     4) Delegate with full task description and context.

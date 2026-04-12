@@ -7,7 +7,7 @@ The HUD (Heads-Up Display) provides real-time session status to the user without
 ## 2. HUD Format Template
 
 ```
-[OMP v1.0.0] <mode> | <model> | ctx:<contextPct>% | tok:~<tokensUsed>/<tokensTotal> | <duration> | tools:<count> | skills:<count> | agents:<count> | <status>
+[OMP v1.0.0] <mode> | <model> | ctx:<contextPct>% | tok:~<tokensUsed>/<tokensTotal> | <duration> | tools:<used>/<total> | skills:<used>/<total> | agents:<used>/<total> | <status>
 ```
 
 | Field | Example | Description |
@@ -18,14 +18,28 @@ The HUD (Heads-Up Display) provides real-time session status to the user without
 | `tokensUsed` | `67k` | Tokens consumed this session (short form with ~) |
 | `tokensTotal` | `200k` | Model context window size |
 | `duration` | `3m` | Session elapsed time |
-| `tools` | `12` | Count of unique tools used |
-| `skills` | `5` | Count of unique skills invoked |
-| `agents` | `3` | Count of cumulative agents used |
+| `tools` | `12/13` | Count of unique tools used / total available |
+| `skills` | `5/21` | Count of unique skills invoked / total available |
+| `agents` | `3/23` | Count of cumulative agents used / total available |
 | `status` | `running` | Current session status |
 
-Example: `[OMP v1.0.0] autopilot | sonnet | ctx:67% | tok:~67k/200k | 3m | tools:12 | skills:5 | agents:3 | ● running`
+Example: `[OMP v1.0.0] autopilot | sonnet | ctx:67% | tok:~67k/200k | 3m | tools:12/13 | skills:5/21 | agents:3/23 | ● running`
 
 Status values: `idle`, `running`, `waiting`, `complete`, `error`, `eco`
+
+## Migration
+
+### tools:N → tools:N/M
+
+Starting in v1.1, all count fields in the HUD display the N/M format showing used-vs-available:
+
+- `tools:12` → `tools:12/13`
+- `skills:5` → `skills:5/21`
+- `agents:3` → `agents:3/23`
+
+Users with tmux `status-right` configurations or scripts that parse the bare integer after `tools:`, `skills:`, or `agents:` must update their parsing to handle the `N/M` pattern (e.g., split on `/` and take the first element, or use a regex like `tools:(\d+)/\d+`).
+
+The denominator values (`toolsTotal`, `skillsTotal`, `agentsTotal`) default to 13, 21, and 23 respectively and are part of `HudState`.
 
 ## 3. HudState TypeScript Interface
 

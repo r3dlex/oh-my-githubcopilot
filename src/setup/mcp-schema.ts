@@ -118,10 +118,11 @@ export type ResolvedMcpConfig = {
 
 /** User-level config path: ~/.omp/mcp-config.json (Unix) or %USERPROFILE%\.omp\ (Win32) */
 export function getUserConfigPath(): string {
-  const home = homedir();
   if (process.platform === "win32") {
+    const home = process.env.USERPROFILE ?? homedir();
     return `${home}\\.omp\\mcp-config.json`;
   }
+  const home = process.env.HOME ?? homedir();
   return `${home}/.omp/mcp-config.json`;
 }
 

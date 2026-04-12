@@ -105,10 +105,14 @@ export function processHook(input: HookInput): HookOutput {
   }
 }
 
-// Main entry point
-const input: HookInput = JSON.parse(await readStdin());
-const output = processHook(input);
-console.log(JSON.stringify(output));
+// Main entry point — only runs when executed directly (not imported)
+import { fileURLToPath } from "url";
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  const input: HookInput = JSON.parse(await readStdin());
+  const output = processHook(input);
+  console.log(JSON.stringify(output));
+}
 
 async function readStdin(): Promise<string> {
   const chunks: string[] = [];

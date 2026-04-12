@@ -14,6 +14,13 @@ export interface HudMetrics {
   toolsUsed: Set<string>;
   skillsUsed: Set<string>;
   agentsUsed: Set<string>;
+  toolsTotal: number;
+  skillsTotal: number;
+  agentsTotal: number;
+  premiumRequests: number;
+  monthlyPremiumRequests: number;
+  premiumRequestsTotal: number;
+  warningActive: boolean;
 }
 
 // Model context windows in tokens
