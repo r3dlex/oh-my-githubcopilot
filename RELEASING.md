@@ -8,69 +8,124 @@ This document describes the end-to-end release process for `oh-my-copilot`.
 - `NPM_TOKEN` configured as a GitHub Actions secret (see [Secret Setup](#secret-setup))
 - Node.js >= 22.0.0
 
-## Release Process (Happy Path)
+## Continuous Alpha Releases
 
-1. **Bump version in `package.json`**
+Every push to `main` automatically publishes an alpha release:
 
-   ```bash
-   npm version patch   # 1.2.0 → 1.2.1
-   npm version minor   # 1.2.0 → 1.3.0
-   npm version major   # 1.2.0 → 2.0.0
-   ```
+- **Version scheme**: `X.Y.Z-alpha.<git-short-sha>` (e.g., `1.2.3-alpha.a1b2c3d4`)
+- **Dist tag**: `alpha`
+- **Manual steps required**: None — fully automated
+- **Install latest alpha**: `npm install oh-my-copilot@alpha`
+- **CHANGELOG.md requirement**: NOT required for alpha releases
 
-   This updates `package.json` and creates a local git commit + tag (`vX.Y.Z`).
+Alpha releases allow users to test new features and fixes immediately without waiting for a stable release.
 
-2. **Sync plugin manifest version**
+## npm Dist Tags
 
-   `npm version` only bumps `package.json`. You must also manually update `.github/plugin/plugin.json`:
+| Dist Tag | Version Scheme | When Published | Install Command |
+|----------|---|---|---|
+| `latest` | `X.Y.Z` (stable) | On tagged commits (`vX.Y.Z`) | `npm install oh-my-copilot` |
+| `alpha` | `X.Y.Z-alpha.<sha>` | On every push to `main` | `npm install oh-my-copilot@alpha` |
 
-   ```json
-   {
-     "version": "X.Y.Z"
-   }
-   ```
+## Stable Release Process
 
-   The CI will fail the publish step if `.claude-plugin/plugin.json` (synced from `.github/plugin/plugin.json` via `sync-claude-plugin`) does not match the git tag.
+To publish a stable release, follow these steps:
 
-3. **Update `CHANGELOG.md`**
+### Step 1: Bump Version
 
-   Add a section for the new version describing changes.
+```bash
+npm version patch   # 1.2.0 → 1.2.1
+npm version minor   # 1.2.0 → 1.3.0
+npm version major   # 1.2.0 → 2.0.0
+```
 
-4. **Amend the release commit**
+This updates `package.json`, creates a local git commit, and creates a git tag (`vX.Y.Z`).
 
-   ```bash
-   git add .github/plugin/plugin.json CHANGELOG.md
-   git commit --amend --no-edit
-   git tag -f vX.Y.Z   # re-tag after amend
-   ```
+### Step 2: Sync Plugin Manifest
 
-5. **Push commit and tag**
+`npm version` only updates `package.json`. You must also manually update `.github/plugin/plugin.json`:
 
-   ```bash
-   git push origin main
-   git push origin vX.Y.Z
-   ```
+```json
+{
+  "version": "X.Y.Z"
+}
+```
 
-   This triggers the `Release` GitHub Actions workflow automatically.
+Then run the sync script:
 
-6. **Monitor CI**
+```bash
+npm run sync-claude-plugin
+```
 
-   The workflow runs 4 jobs in sequence:
-   - `build` — compiles and archives the repo
-   - `test` — typechecks and runs the test suite
-   - `publish` — verifies versions, packs, and publishes to npm
-   - `github-release` — creates a GitHub Release with auto-generated notes and the `.tgz` attached
+This syncs the version from `.github/plugin/plugin.json` to `.claude-plugin/plugin.json`. The CI will fail the publish step if these do not match the git tag.
 
-   Monitor at: `https://github.com/r3dlex/oh-my-copilot/actions`
+### Step 3: Write CHANGELOG.md
+
+Add a section for the new version describing changes. The section heading **must** contain the version number (e.g., `# oh-my-copilot v1.2.0`).
+
+Example:
+
+```markdown
+# oh-my-copilot v1.2.0
+
+## Features
+- New feature A
+- New feature B
+
+## Fixes
+- Fixed bug X
+- Fixed bug Y
+```
+
+### Step 4: Amend the Release Commit
+
+After writing the CHANGELOG, add both the plugin manifest and changelog to the release commit:
+
+```bash
+git add .github/plugin/plugin.json CHANGELOG.md
+git commit --amend --no-edit
+git tag -f vX.Y.Z
+```
+
+The `--amend` updates the existing commit created by `npm version`. The `--no-edit` preserves the commit message. The `git tag -f` re-tags after the amend.
+
+### Step 5: Push with `--follow-tags`
+
+```bash
+git push origin main --follow-tags
+```
+
+The `--follow-tags` flag ensures the tag is pushed together with the commit and triggers the Release workflow.
+
+### Step 6: Monitor CI
+
+The `Release` GitHub Actions workflow runs automatically and executes 4 jobs in sequence:
+
+- **build** — Compiles and archives the repo
+- **test** — Typechecks, runs the test suite, and **verifies CHANGELOG.md exists with the correct version**
+- **publish** — Verifies versions match, packs the tarball, and publishes to npm on the `latest` dist-tag
+- **github-release** — Creates a GitHub Release with auto-generated notes and attaches the `.tgz`
+
+Monitor at: `https://github.com/r3dlex/oh-my-copilot/actions`
+
+## CHANGELOG.md Requirement
+
+- **Alpha releases**: CHANGELOG.md is NOT required
+- **Stable releases**: CHANGELOG.md MUST have a section heading containing the version (e.g., `# oh-my-copilot v1.2.0`)
+
+The test job in CI explicitly checks for this. If the version heading is missing, the pipeline will fail with a clear error message before publishing.
 
 ## Dry Run
 
-To validate the pipeline without publishing:
+To validate the pipeline without publishing to npm:
 
 1. Go to **Actions → Release → Run workflow**
-2. Check **"Dry run"** and click **Run workflow**
+2. Provide inputs:
+   - **dry-run** (checkbox): Check this to skip real npm publish
+   - **release-type** (dropdown): Select `alpha` or `stable` to test the workflow for that release type
+3. Click **Run workflow**
 
-The workflow runs all steps but uses `npm publish --dry-run` and skips GitHub Release creation. Use this to verify tarball contents and pipeline health before a real release.
+The workflow runs all steps but uses `npm publish --dry-run` (when applicable) and skips GitHub Release creation. Use this to verify tarball contents and pipeline health before a real release.
 
 ## Secret Setup
 
@@ -93,6 +148,7 @@ The publish job requires an npm access token stored as a GitHub Actions secret:
 ### Rotating NPM_TOKEN
 
 When the token expires or is compromised:
+
 1. Generate a new token on npmjs.com
 2. Update the `NPM_TOKEN` secret in GitHub Actions
 3. Revoke the old token on npmjs.com
@@ -101,8 +157,8 @@ When the token expires or is compromised:
 
 If a bad release reaches npm:
 
-- **Within 72 hours:** `npm unpublish oh-my-copilot@X.Y.Z`
-- **After 72 hours:** `npm deprecate oh-my-copilot@X.Y.Z "This version has a known issue. Please use X.Y.Z+1."`
+- **Within 72 hours**: `npm unpublish oh-my-copilot@X.Y.Z`
+- **After 72 hours**: `npm deprecate oh-my-copilot@X.Y.Z "This version has a known issue. Please use X.Y.Z+1."`
 
 Always publish a fixed version immediately after deprecating a bad one.
 

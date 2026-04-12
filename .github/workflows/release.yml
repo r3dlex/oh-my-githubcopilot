@@ -4,12 +4,22 @@ on:
   push:
     tags:
       - 'v*.*.*'
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       dry-run:
         description: 'Dry run (skip actual publish and GitHub release)'
         type: boolean
         default: false
+      release_type:
+        description: 'Force release type (auto = detect from tag)'
+        type: choice
+        options:
+          - auto
+          - alpha
+          - stable
+        default: auto
 
 concurrency:
   group: release
@@ -18,12 +28,40 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      release_type: ${{ steps.version.outputs.release_type }}
+      publish_version: ${{ steps.version.outputs.publish_version }}
+      npm_tag: ${{ steps.version.outputs.npm_tag }}
+      base_version: ${{ steps.version.outputs.base_version }}
+      git_tag: ${{ steps.version.outputs.git_tag }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      - name: Resolve release version
+        id: version
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          TAG_MATCH=$(git tag --points-at HEAD | grep -E "^v${PKG_VERSION//./\\.}$" || true)
+          FORCED="${{ inputs.release_type }}"
+
+          if [ "$FORCED" = "stable" ] || { [ "$FORCED" != "alpha" ] && [ -n "$TAG_MATCH" ]; }; then
+            echo "release_type=stable" >> "$GITHUB_OUTPUT"
+            echo "publish_version=$PKG_VERSION" >> "$GITHUB_OUTPUT"
+            echo "npm_tag=latest" >> "$GITHUB_OUTPUT"
+            echo "git_tag=${TAG_MATCH:-v$PKG_VERSION}" >> "$GITHUB_OUTPUT"
+          else
+            echo "release_type=alpha" >> "$GITHUB_OUTPUT"
+            echo "publish_version=${PKG_VERSION}-alpha.${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+            echo "npm_tag=alpha" >> "$GITHUB_OUTPUT"
+            echo "git_tag=" >> "$GITHUB_OUTPUT"
+          fi
+          echo "base_version=$PKG_VERSION" >> "$GITHUB_OUTPUT"
+
       - name: Branch guard (tag must be on main)
+        if: steps.version.outputs.release_type == 'stable'
         run: |
           git branch --contains HEAD | grep -q main || \
             { echo "::error::Tagged commit is not reachable from main branch"; exit 1; }
@@ -67,6 +105,17 @@ jobs:
 
       - run: npm ci
 
+      - name: Validate CHANGELOG.md (stable releases only)
+        if: needs.build.outputs.release_type == 'stable'
+        run: |
+          BASE_VERSION="${{ needs.build.outputs.base_version }}"
+          if ! grep -qF "v${BASE_VERSION}" CHANGELOG.md; then
+            echo "::error::CHANGELOG.md does not contain a section for version ${BASE_VERSION}"
+            echo "::error::Add a heading like '# oh-my-copilot v${BASE_VERSION}' with release notes before tagging."
+            exit 1
+          fi
+          echo "CHANGELOG.md contains section for v${BASE_VERSION} ✓"
+
       - run: npm run typecheck
 
       - run: timeout 120 npm test < /dev/null
@@ -78,11 +127,10 @@ jobs:
 
   publish:
     runs-on: ubuntu-latest
-    needs: test
+    needs: [build, test]
     permissions:
       contents: read
       id-token: write
-    environment: npm
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v4
@@ -100,43 +148,60 @@ jobs:
 
       - run: npm ci --omit=dev
 
-      - name: Verify package.json version matches tag
+      - name: Verify package.json version matches (stable only)
+        if: needs.build.outputs.release_type == 'stable'
         run: |
           PKG_VERSION=$(node -p "require('./package.json').version")
-          TAG_VERSION="${GITHUB_REF#refs/tags/v}"
-          if [ "$PKG_VERSION" != "$TAG_VERSION" ]; then
-            echo "::error::package.json version ($PKG_VERSION) does not match tag ($TAG_VERSION)"
+          EXPECTED="${{ needs.build.outputs.base_version }}"
+          if [ "$PKG_VERSION" != "$EXPECTED" ]; then
+            echo "::error::package.json version ($PKG_VERSION) does not match expected ($EXPECTED)"
             exit 1
           fi
 
-      - name: Verify .claude-plugin/plugin.json version matches tag
+      - name: Verify .claude-plugin/plugin.json version matches (stable only)
+        if: needs.build.outputs.release_type == 'stable'
         run: |
           PLUGIN_VERSION=$(node -p "require('./.claude-plugin/plugin.json').version")
-          TAG_VERSION="${GITHUB_REF#refs/tags/v}"
-          if [ "$PLUGIN_VERSION" != "$TAG_VERSION" ]; then
-            echo "::error::.claude-plugin/plugin.json version ($PLUGIN_VERSION) does not match tag ($TAG_VERSION)"
+          EXPECTED="${{ needs.build.outputs.base_version }}"
+          if [ "$PLUGIN_VERSION" != "$EXPECTED" ]; then
+            echo "::error::.claude-plugin/plugin.json version ($PLUGIN_VERSION) does not match expected ($EXPECTED)"
             exit 1
           fi
+
+      - name: Check if version already published (stable idempotency)
+        if: needs.build.outputs.release_type == 'stable' && !inputs.dry-run
+        id: npm_check
+        run: |
+          PUBLISH_VERSION="${{ needs.build.outputs.publish_version }}"
+          if npm view "oh-my-copilot@${PUBLISH_VERSION}" version 2>/dev/null | grep -q "${PUBLISH_VERSION}"; then
+            echo "already_published=true" >> "$GITHUB_OUTPUT"
+            echo "Version ${PUBLISH_VERSION} already on npm, skipping."
+          else
+            echo "already_published=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set publish version in package.json
+        run: npm version "${{ needs.build.outputs.publish_version }}" --no-git-tag-version --allow-same-version
 
       - name: Pre-publish dry run (verify tarball contents)
         run: npm pack --dry-run
 
       - name: Publish to npm
-        if: ${{ !inputs.dry-run }}
-        run: npm publish --provenance --access public --ignore-scripts
+        if: ${{ !inputs.dry-run && steps.npm_check.outputs.already_published != 'true' }}
+        run: npm publish --provenance --access public --ignore-scripts --tag ${{ needs.build.outputs.npm_tag }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish to npm (dry run)
         if: ${{ inputs.dry-run }}
-        run: npm publish --dry-run --ignore-scripts
+        run: npm publish --dry-run --ignore-scripts --tag ${{ needs.build.outputs.npm_tag }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   github-release:
     runs-on: ubuntu-latest
-    needs: publish
-    if: ${{ !inputs.dry-run }}
+    needs: [build, publish]
+    if: ${{ needs.build.outputs.release_type == 'stable' && !inputs.dry-run }}
     permissions:
       contents: write
     steps:
@@ -160,7 +225,9 @@ jobs:
 
       - name: Create GitHub Release
         run: |
-          gh release create "${{ github.ref_name }}" \
+          TAG="${{ needs.build.outputs.git_tag }}"
+          gh release view "$TAG" 2>/dev/null && echo "Release $TAG already exists, skipping." && exit 0
+          gh release create "$TAG" \
             --generate-notes \
             --latest \
             *.tgz
