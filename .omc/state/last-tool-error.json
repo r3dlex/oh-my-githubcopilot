@@ -1,7 +1,0 @@
-{
-  "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"gh api repos/r3dlex/oh-my-copilot/actions/runs/56 --jq '{status, conclusion, head_sha}' 2>/dev/null\"}",
-  "error": "Exit code 1\n{\"message\":\"Not Found\",\"documentation_url\":\"https://docs.github.com/rest/actions/workflow-runs#get-a-workflow-run\",\"status\":\"404\"}",
-  "timestamp": "2026-04-11T16:13:58.818Z",
-  "retry_count": 3
-}

@@ -4,6 +4,10 @@
 
 # OMP plugin state (local session data)
 .omp/
+.omc/
+
+# Coverage reports
+coverage/
 
 # Build outputs
 dist/
