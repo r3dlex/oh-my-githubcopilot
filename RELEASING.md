@@ -20,6 +20,30 @@ Every push to `main` automatically publishes an alpha release:
 
 Alpha releases allow users to test new features and fixes immediately without waiting for a stable release.
 
+## Package Registries
+
+The publish job writes to **two registries** on every release:
+
+| Registry | Package Name | Auth | Condition |
+|----------|-------------|------|-----------|
+| GitHub Packages | `@r3dlex/oh-my-copilot` | `GITHUB_TOKEN` (built-in) | Always |
+| npmjs.com | `oh-my-copilot` | `NPM_TOKEN` secret | When `NPM_TOKEN` is set |
+
+GitHub Packages always publishes (no extra secret required). npmjs.com publishes only when the `NPM_TOKEN` secret is configured — if absent, the step logs a notice and the job succeeds.
+
+**Install from GitHub Packages:**
+```bash
+# Requires: ~/.npmrc with //npm.pkg.github.com/:_authToken=<PAT>
+npm install @r3dlex/oh-my-copilot@alpha    # latest alpha
+npm install @r3dlex/oh-my-copilot          # stable
+```
+
+**Install from npmjs.com (public, no auth):**
+```bash
+npm install oh-my-copilot@alpha    # latest alpha
+npm install oh-my-copilot          # stable
+```
+
 ## npm Dist Tags
 
 | Dist Tag | Version Scheme | When Published | Install Command |

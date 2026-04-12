@@ -131,6 +131,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
+      packages: write
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v4
@@ -144,7 +145,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-          registry-url: 'https://registry.npmjs.org'
 
       - run: npm ci --omit=dev
 
@@ -168,35 +168,73 @@ jobs:
             exit 1
           fi
 
-      - name: Check if version already published (stable idempotency)
-        if: needs.build.outputs.release_type == 'stable' && !inputs.dry-run
-        id: npm_check
-        run: |
-          PUBLISH_VERSION="${{ needs.build.outputs.publish_version }}"
-          if npm view "oh-my-copilot@${PUBLISH_VERSION}" version 2>/dev/null | grep -q "${PUBLISH_VERSION}"; then
-            echo "already_published=true" >> "$GITHUB_OUTPUT"
-            echo "Version ${PUBLISH_VERSION} already on npm, skipping."
-          else
-            echo "already_published=false" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Set publish version in package.json
         run: npm version "${{ needs.build.outputs.publish_version }}" --no-git-tag-version --allow-same-version
 
       - name: Pre-publish dry run (verify tarball contents)
         run: npm pack --dry-run
 
-      - name: Publish to npm
-        if: ${{ !inputs.dry-run && steps.npm_check.outputs.already_published != 'true' }}
+      # ── GitHub Packages (always, GITHUB_TOKEN) ──────────────────────────────
+      - name: Setup Node for GitHub Packages
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://npm.pkg.github.com'
+
+      - name: Publish to GitHub Packages
+        if: ${{ !inputs.dry-run }}
+        run: |
+          npm pkg set name="@r3dlex/oh-my-copilot"
+          npm publish --registry https://npm.pkg.github.com --ignore-scripts --tag ${{ needs.build.outputs.npm_tag }} || echo "GitHub Packages publish skipped (may already exist)"
+          npm pkg set name="oh-my-copilot"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to GitHub Packages (dry run)
+        if: ${{ inputs.dry-run }}
+        run: |
+          npm pkg set name="@r3dlex/oh-my-copilot"
+          npm publish --dry-run --registry https://npm.pkg.github.com --ignore-scripts --tag ${{ needs.build.outputs.npm_tag }}
+          npm pkg set name="oh-my-copilot"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # ── npmjs.com (conditional on NPM_TOKEN) ────────────────────────────────
+      - name: Setup Node for npmjs.com
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Check if version already published on npmjs.com (stable idempotency)
+        if: needs.build.outputs.release_type == 'stable' && !inputs.dry-run
+        id: npm_check
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          PUBLISH_VERSION="${{ needs.build.outputs.publish_version }}"
+          if npm view "oh-my-copilot@${PUBLISH_VERSION}" version 2>/dev/null | grep -q "${PUBLISH_VERSION}"; then
+            echo "already_published=true" >> "$GITHUB_OUTPUT"
+            echo "Version ${PUBLISH_VERSION} already on npmjs.com, skipping."
+          else
+            echo "already_published=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish to npmjs.com
+        if: ${{ secrets.NPM_TOKEN != '' && !inputs.dry-run && steps.npm_check.outputs.already_published != 'true' }}
         run: npm publish --provenance --access public --ignore-scripts --tag ${{ needs.build.outputs.npm_tag }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish to npm (dry run)
-        if: ${{ inputs.dry-run }}
+      - name: Publish to npmjs.com (dry run)
+        if: ${{ inputs.dry-run && secrets.NPM_TOKEN != '' }}
         run: npm publish --dry-run --ignore-scripts --tag ${{ needs.build.outputs.npm_tag }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: npmjs.com publish skipped (no NPM_TOKEN)
+        if: ${{ secrets.NPM_TOKEN == '' }}
+        run: echo "NPM_TOKEN not configured — skipping npmjs.com publish. Package is available on GitHub Packages only."
 
   github-release:
     runs-on: ubuntu-latest
