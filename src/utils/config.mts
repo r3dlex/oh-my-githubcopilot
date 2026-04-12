@@ -27,7 +27,7 @@ function readConfigFile<T>(path: string): Partial<T> {
   }
 }
 
-export function loadConfig<T>(name: string, scope?: ConfigScope): Partial<T> {
+export function loadConfig<T>(_name: string, scope?: ConfigScope): Partial<T> {
   if (scope === "local") return readConfigFile<T>(getConfigPath("local"));
   if (scope === "global") return readConfigFile<T>(getConfigPath("global"));
   // Merge: local wins
@@ -36,7 +36,7 @@ export function loadConfig<T>(name: string, scope?: ConfigScope): Partial<T> {
   return { ...global, ...local };
 }
 
-export function writeConfig<T>(name: string, scope: ConfigScope, patch: Partial<T>): void {
+export function writeConfig<T>(_name: string, scope: ConfigScope, patch: Partial<T>): void {
   const path = getConfigPath(scope);
   const existing = readConfigFile<T>(path);
   const merged = { ...existing, ...patch };
