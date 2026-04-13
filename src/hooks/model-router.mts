@@ -25,7 +25,7 @@ export interface HookOutput {
 // Model tier recommendations — advisory only
 const TIER_RECOMMENDATIONS: Record<string, string> = {
   high: "model: claude-opus-4.6 or gpt-5 recommended for this task (architecture, security, critical decisions)",
-  standard: "model: claude-sonnet-4.5 recommended for this task (standard implementation and review)",
+  standard: "model: claude-sonnet-4.6 recommended for this task (standard implementation and review)",
   fast: "model: gpt-5.4-mini or haiku recommended for quick lookups and formatting",
 };
 

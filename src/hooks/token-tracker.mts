@@ -92,10 +92,11 @@ export function processHook(input: HookInput): HookOutput {
     try {
       state = JSON.parse(readFileSync(statePath, "utf-8"));
     } catch {
-      // Initialize state if not found
+      // Initialize state if not found — budget derived from model when available
+      const fallbackModel = (input as { model?: string }).model ?? "default";
       state = {
         tokens_estimated: 0,
-        token_budget: 200_000,
+        token_budget: (MODEL_CONTEXTS as Record<string, number>)[fallbackModel] ?? MODEL_CONTEXTS["default"] ?? 200_000,
         context_pct: 0,
         warnings_issued: new Set(),
       };

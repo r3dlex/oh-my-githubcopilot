@@ -87,7 +87,7 @@ export function renderAnsi(state: HudState): string {
   const reqWarning = state.warningActive ? " !!" : "";
   const reqStr = `req:${state.premiumRequests ?? 0}/${state.premiumRequestsTotal ?? 1500}${reqWarning}`;
 
-  return `[OMP v${state.version}] ${modeStr} | ${model} | ${ctxStr} | ${tokenStr} | ${reqStr} | ${age} | tools:${state.toolsUsed?.size || 0}/${state.toolsTotal ?? 13} | skills:${state.skillsUsed?.size || 0}/${state.skillsTotal ?? 21} | agents:${state.cumulativeAgentsUsed}/${state.agentsTotal ?? 23} | ${icon} ${state.status}`;
+  return `[OMP v${state.version}] ${modeStr} | ${model} | ${ctxStr} | ${tokenStr} | ${reqStr} | ${age} | tools:${state.toolsUsed?.size || 0}/${state.toolsTotal ?? 13} | skills:${state.skillsUsed?.size || 0}/${state.skillsTotal ?? 25} | agents:${state.cumulativeAgentsUsed}/${state.agentsTotal ?? 23} | ${icon} ${state.status}`;
 }
 
 /**
@@ -104,5 +104,5 @@ export function renderPlain(state: HudState): string {
   const reqWarningPlain = state.warningActive ? " !!" : "";
   const reqStrPlain = `req:${state.premiumRequests ?? 0}/${state.premiumRequestsTotal ?? 1500}${reqWarningPlain}`;
 
-  return `[OMP v${state.version}] ${mode} | ${model} | ctx:${ctx}% | tok:~${tokens}/${state.tokensTotal} | ${reqStrPlain} | ${age} | tools:${state.toolsUsed?.size || 0}/${state.toolsTotal ?? 13} | skills:${state.skillsUsed?.size || 0}/${state.skillsTotal ?? 21} | agents:${state.cumulativeAgentsUsed}/${state.agentsTotal ?? 23} | ${state.status}`;
+  return `[OMP v${state.version}] ${mode} | ${model} | ctx:${ctx}% | tok:~${tokens}/${state.tokensTotal} | ${reqStrPlain} | ${age} | tools:${state.toolsUsed?.size || 0}/${state.toolsTotal ?? 13} | skills:${state.skillsUsed?.size || 0}/${state.skillsTotal ?? 25} | agents:${state.cumulativeAgentsUsed}/${state.agentsTotal ?? 23} | ${state.status}`;
 }

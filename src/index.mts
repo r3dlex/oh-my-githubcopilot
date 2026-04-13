@@ -14,11 +14,12 @@ import { createRequire } from "module";
 const _require = createRequire(import.meta.url);
 const { version: PKG_VERSION, name: PKG_NAME } = _require("../package.json") as { version: string; name: string };
 
-const { positionals } = parseArgs({
+const { positionals, values: flags } = parseArgs({
   args: process.argv.slice(2),
   options: {
     help: { type: "boolean", default: false },
     version: { type: "boolean", default: false },
+    watch: { type: "boolean", default: false },
   },
   allowPositionals: true,
 });
@@ -28,7 +29,12 @@ const subcommand = positionals[0] || "hud";
 async function main() {
   switch (subcommand) {
     case "hud":
-      await printHud();
+      if (flags.watch) {
+        const { runHudWatch } = await import("./hud/watch.mts");
+        runHudWatch();
+      } else {
+        await printHud();
+      }
       break;
     case "version":
       console.log(`${PKG_NAME} v${PKG_VERSION}`);

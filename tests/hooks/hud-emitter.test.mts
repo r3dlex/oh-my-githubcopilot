@@ -129,7 +129,7 @@ describe("hud-emitter hook", () => {
       });
       const hudMutation = result.mutations.find((m) => m.type === "emit_hud");
       expect(hudMutation).toBeDefined();
-      expect(readFileSync(hudPath("hud", "display.txt"), "utf-8")).toContain("claude-sonnet-4.5");
+      expect(readFileSync(hudPath("hud", "display.txt"), "utf-8")).toContain("claude-sonnet-4.6");
     });
   });
 });

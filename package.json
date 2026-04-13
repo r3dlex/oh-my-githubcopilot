@@ -34,6 +34,7 @@
     "LICENSE"
   ],
   "scripts": {
+    "hud:watch": "node --import tsx src/index.mts hud --watch",
     "build": "node --import tsx esbuild.config.mts",
     "dev": "node --import tsx --watch esbuild.config.mts",
     "test": "vitest run",
