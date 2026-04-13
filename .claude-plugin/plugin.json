@@ -1,14 +1,15 @@
 {
+  "schemaVersion": "1.0",
   "name": "oh-my-githubcopilot",
+  "version": "1.5.2",
   "description": "Multi-agent orchestration for GitHub Copilot CLI. 23 agents, 25 skills, parallel execution, HUD, PSM, SWE-bench.",
-  "version": "1.4.2",
   "author": {
     "name": "r3dlex"
   },
   "repository": "https://github.com/r3dlex/oh-my-githubcopilot",
   "license": "Apache-2.0",
-  "keywords": ["orchestration", "multi-agent", "autopilot", "swe-bench", "hud"],
-  "agents": ["./src/agents"],
+  "keywords": ["orchestration", "multi-agent", "autopilot", "swe-bench", "hud", "copilot-cli"],
+  "agents": ["./agents"],
   "skills": [
     "./skills/autopilot",
     "./skills/ralph",

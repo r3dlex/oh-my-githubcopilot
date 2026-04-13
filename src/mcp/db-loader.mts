@@ -9,10 +9,13 @@
 
 import { createRequire } from "module";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let SqliteConstructor: ((...args: any[]) => any) | null = null;
+export type SqliteDatabaseConstructor = new (...args: unknown[]) => {
+  pragma(sql: string): unknown;
+};
+
+let SqliteConstructor: SqliteDatabaseConstructor | null = null;
 try {
-  SqliteConstructor = createRequire(import.meta.url)("better-sqlite3");
+  SqliteConstructor = createRequire(import.meta.url)("better-sqlite3") as SqliteDatabaseConstructor;
 } catch {
   // SQLite not available
 }

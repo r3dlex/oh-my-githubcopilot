@@ -17,6 +17,16 @@ function pluginJson(): Record<string, unknown> {
   return JSON.parse(readFileSync(path, "utf-8"));
 }
 
+function rootPluginJson(): Record<string, unknown> {
+  const path = join(root, "plugin.json");
+  return JSON.parse(readFileSync(path, "utf-8"));
+}
+
+function claudePluginJson(): Record<string, unknown> {
+  const path = join(root, ".claude-plugin/plugin.json");
+  return JSON.parse(readFileSync(path, "utf-8"));
+}
+
 function marketplaceJson(): Record<string, unknown> {
   const path = join(root, ".github/plugin/marketplace.json");
   return JSON.parse(readFileSync(path, "utf-8"));
@@ -133,6 +143,7 @@ describe("plugin installation", () => {
       expect(json.license).toBe("Apache-2.0");
       const scripts = json.scripts as Record<string, string>;
       expect(scripts["sync-claude-plugin"]).toBeDefined();
+      expect(scripts["sync-claude-plugin"]).toContain("cp plugin.json .claude-plugin/plugin.json");
     });
 
     it("should have engines field requiring node >= 22.0.0", () => {
@@ -140,6 +151,27 @@ describe("plugin installation", () => {
       expect(json.engines).toBeDefined();
       const engines = json.engines as Record<string, string>;
       expect(engines.node).toMatch(/>=22/);
+    });
+
+    it("should package runtime manifests and published agent definitions", () => {
+      const json = packageJson();
+      const files = json.files as string[];
+      expect(files).toContain("agents/");
+      expect(files).toContain("plugin.json");
+      expect(files).toContain(".mcp.json");
+      expect(files).not.toContain("src/agents/");
+    });
+  });
+
+  describe(".claude-plugin sync", () => {
+    it("should keep the embedded plugin manifest version in sync", () => {
+      expect(claudePluginJson().version).toBe(packageJson().version);
+    });
+
+    it("should mirror the root runtime manifest paths", () => {
+      expect(claudePluginJson().agents).toEqual(rootPluginJson().agents);
+      expect(claudePluginJson().hooks).toBe(rootPluginJson().hooks);
+      expect(claudePluginJson().mcp).toBe(rootPluginJson().mcp);
     });
   });
 
