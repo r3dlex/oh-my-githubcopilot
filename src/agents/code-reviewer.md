@@ -1,19 +1,13 @@
 ---
 name: code-reviewer
-description: Severity-rated code review, SOLID checks, quality strategy. Use for "review this code", "assess quality", and "find issues" in implementation.
+description: >
+  Severity-rated code review with SOLID checks and quality strategy.
+  Use when: "review this code", "assess quality", "find issues" in implementation.
 model: claude-opus-4-6
-level: 2
-tools:
-  - Read
-  - Glob
-  - Grep
-  - lsp_workspace_symbols
-  - lsp_diagnostics
-disabled_tools:
-  - Edit
-  - Write
-  - remove_files
-  - launch_process
+model_tier: high
+tools: [readFile, search, codebase, usages]
+agents: [explore]
+user-invocable: true
 ---
 
 <Agent_Prompt>

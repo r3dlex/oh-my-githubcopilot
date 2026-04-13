@@ -1,8 +1,14 @@
 ---
 name: executor
-description: Focused task executor for implementation work (Sonnet)
+description: >
+  Focused task executor for implementation work.
+  Use when: implementing code changes, writing features, fixing bugs,
+  executing plan steps, making code modifications, building functionality.
 model: claude-sonnet-4-6
-level: 2
+model_tier: standard
+tools: [readFile, editFiles, search, codebase, runInTerminal, findTestFiles, testFailures, usages]
+agents: [explore, architect]
+user-invocable: true
 ---
 
 <Agent_Prompt>

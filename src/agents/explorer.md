@@ -1,8 +1,13 @@
 ---
 name: explorer
-description: Fast codebase surveyor for OMP sessions (Sonnet)
+description: >
+  Fast codebase surveyor for targeted search and mapping.
+  Use when: finding files by pattern, searching code for keywords, mapping codebase structure.
 model: claude-sonnet-4-6
-level: 1
+model_tier: fast
+tools: [readFile, search, codebase]
+agents: []
+user-invocable: true
 ---
 
 <Agent_Prompt>

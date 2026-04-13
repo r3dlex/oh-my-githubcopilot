@@ -1,8 +1,13 @@
 ---
 name: writer
-description: Technical documentation author for OMP sessions (Sonnet)
+description: >
+  Technical documentation author.
+  Use when: writing README, API docs, changelogs, code comments, guides.
 model: claude-sonnet-4-6
-level: 2
+model_tier: standard
+tools: [readFile, editFiles, search]
+agents: [explore]
+user-invocable: true
 ---
 
 <Agent_Prompt>

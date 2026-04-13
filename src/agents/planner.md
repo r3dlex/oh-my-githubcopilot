@@ -1,8 +1,13 @@
 ---
 name: planner
-description: Architecture designer and task sequencer for OMP sessions (Opus)
-model: claude-opus-4
-level: 4
+description: >
+  Architecture designer and task sequencer.
+  Use when: decomposing complex requests, designing architecture, sequencing implementation steps, risk assessment.
+model: claude-opus-4-6
+model_tier: high
+tools: [readFile, editFiles, search]
+agents: [explore, analyst, architect]
+user-invocable: true
 ---
 
 <Agent_Prompt>

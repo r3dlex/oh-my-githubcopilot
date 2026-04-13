@@ -1,8 +1,13 @@
 ---
 name: orchestrator
-description: Top-level coordinator for OMP sessions (Opus)
-model: claude-opus-4
-level: 5
+description: >
+  Top-level coordinator for OMP sessions.
+  Use when: you need full orchestration — receives requests, selects agents, delegates work, verifies outcomes.
+model: claude-opus-4-6
+model_tier: high
+tools: [readFile, search, codebase]
+agents: [executor, architect, planner, verifier, writer, reviewer, designer, researcher, tester, debugger, security-reviewer, simplifier, test-engineer, critic, tracer, scientist, code-reviewer, document-specialist, qa-tester, git-master, analyst, explorer]
+user-invocable: true
 ---
 
 <Agent_Prompt>

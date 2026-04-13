@@ -22,9 +22,9 @@ Every software team juggles implementation, architecture, security review, testi
 | What you get | Why it matters |
 |--------------|----------------|
 | **23 agents** | executor, architect, planner, reviewer, debugger, designer, security-reviewer, scientist, analyst, and more — each tuned to a different craft |
-| **25 skills** | `autopilot`, `ralph`, `ultrawork`, `team`, `ecomode`, `swarm`, `pipeline`, `plan`, `graphify`, `spending`, and more — trigger with a slash command |
+| **25 skills** | `autopilot`, `ralph`, `ultrawork`, `team`, `ecomode`, `swarm`, `pipeline`, `omp-plan`, `graphify`, `spending`, and more — trigger with a slash command |
 | **6 hooks** | Keyword detection, delegation routing, model selection, token tracking, HUD emission, stop-continuation |
-| **MCP server** | 10 built-in tools for extended capabilities |
+| **MCP server** | Built-in tools for extended capabilities |
 | **HUD display** | Real-time session context and progress tracking |
 | **PSM** | Plugin State Manager with SQLite persistence across sessions |
 | **SWE-bench** | Benchmark harness for reproducible evaluation |
@@ -36,49 +36,53 @@ Every software team juggles implementation, architecture, security review, testi
 
 ## Quick Start
 
-### Option A: Workspace Convention (Recommended)
+### 1) Install the plugin
 
-Copy OMP agents, skills, and hooks directly into your project's `.github/` directory:
+From a local checkout:
 
 ```bash
-git clone https://github.com/r3dlex/oh-my-githubcopilot.git /tmp/omp
-/tmp/omp/scripts/omp-adopt.sh --target . --mode template
+git clone https://github.com/r3dlex/oh-my-githubcopilot.git
+cd oh-my-githubcopilot
+copilot plugin install ./
 ```
 
-Open your project in VS Code with GitHub Copilot. Agents, skills, and hooks are auto-discovered from `.github/`.
-
-### Option B: Copilot CLI Plugin (Global)
+Or install from GitHub directly:
 
 ```bash
 copilot plugin install r3dlex/oh-my-githubcopilot
 ```
 
-### Option C: Track Updates via Submodule
+### 2) Run first-time setup in Copilot
 
-```bash
-git clone https://github.com/r3dlex/oh-my-githubcopilot.git /tmp/omp
-/tmp/omp/scripts/omp-adopt.sh --target . --mode submodule
+```text
+/skills list
+/omp:setup
+/mcp show
 ```
 
-### CLI Companion (Optional)
+### 3) Start delegating work
+
+```text
+@executor implement the requested change
+@planner break this task into steps
+@verifier check build, tests, and diagnostics
+```
+
+### Optional: install the CLI companion
 
 ```bash
 npm install -g oh-my-githubcopilot
-omp setup     # Creates ~/.omp/ config directory
-omp hud       # Displays current HUD line
+omp setup
+omp hud
 ```
 
-The `omp` CLI is a companion tool, not required for core functionality.
+The `omp` CLI is a companion tool for local runtime features; the Copilot plugin works without it.
 
-### Using OMP
+### Optional: adopt OMP into another repository
 
-After installation, use skills as slash commands or magic keywords:
-
-```
-/ralph build a REST API for task management
-/ultrawork refactor the auth module
-autopilot: build a TODO app with tests
-/team 3:executor fix all TypeScript errors
+```bash
+git clone https://github.com/r3dlex/oh-my-githubcopilot.git /tmp/omp
+/tmp/omp/scripts/omp-adopt.sh --target . --mode template
 ```
 
 <p align="center">
@@ -89,7 +93,7 @@ autopilot: build a TODO app with tests
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│                    oh-my-githubcopilot                        │
+│                    oh-my-githubcopilot                      │
 ├──────────────────┬──────────────────┬────────────────────────┤
 │  Agents (23)     │  Hooks (6)       │  PSM (SQLite)          │
 │  ─────────────   │  ─────────────   │  ────────────────      │
@@ -98,144 +102,92 @@ autopilot: build a TODO app with tests
 │  planner         │  delegation-     │                        │
 │  reviewer        │  enforcer        │  MCP Server            │
 │  debugger        │  model-router    │  ─────────────         │
-│  designer        │  token-tracker   │  10 tools exposed      │
+│  designer        │  token-tracker   │  tools exposed         │
 │  security-       │  hud-emitter     │                        │
 │  reviewer        │  stop-contin.    │  HUD Display           │
 │  ... (23 total)  │                  │  ─────────────         │
 │                  │                  │  tmux status bar       │
 ├──────────────────┴──────────────────┴────────────────────────┤
-│  .github/agents/  +  .github/skills/  +  .github/hooks/      │
-│  ~/.omp/ (user config)  +  .omp/ (workspace config)          │
+│  .github/agents/  +  .github/skills/  +  .github/hooks/     │
+│  ~/.omp/ (user config)  +  .omp/ (workspace config)         │
 └──────────────────────────────────────────────────────────────┘
 ```
 
 ### Agents
 
-OMP provides 23 specialized agents, each with Copilot CLI frontmatter for native auto-discovery:
+OMP provides 23 specialized agents, each with Copilot-compatible frontmatter for native discovery:
 
 | Agent | Model tier | Use case |
 |-------|-----------|---------|
-| executor | sonnet | Implementation, file edits, testing |
-| architect | opus | Architecture decisions, security analysis |
-| planner | opus | Strategic planning, task decomposition |
-| analyst | opus | Requirements analysis, pre-planning |
-| critic | opus | Work plan and code review |
-| reviewer | sonnet | Code review, style, SOLID checks |
-| verifier | sonnet | Verification, evidence-based completion |
-| debugger | sonnet | Root-cause analysis, stack traces |
-| designer | sonnet | UI/UX, responsive layouts |
-| test-engineer | sonnet | Test strategy, e2e coverage, TDD |
-| security-reviewer | sonnet | OWASP Top 10, secrets, unsafe patterns |
-| code-reviewer | opus | Severity-rated feedback, logic defects |
-| writer | haiku | Technical docs, README, API docs |
-| scientist | sonnet | Data analysis, research execution |
-| qa-tester | sonnet | Interactive CLI testing via tmux |
-| document-specialist | sonnet | External docs & reference lookup |
-| explorer | haiku | Codebase search, file patterns |
-| researcher | sonnet | Complex research, web fetch |
-| tracer | sonnet | Evidence-driven causal tracing |
-| simplifier | sonnet | Code simplification, refactoring |
-| git-master | sonnet | Atomic commits, rebasing, history |
-| orchestrator | opus | Multi-agent coordination |
-| tester | sonnet | Test writing and maintenance |
-
-_Full specs: [AGENTS.md](AGENTS.md) · [spec/AGENTS_SPEC.md](spec/AGENTS_SPEC.md)_
+| executor | standard | Implementation, file edits, testing |
+| architect | high | Architecture decisions and verification |
+| planner | high | Strategic planning and sequencing |
+| verifier | standard | Build/test/diagnostic validation |
+| writer | standard | Documentation and changelog work |
+| explorer | fast | Read-only codebase surveys |
+| debugger | standard | Root-cause analysis |
+| reviewer | high | General quality review |
+| security-reviewer | standard | Security review |
+| ... | ... | 23 total roles across implementation, planning, QA, and documentation |
 
 ### Skills
 
-25 skills, each triggerable via slash command or magic keyword:
+25 skills, each triggerable via slash command or keyword:
 
-| Skill | Trigger | Description |
-|-------|---------|-------------|
-| autopilot | `autopilot:` | Full autonomous pipeline: explore → plan → implement → verify |
-| ralph | `/ralph` | Persistence loop with architect gate |
-| ultrawork | `ulw:` | Parallel multi-agent high-throughput implementation |
-| team | `/team` | Coordinated N-agent team with staged pipeline |
-| ecomode | `eco:` | Cost-optimized execution with haiku agents |
-| swarm | `/swarm` | Parallel agent swarm for independent tasks |
-| pipeline | `pipeline:` | Sequential stage-based execution |
-| plan | `/plan` | Strategic planning with critic review |
-| graphify | `/graphify` | Convert any input to a knowledge graph |
-| graphwiki | `/graphwiki` | graphwiki CLI: query, lint, build, status |
-| graph-provider | `/graph-provider` | Manage active graph provider |
-| spending | `/spending` | Premium request usage tracking |
-| hud | `/hud` | Display current HUD state |
-| psm | `/psm` | Plugin State Manager operations |
-| swe-bench | `/swe-bench` | SWE-bench evaluation harness |
-| release | `/release` | Guided release workflow |
-| setup | `/setup` | Onboarding wizard |
-| mcp-setup | `/mcp-setup` | MCP server configuration |
-| wiki | `/wiki` | Project wiki operations |
-| learner | `/learner` | Structured learning sessions |
-| note | `/note` | Session notes and context |
-| trace | `/trace` | Execution tracing |
-| omp-plan | `/omp-plan` | OMP-aware planning |
-| deep-interview | `/deep-interview` | Requirements deep-dive |
-| configure-notifications | `/configure-notifications` | Notification settings |
+| Skill | Trigger | Purpose |
+|------|---------|---------|
+| autopilot | `autopilot:` | Autonomous end-to-end execution |
+| ralph | `ralph:` | Persistent completion loop |
+| ultrawork | `ultrawork:` | Parallel multi-agent high-throughput implementation |
+| team | `team:` | Coordinated multi-agent execution |
+| deep-interview | `deep-interview:` | Requirements clarification |
+| omp-plan | `plan:` | Strategic planning |
+| omp-setup | `/omp:setup` | Guided OMP setup |
+| graphify | `graphify:` | Knowledge graph generation |
+| graphwiki | `graphwiki:` | Query and maintain graphwiki knowledge |
+| graph-provider | `graph-provider:` | Manage the active graph backend |
+| spending | `spending:` | Track premium request usage |
+| ... | ... | 25 total skills |
 
-### Hooks
-
-Six hooks power the orchestration pipeline:
-
-- **keyword-detector** — triggers OMP skills on magic keywords
-- **delegation-enforcer** — routes tasks to appropriate agents
-- **model-router** — selects optimal model tier per task
-- **token-tracker** — monitors usage and cost
-- **hud-emitter** — streams session context to HUD
-- **stop-continuation** — graceful cancellation handling
-
-### `.github/` Workspace Convention
-
-OMP ships a fully populated `.github/` directory for VS Code Copilot auto-discovery:
+## Repository Layout
 
 ```
-.github/
-  agents/          # 23 agent .md files with Copilot CLI frontmatter
-  skills/          # 25 skill directories with SKILL.md
-  hooks/           # pre-tool-use.sh, post-tool-use.sh
-  copilot-instructions.md  # full agent registry + model routing
+.
+├── AGENTS.md        # orchestration brain
+├── agents/          # 23 Copilot-facing agent files
+├── skills/          # 25 skills
+├── hooks/           # hook config + shell entrypoints
+├── src/             # TypeScript implementation
+├── dist/            # built runtime artifacts committed for plugin consumers
+├── .github/
+│   ├── agents/      # workspace-discovered agent copies
+│   ├── skills/      # workspace-discovered skill copies
+│   └── copilot-instructions.md
+└── spec/            # architecture and subsystem docs
 ```
 
-No configuration required — open any project that has adopted OMP and all agents, skills, and hooks are live.
+## Verification
 
-### PSM (Plugin State Manager)
+Before release or plugin publication, verify at least:
 
-Cross-session persistence via SQLite:
-
-```javascript
-// State persists across sessions
-await state.write({ mode: 'autopilot', iteration: 3 });
-const state = await state.read();
+```bash
+npm run build
+npm run typecheck
+npm test
 ```
 
-### MCP Server
+For plugin smoke checks, reinstall and verify the runtime surfaces:
 
-10 tools exposed for extended capabilities. See [spec/MCP.md](spec/MCP.md).
+```bash
+copilot plugin uninstall oh-my-githubcopilot
+copilot plugin install ./
+```
 
-## Documentation
+Then check:
 
-- [AGENTS.md](AGENTS.md) — Agent registry and delegation rules
-- [spec/AGENTS_SPEC.md](spec/AGENTS_SPEC.md) — Agent capabilities table
-- [spec/SKILLS.md](spec/SKILLS.md) — Skill catalog
-- [spec/HOOKS.md](spec/HOOKS.md) — Hook system
-- [spec/HUD.md](spec/HUD.md) — HUD display
-- [spec/PSM.md](spec/PSM.md) — Plugin State Manager
-- [spec/MCP.md](spec/MCP.md) — MCP server
-
-## Requirements
-
-- Node.js >= 22.0.0
-- GitHub Copilot CLI (for plugin install mode)
-- VS Code + GitHub Copilot extension (for workspace convention mode)
-
----
-
-## 💛 Love this project? [Sponsor r3dlex](https://github.com/sponsors/r3dlex)
-
-If OMP saves you time, consider sponsoring the maintainer:
-
-[![Sponsor r3dlex](https://github.githubassets.com/assets/images/modules/sponsors/modules/SponsorButton--glyph-sm-b5211212fc9306694a295e37672660c1.gif)](https://github.com/sponsors/r3dlex)
-
-Every sponsorship helps keep development going.
-
-Apache-2.0 License | [GitHub](https://github.com/r3dlex/oh-my-githubcopilot)
+```text
+/skills list
+/omp:setup
+@executor
+/mcp show
+```

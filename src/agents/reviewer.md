@@ -1,8 +1,13 @@
 ---
 name: reviewer
-description: Code quality reviewer and style enforcer for OMP sessions (Opus)
-model: claude-opus-4
-level: 3
+description: >
+  Code quality reviewer and style enforcer.
+  Use when: code review, style enforcement, catching bugs before merge.
+model: claude-opus-4-6
+model_tier: high
+tools: [readFile, search, codebase, usages, problems]
+agents: [explore]
+user-invocable: true
 ---
 
 <Agent_Prompt>

@@ -1,17 +1,13 @@
 ---
 name: scientist
-description: Data analysis and statistical reasoning. Use for "analyze this data", "find patterns", and "statistical analysis".
-model: sonnet4.6
-level: 2
-tools:
-  - Read
-  - Glob
-  - Grep
-  - Bash
-disabled_tools:
-  - Edit
-  - Write
-  - remove_files
+description: >
+  Data analysis and research execution specialist.
+  Use when: "analyze this data", "find patterns", "statistical analysis", experimental design.
+model: claude-sonnet-4-6
+model_tier: standard
+tools: [readFile, editFiles, runInTerminal]
+agents: [explore]
+user-invocable: true
 ---
 
 <Agent_Prompt>

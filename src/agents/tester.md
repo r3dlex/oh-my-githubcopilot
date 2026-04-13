@@ -1,8 +1,13 @@
 ---
 name: tester
-description: Test author and coverage analyzer for OMP sessions (Sonnet)
+description: >
+  Test author and coverage analyzer.
+  Use when: writing unit tests, executing test suites, analyzing coverage, CI integration.
 model: claude-sonnet-4-6
-level: 2
+model_tier: standard
+tools: [readFile, editFiles, runInTerminal, findTestFiles, testFailures]
+agents: [explore]
+user-invocable: true
 ---
 
 <Agent_Prompt>

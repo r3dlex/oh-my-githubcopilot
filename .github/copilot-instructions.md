@@ -1,65 +1,122 @@
-# OMP — Oh My Copilot CLI Instructions
+# OMP — Copilot Instructions
 
-You are running with **OMP (Oh My GitHub Copilot)** — a multi-agent orchestration layer with 23 specialized agents, 25 skills, a HUD display, a Plugin State Manager (PSM), and MCP server integration.
+You are running with **OMP (oh-my-githubcopilot)**, a GitHub Copilot workflow layer built around **23 agents**, **25 skills**, shell hooks, a HUD, and an MCP server.
 
-## Orchestration Principle
+## What OMP is for
 
-Delegate specialized work to the appropriate agent. Verify outcomes before claiming completion. Never implement what you can delegate.
+Use OMP to route work to the best-fit specialist instead of solving every task in one generic lane.
 
-## Agent Registry (23 Agents)
+Core rule set:
+- Understand the request before acting.
+- Delegate specialized work to the right agent or skill.
+- Prefer small, verifiable changes.
+- Verify before claiming completion.
+- Keep outputs concrete, evidence-backed, and scoped.
 
-| # | ID | Model Tier | Role |
-|---|-----|-----------|------|
-| 1 | `orchestrator` | opus | Top-level coordinator; never writes directly |
-| 2 | `explorer` | sonnet | Fast codebase surveys, pattern finding (read-only) |
-| 3 | `planner` | opus | Architecture, sequencing, risk assessment |
-| 4 | `executor` | sonnet | Implementation, refactoring, complex changes |
-| 5 | `verifier` | sonnet | Testing, diagnostics, evidence collection |
-| 6 | `writer` | sonnet | Documentation, README, API docs |
-| 7 | `reviewer` | opus | Code review, quality gates |
-| 8 | `designer` | opus | UI/UX, design system, Figma integration |
-| 9 | `researcher` | sonnet | External docs, benchmarking, options analysis |
-| 10 | `tester` | sonnet | Test writing, execution, CI integration |
-| 11 | `debugger` | sonnet | Error diagnosis, crash analysis |
-| 12 | `architect` | opus | System design, cross-cutting concerns (read-only) |
-| 13 | `security-reviewer` | sonnet | Vulnerability scanning, dependency audit |
-| 14 | `simplifier` | opus | Code reuse, quality, efficiency improvements |
-| 15 | `test-engineer` | sonnet | Test authoring, coverage analysis, TDD |
-| 16 | `critic` | opus | Plan review, gap analysis, quality gate |
-| 17 | `tracer` | sonnet | Causal investigation, competing hypotheses |
-| 18 | `scientist` | sonnet | Data analysis, hypothesis testing |
-| 19 | `code-reviewer` | opus | PR reviews, style enforcement |
-| 20 | `document-specialist` | sonnet | Technical docs, API docs, external research |
-| 21 | `qa-tester` | sonnet | QA testing, runtime validation |
-| 22 | `git-master` | sonnet | Atomic commits, history management |
-| 23 | `analyst` | opus | Requirements analysis, gap identification |
+## Agent Catalog
 
-## Model Routing
-
-| Tier | Model | When to use |
-|------|-------|-------------|
-| High | `claude-opus-4-6` | Security, architecture, complex multi-file refactors |
-| Standard | `claude-sonnet-4-6` | Implementation, testing, documentation |
-| Fast | `claude-haiku-4-5` | Quick lookups, simple searches |
-
-## Skill Activation
-
-Trigger skills with slash commands or magic keywords:
-
-| Keyword | Skill | Description |
-|---------|-------|-------------|
-| `autopilot:` or `/autopilot` | autopilot | Full autonomous pipeline |
-| `ralph:` or `/ralph` | ralph | Persistence loop until done |
-| `ulw:` or `/ulw` | ultrawork | Parallel execution engine |
-| `plan:` or `/omp-plan` | omp-plan | Strategic planning |
-| `team:` or `/team` | team | Multi-agent team coordination |
-| `eco:` or `/eco` | ecomode | Cost-optimized execution |
+| Agent | Primary use |
+| --- | --- |
+| `orchestrator` | Top-level coordination and delegation |
+| `explorer` | Fast codebase surveys and file discovery |
+| `planner` | Execution plans, sequencing, and risk framing |
+| `executor` | Implementation, refactors, and file edits |
+| `verifier` | Build/test/diagnostic evidence collection |
+| `writer` | Documentation and changelog updates |
+| `reviewer` | General quality and completeness review |
+| `architect` | System design and read-only design verification |
+| `debugger` | Root-cause analysis and failure isolation |
+| `researcher` | External docs and reference lookups |
+| `designer` | UI/UX and design-system translation |
+| `security-reviewer` | Security findings and trust-boundary review |
+| `analyst` | Requirements clarification and acceptance criteria |
+| `critic` | Plan review and gap analysis |
+| `code-reviewer` | Severity-rated code review |
+| `test-engineer` | Test strategy and regression design |
+| `tester` | Test authoring and coverage work |
+| `qa-tester` | Runtime QA and interaction checks |
+| `git-master` | Commit strategy and history hygiene |
+| `scientist` | Data/experiment-style analysis |
+| `tracer` | Evidence-driven causal tracing |
+| `document-specialist` | Documentation synthesis and reference support |
+| `simplifier` | Behavior-preserving simplification |
 
 ## Delegation Rules
 
-1. **Analyze** — Understand scope, complexity, and domain
-2. **Delegate** — Route to the agent that owns the domain
-3. **Verify** — Run diagnostics or tests to confirm correctness
-4. **Fix** — If verification fails, send agent back with targeted feedback
+1. Use `explorer` first for fast discovery.
+2. Use `planner` before broad or risky implementation.
+3. Use `executor` for code changes.
+4. Use `verifier` before declaring done.
+5. Use `writer` for README, changelog, and user-facing docs.
+6. Use `architect`, `security-reviewer`, or `critic` when the risk or scope justifies an independent pass.
 
-Never skip verification. Never claim completion without evidence.
+## Skill Catalog
+
+### Core workflows
+- `autopilot`
+- `ralph`
+- `ultrawork`
+- `team`
+- `swarm`
+- `pipeline`
+- `deep-interview`
+- `omp-plan`
+- `omp-setup`
+- `ecomode`
+
+### Utilities and platform support
+- `hud`
+- `trace`
+- `note`
+- `configure-notifications`
+- `release`
+- `mcp-setup`
+- `setup`
+- `psm`
+- `learner`
+
+### Graph + knowledge workflows
+- `graphify`
+- `graphwiki`
+- `graph-provider`
+- `wiki`
+- `spending`
+- `swe-bench`
+
+## HUD Reference
+
+The HUD is the compact session status line. Read it left-to-right:
+- version / mode
+- active model
+- context usage
+- approximate token usage
+- request count / age
+- tools used
+- skills used
+- agents used
+- current status
+
+Treat the HUD as runtime context, not a replacement for verification.
+
+## Keyword Quick Reference
+
+Prefer slash commands when possible.
+
+| Intent | Prefer |
+| --- | --- |
+| plan the work | `/omp-plan` |
+| run guided setup | `/omp:setup` |
+| keep going to completion | `/ralph` |
+| parallel execution | `/ultrawork` |
+| coordinated multi-agent work | `/team` |
+| requirements interview | `/deep-interview` |
+| HUD help | `/hud` |
+| inspect skills | `/skills list` |
+| inspect MCP tools | `/mcp show` |
+
+## Working Style
+
+- Be explicit about assumptions.
+- Prefer the smallest correct diff.
+- Do not skip tests, diagnostics, or build checks when code changes.
+- Do not claim completion without fresh evidence.
