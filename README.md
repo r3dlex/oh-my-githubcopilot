@@ -35,15 +35,48 @@ Every software team juggles implementation, architecture, security review, testi
 
 ## Quick Start
 
+### Option A: Workspace Convention (Recommended)
+
+Copy OMP agents, skills, and hooks directly into your project:
+
 ```bash
-# Install
+git clone https://github.com/r3dlex/oh-my-githubcopilot.git /tmp/omp
+/tmp/omp/scripts/omp-adopt.sh --target . --mode template
+```
+
+Open your project in VS Code with GitHub Copilot. Agents, skills, and hooks are auto-discovered from `.github/`.
+
+### Option B: Copilot CLI Plugin (Global)
+
+```bash
+copilot plugin install r3dlex/oh-my-githubcopilot
+```
+
+### Option C: Track Updates via Submodule
+
+```bash
+git clone https://github.com/r3dlex/oh-my-githubcopilot.git /tmp/omp
+/tmp/omp/scripts/omp-adopt.sh --target . --mode submodule
+```
+
+### CLI Companion (Optional)
+
+```bash
 npm install -g oh-my-githubcopilot
+omp setup     # Creates ~/.omp/ config directory
+omp hud       # Displays current HUD line
+```
 
-# Initialize (creates ~/.omp/ config)
-omp setup
+The `omp` CLI is a companion tool, not required for core functionality.
 
-# Start using OMP skills
-/omp-setup
+### Using OMP
+
+After installation, use skills as slash commands or magic keywords:
+
+```
+/ralph build a REST API for task management
+/ultrawork refactor the auth module
+autopilot: build a TODO app with tests
 ```
 
 <p align="center">

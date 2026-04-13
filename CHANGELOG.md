@@ -1,6 +1,21 @@
 # Changelog
 
 All notable changes to **oh-my-githubcopilot** are documented here, ordered newest first.
+
+---
+
+## [v1.5.0] — Copilot CLI native integration
+
+### Features
+- **Copilot CLI agent frontmatter** — all 23 agents now include required Copilot CLI frontmatter (`model`, `tools`, `agents`, `user-invocable`) in `agents/*.agent.md`
+- **`.github/` workspace convention** — agents, skills (25), and shell hooks auto-discovered from `.github/agents/`, `.github/skills/`, `.github/hooks/` when project is opened in VS Code with GitHub Copilot
+- **`.github/copilot-instructions.md`** — full 23-agent registry, model routing, and skill activation table injected into every Copilot session
+- **Root `plugin.json`** — canonical plugin manifest at repo root (avoids `.github/plugin/` cache_path bug); agents path set to `./agents`
+- **`scripts/omp-adopt.sh`** — per-project adoption script supporting three modes: `template` (copy-in), `submodule`, `subtree`
+- **`postinstall` build step** — `npm run build` runs automatically after `copilot plugin install` so `dist/` is always present
+
+### Documentation
+- **README Quick Start** rewritten with three installation options: workspace convention (recommended), Copilot CLI plugin, submodule track
 Each section corresponds to commits between conceptual version boundaries (no git tags exist yet — the CI pipeline introduced in v1.2.x will tag future releases automatically).
 
 ---

@@ -1,6 +1,6 @@
 {
   "name": "oh-my-githubcopilot",
-  "version": "1.4.2",
+  "version": "1.5.0",
   "description": "Multi-agent orchestration for GitHub Copilot CLI. 23 agents, 25 skills, parallel execution, HUD, PSM, SWE-bench.",
   "author": {
     "name": "r3dlex"
@@ -42,6 +42,7 @@
     "typecheck": "tsc --noEmit",
     "sync-claude-plugin": "cp .github/plugin/plugin.json .claude-plugin/plugin.json",
     "prepublishOnly": "npm run build && npm run sync-claude-plugin",
+    "postinstall": "npm run build",
     "archgate:init": "npx archgate init --editor claude",
     "archgate:check": "npx archgate check"
   },
