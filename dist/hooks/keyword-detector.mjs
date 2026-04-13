@@ -87,6 +87,11 @@ var KEYWORD_MAP = {
   "/omp:spending": "spending"
 };
 var KEYWORD_ENTRIES = Object.entries(KEYWORD_MAP).sort(([a], [b]) => b.length - a.length);
+var CANONICAL_COMMAND_MAP = {
+  "omp-plan": "/omp:plan",
+  "omp-setup": "/setup",
+  "mcp-setup": "/mcp"
+};
 function detectKeyword(prompt) {
   const trimmed = prompt.trimStart();
   for (const [keyword, skillId] of KEYWORD_ENTRIES) {
@@ -113,6 +118,9 @@ function detectKeyword(prompt) {
   }
   return null;
 }
+function getCanonicalCommand(skillId) {
+  return CANONICAL_COMMAND_MAP[skillId] ?? `/omp:${skillId}`;
+}
 function processHook(input) {
   const start = Date.now();
   const log = [];
@@ -135,7 +143,7 @@ function processHook(input) {
       };
     }
     const taskPart = input.prompt.slice(match.position + match.keyword.length).trim();
-    const rewritten = `/oh-my-githubcopilot:${match.skillId}${taskPart ? ` ${taskPart}` : ""}`;
+    const rewritten = `${getCanonicalCommand(match.skillId)}${taskPart ? ` ${taskPart}` : ""}`;
     log.push(`Keyword detected: "${match.keyword}" \u2192 skill: ${match.skillId}`);
     log.push(`Rewritten: "${rewritten}"`);
     return {
