@@ -1,8 +1,13 @@
 ---
 name: simplifier
-description: Simplifies and refines code for clarity, consistency, and maintainability while preserving all functionality. Focuses on recently modified code unless instructed otherwise.
+description: >
+  Code simplification and refactoring specialist.
+  Use when: simplifying code, improving clarity, removing dead code, reducing complexity.
 model: claude-opus-4-6
-level: 3
+model_tier: high
+tools: [readFile, editFiles, search]
+agents: [explore]
+user-invocable: true
 ---
 
 <Agent_Prompt>

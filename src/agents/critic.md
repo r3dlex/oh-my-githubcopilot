@@ -1,8 +1,13 @@
 ---
 name: critic
-description: Work plan and code review expert — thorough, structured, multi-perspective (Opus)
+description: >
+  Work plan and code review expert — thorough, structured, multi-perspective final quality gate.
+  Use when: reviewing plans before execution, challenging scope, stress-testing designs.
 model: claude-opus-4-6
-level: 3
+model_tier: high
+tools: [readFile, search]
+agents: [explore]
+user-invocable: true
 ---
 
 <Agent_Prompt>

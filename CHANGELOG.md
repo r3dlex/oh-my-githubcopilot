@@ -4,37 +4,20 @@ All notable changes to **oh-my-githubcopilot** are documented here, ordered newe
 
 ---
 
-## [v1.5.2] — Copilot CLI hooks schema + MCP SQLite fallback
-
-### Fixes
-- **`hooks.json` schema rewrite** — Copilot CLI v1.0.25 validates hooks against a Zod schema expecting `{ version: 1, hooks: { EventName: [{ type, bash, timeoutSec }] } }`; old format used `{ schemaVersion: "1.0", hooks: [array] }` causing "Expected object, received array" validation failure. Rewrote hooks.json to the correct object-keyed-by-event format with `type: "command"`, `bash: "node ./dist/hooks/<name>.mjs"`, `timeoutSec` fields.
-- **MCP server `better-sqlite3` fallback** — `better-sqlite3` is a native Node.js addon that cannot be bundled by esbuild; git-clone plugin installs have no `node_modules`, causing `ERR_MODULE_NOT_FOUND` at MCP server startup. Both `state-manager.mts` and `memory-store.mts` now wrap the `require('better-sqlite3')` in try/catch and fall back to JSON file storage (`~/.omp/state/sessions.json`, `~/.omp/state/memory.json`) when SQLite is unavailable.
-
----
-
-## [v1.5.1] — Copilot CLI plugin loading fixes
-
-### Fixes
-- **`dist/` committed to git** — Copilot CLI git-clones the repo without running npm build; `dist/` was gitignored and missing, causing MCP server and hook load failures. Removed `dist/` from `.gitignore` and committed all built output.
-- **Agent frontmatter `model` field** — All 46 agent files (`agents/` + `.github/agents/`) had `model: [claude-sonnet-4-6]` (YAML array); Copilot CLI requires a plain string `model: claude-sonnet-4-6`
-- **Skill `SKILL.md` frontmatter** — All 25 `skills/*/SKILL.md` files were missing YAML frontmatter (`name`, `description`, `user-invocable`); Copilot CLI requires frontmatter to load skills
-- **Hooks config `entry` → `path`** — `hooks/hooks.json` used `"entry"` field; Copilot CLI schema expects `"path"`
-
----
-
-## [v1.5.0] — Copilot CLI native integration
+## [v1.5.0] — Copilot CLI release alignment
 
 ### Features
-- **Copilot CLI agent frontmatter** — all 23 agents now include required Copilot CLI frontmatter (`model`, `tools`, `agents`, `user-invocable`) in `agents/*.agent.md`
-- **`.github/` workspace convention** — agents, skills (25), and shell hooks auto-discovered from `.github/agents/`, `.github/skills/`, `.github/hooks/` when project is opened in VS Code with GitHub Copilot
-- **`.github/copilot-instructions.md`** — full 23-agent registry, model routing, and skill activation table injected into every Copilot session
-- **Root `plugin.json`** — canonical plugin manifest at repo root (avoids `.github/plugin/` cache_path bug); agents path set to `./agents`
-- **`scripts/omp-adopt.sh`** — per-project adoption script supporting three modes: `template` (copy-in), `submodule`, `subtree`
-- **`postinstall` build step** — `npm run build` runs automatically after `copilot plugin install` so `dist/` is always present
+- **Copilot-ready agent metadata** — normalized `src/agents/*.md` frontmatter for Copilot-compatible agent loading fields while preserving the existing prompt bodies.
+- **`.github/copilot-instructions.md` refresh** — rewrote the base Copilot instructions with an OMP overview, delegation guidance, agent catalog, skill catalog, HUD reference, and keyword quick reference.
+- **README quick start refresh** — replaced the install flow with `copilot plugin install ...`, `/omp:setup`, and first-run Copilot commands.
+
+### Fixes
+- **Version sync to `1.5.0`** — aligned `package.json`, `package-lock.json`, root/plugin manifests, and marketplace metadata on the release target.
+- **Plugin manifest agent path** — `.github/plugin/plugin.json` now points at `./agents` so the manifest matches the Copilot-facing agent bundle.
+- **Release notes alignment** — consolidated the current Copilot CLI packaging/runtime fixes under the `v1.5.0` release line for a single consumer-facing release target.
 
 ### Documentation
-- **README Quick Start** rewritten with three installation options: workspace convention (recommended), Copilot CLI plugin, submodule track
-Each section corresponds to commits between conceptual version boundaries (no git tags exist yet — the CI pipeline introduced in v1.2.x will tag future releases automatically).
+- **Release expectations clarified** — release docs now call out the committed `dist/` expectation for plugin consumers.
 
 ---
 

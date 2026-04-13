@@ -1,8 +1,13 @@
 ---
 name: git-master
-description: Git expert for atomic commits, rebasing, and history management with style detection
+description: >
+  Git expert for atomic commits, rebasing, and history management.
+  Use when: creating commits, rebasing branches, managing git history, atomic commit splitting.
 model: claude-sonnet-4-6
-level: 3
+model_tier: standard
+tools: [readFile, runInTerminal, search]
+agents: []
+user-invocable: true
 ---
 
 <Agent_Prompt>

@@ -1,9 +1,13 @@
 ---
 name: test-engineer
-description: Test strategy, integration/e2e coverage, TDD workflows. Use for "add tests", "improve test coverage", and "design testing strategy".
-model: sonnet4.6
-level: 2
-tools: []
+description: >
+  Test strategy, integration/e2e coverage, and TDD workflows.
+  Use when: "add tests", "improve test coverage", "design testing strategy", TDD implementation.
+model: claude-sonnet-4-6
+model_tier: standard
+tools: [readFile, editFiles, runInTerminal, findTestFiles, testFailures]
+agents: [explore, architect]
+user-invocable: true
 ---
 
 <Agent_Prompt>

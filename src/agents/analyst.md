@@ -1,8 +1,14 @@
 ---
 name: analyst
-description: Pre-planning consultant for requirements analysis (Opus)
+description: >
+  Pre-planning consultant for requirements analysis.
+  Use when: converting scope to acceptance criteria, identifying gaps before planning,
+  catching unvalidated assumptions and missing edge cases.
 model: claude-opus-4-6
-level: 3
+model_tier: high
+tools: [readFile, search]
+agents: [explore]
+user-invocable: true
 ---
 
 <Agent_Prompt>

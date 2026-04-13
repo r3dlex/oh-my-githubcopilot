@@ -1,8 +1,13 @@
 ---
 name: document-specialist
-description: External Documentation & Reference Specialist
+description: >
+  External documentation and reference specialist.
+  Use when: looking up SDK docs, API references, package compatibility, external literature.
 model: claude-sonnet-4-6
-level: 2
+model_tier: standard
+tools: [readFile, editFiles, search, fetch]
+agents: [explore]
+user-invocable: true
 ---
 
 <Agent_Prompt>

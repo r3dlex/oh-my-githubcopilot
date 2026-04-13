@@ -1,20 +1,13 @@
 ---
 name: architect
-description: System design, architecture analysis, and implementation verification. Use for "design X", "analyze architecture", "debug root cause", and "verify implementation".
+description: >
+  System design, architecture analysis, and implementation verification.
+  Use when: "design X", "analyze architecture", "debug root cause", "verify implementation".
 model: claude-opus-4-6
-level: 1
-tools:
-  - Read
-  - Glob
-  - Grep
-  - lsp_workspace_symbols
-  - lsp_diagnostics
-disabled_tools:
-  - Edit
-  - Write
-  - Bash
-  - remove_files
-  - launch_process
+model_tier: high
+tools: [readFile, search, codebase, usages]
+agents: [explore]
+user-invocable: true
 ---
 
 <Agent_Prompt>

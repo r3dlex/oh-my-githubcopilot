@@ -7,6 +7,7 @@ This document describes the end-to-end release process for `oh-my-githubcopilot`
 - Write access to the GitHub repository
 - `NPM_TOKEN` configured as a GitHub Actions secret (see [Secret Setup](#secret-setup))
 - Node.js >= 22.0.0
+- Fresh built artifacts in `dist/` committed to git before release publication (plugin consumers may install without running a build)
 
 ## Continuous Alpha Releases
 
@@ -65,7 +66,16 @@ npm version major   # 1.2.0 → 2.0.0
 
 This updates `package.json`, creates a local git commit, and creates a git tag (`vX.Y.Z`).
 
-### Step 2: Sync Plugin Manifest
+### Step 2: Build and commit runtime artifacts
+
+```bash
+npm run build
+git add dist/
+```
+
+OMP plugin consumers may install from a git checkout or plugin clone without an automatic rebuild, so the committed `dist/` directory is part of the release artifact.
+
+### Step 3: Sync Plugin Manifest
 
 `npm version` only updates `package.json`. You must also manually update `.github/plugin/plugin.json`:
 
@@ -83,7 +93,7 @@ npm run sync-claude-plugin
 
 This syncs the version from `.github/plugin/plugin.json` to `.claude-plugin/plugin.json`. The CI will fail the publish step if these do not match the git tag.
 
-### Step 3: Write CHANGELOG.md
+### Step 4: Write CHANGELOG.md
 
 Add a section for the new version describing changes. The section heading **must** contain the version number (e.g., `# oh-my-githubcopilot v1.2.0`).
 
@@ -101,7 +111,7 @@ Example:
 - Fixed bug Y
 ```
 
-### Step 4: Amend the Release Commit
+### Step 5: Amend the Release Commit
 
 After writing the CHANGELOG, add both the plugin manifest and changelog to the release commit:
 
@@ -113,7 +123,7 @@ git tag -f vX.Y.Z
 
 The `--amend` updates the existing commit created by `npm version`. The `--no-edit` preserves the commit message. The `git tag -f` re-tags after the amend.
 
-### Step 5: Push with `--follow-tags`
+### Step 6: Push with `--follow-tags`
 
 ```bash
 git push origin main --follow-tags

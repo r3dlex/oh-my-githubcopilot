@@ -1,16 +1,13 @@
 ---
 name: security-reviewer
-description: OWASP Top 10, secrets, unsafe pattern detection. Use for "security review", "find vulnerabilities", and "check for secrets".
-model: sonnet4.6
-level: 2
-tools:
-  - Read
-  - Glob
-  - Grep
-  - Bash
-disabled_tools:
-  - Write
-  - remove_files
+description: >
+  Security vulnerability detection specialist (OWASP Top 10, secrets, unsafe patterns).
+  Use when: "security review", "find vulnerabilities", "check for secrets", auth/crypto changes.
+model: claude-sonnet-4-6
+model_tier: standard
+tools: [readFile, search, codebase]
+agents: [explore]
+user-invocable: true
 ---
 
 <Agent_Prompt>

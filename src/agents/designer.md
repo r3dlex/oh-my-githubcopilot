@@ -1,8 +1,13 @@
 ---
 name: designer
-description: UI/UX designer and design system integrator for OMP sessions (Opus + Figma)
-model: claude-opus-4
-level: 4
+description: >
+  UI/UX designer and design system integrator.
+  Use when: implementing UI components, translating Figma designs, design system work.
+model: claude-opus-4-6
+model_tier: high
+tools: [readFile, editFiles, fetch]
+agents: [explore, executor]
+user-invocable: true
 ---
 
 <Agent_Prompt>

@@ -1,9 +1,13 @@
 ---
 name: debugger
-description: Root-cause analysis and failure diagnosis. Use for "debug this", "find the bug", and "diagnose failure".
-model: sonnet4.6
-level: 2
-tools: []
+description: >
+  Root-cause analysis and failure diagnosis specialist.
+  Use when: "debug this", "find the bug", "diagnose failure", stack trace analysis, build errors.
+model: claude-sonnet-4-6
+model_tier: standard
+tools: [readFile, runInTerminal, search, codebase, problems]
+agents: [explore, architect]
+user-invocable: true
 ---
 
 <Agent_Prompt>

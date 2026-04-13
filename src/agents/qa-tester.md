@@ -1,9 +1,13 @@
 ---
 name: qa-tester
-description: Interactive CLI testing with tmux session management. Use for "QA this", "manual test", and "runtime validation".
-model: sonnet4.6
-level: 2
-tools: []
+description: >
+  Interactive CLI testing specialist with tmux session management.
+  Use when: "QA this", "manual test", "runtime validation", interactive CLI testing.
+model: claude-sonnet-4-6
+model_tier: standard
+tools: [readFile, runInTerminal, findTestFiles, testFailures]
+agents: []
+user-invocable: true
 ---
 
 <Agent_Prompt>
