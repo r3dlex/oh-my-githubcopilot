@@ -2,7 +2,7 @@
  * keyword-detector hook tests
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import { processHook } from "../../src/hooks/keyword-detector.mts";
 
 describe("keyword-detector hook", () => {
@@ -85,6 +85,42 @@ describe("keyword-detector hook", () => {
       expect(result.modifiedPrompt).toContain("/oh-my-githubcopilot:omp-plan");
     });
 
+    it("should route setup keyword to omp-setup", () => {
+      const result = processHook({ hook_type: "UserPromptSubmitted", prompt: "setup: bootstrap this repo" });
+      expect(result.status).toBe("ok");
+      expect(result.modifiedPrompt).toContain("/oh-my-githubcopilot:omp-setup");
+    });
+
+    it("should detect /setup slash form and route to omp-setup", () => {
+      const result = processHook({ hook_type: "UserPromptSubmitted", prompt: "/setup --non-interactive" });
+      expect(result.status).toBe("ok");
+      expect(result.modifiedPrompt).toContain("/oh-my-githubcopilot:omp-setup");
+    });
+
+    it("should detect /omp:setup slash namespace form", () => {
+      const result = processHook({ hook_type: "UserPromptSubmitted", prompt: "/omp:setup --non-interactive" });
+      expect(result.status).toBe("ok");
+      expect(result.modifiedPrompt).toContain("/oh-my-githubcopilot:omp-setup");
+    });
+
+    it("should detect /omp:plan slash namespace form", () => {
+      const result = processHook({ hook_type: "UserPromptSubmitted", prompt: "/omp:plan map this change" });
+      expect(result.status).toBe("ok");
+      expect(result.modifiedPrompt).toContain("/oh-my-githubcopilot:omp-plan");
+    });
+
+    it("should no longer route removed ralplan alias", () => {
+      const result = processHook({ hook_type: "UserPromptSubmitted", prompt: "ralplan: some task" });
+      expect(result.status).toBe("ok");
+      expect(result.modifiedPrompt).toBeUndefined();
+    });
+
+    it("should no longer route removed ultraqa alias", () => {
+      const result = processHook({ hook_type: "UserPromptSubmitted", prompt: "ultraqa: verify this" });
+      expect(result.status).toBe("ok");
+      expect(result.modifiedPrompt).toBeUndefined();
+    });
+
     it("should include latency in result", () => {
       const result = processHook({ hook_type: "UserPromptSubmitted", prompt: "autopilot: test" });
       expect(result.latencyMs).toBeGreaterThanOrEqual(0);
@@ -135,10 +171,15 @@ describe("keyword-detector hook", () => {
     });
 
     it("should detect /graph-provider slash form (literal match)", () => {
-      // /graph-provider uses a literal startsWith match (the regex stops at the hyphen)
       const result = processHook({ hook_type: "UserPromptSubmitted", prompt: "/graph-provider set graphwiki" });
       expect(result.status).toBe("ok");
       expect(result.modifiedPrompt).toContain("/oh-my-githubcopilot:graph-provider");
+    });
+
+    it("should detect /mcp-setup slash form without truncating the command", () => {
+      const result = processHook({ hook_type: "UserPromptSubmitted", prompt: "/mcp-setup --interactive" });
+      expect(result.status).toBe("ok");
+      expect(result.modifiedPrompt).toBe("/oh-my-githubcopilot:mcp-setup --interactive");
     });
 
     it("should detect /spending slash form", () => {

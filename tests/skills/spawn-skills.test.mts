@@ -20,7 +20,7 @@ vi.mock("child_process", () => ({
  *  when .on() is called with the matching event name. */
 function makeChild(closeCode: number | null, errorMsg?: string) {
   return {
-    on: vi.fn((event: string, cb: Function) => {
+    on: vi.fn((event: string, cb: (arg?: number | Error) => void) => {
       if (errorMsg && event === "error") {
         cb(new Error(errorMsg));
       } else if (closeCode !== null && event === "close") {
@@ -48,7 +48,7 @@ const SPAWN_SKILLS = [
   "psm",
   "ralph",
   "release",
-  // "setup" excluded — has top-level stdin-reading code that blocks on import
+  "setup",
   "swarm",
   "swe-bench",
   "team",

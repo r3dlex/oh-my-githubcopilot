@@ -15,50 +15,92 @@ export interface KeywordMatch {
 
 const KEYWORD_MAP: Record<string, string> = {
   "autopilot:": "autopilot",
-  "ralph:": "ralph",
-  "ulw:": "ultrawork",
-  "team:": "team",
-  "eco:": "ecomode",
-  "swarm:": "swarm",
-  "pipeline:": "pipeline",
-  "plan:": "omp-plan",
-  // Aliases (shortcut commands)
-  "setup:": "setup",
-  "ralplan:": "ralplan",
-  "ultraqa:": "ultraqa",
-  "mcp:": "mcp-setup",
-  "ultrawork:": "ultrawork",
-  "ecomode:": "ecomode",
-  // Phase 1.1 skill stubs (19 total from plugin.json)
   "/autopilot": "autopilot",
+  "/omp:autopilot": "autopilot",
+  "ralph:": "ralph",
   "/ralph": "ralph",
+  "/omp:ralph": "ralph",
+  "ulw:": "ultrawork",
+  "ultrawork:": "ultrawork",
   "/ulw": "ultrawork",
+  "/ultrawork": "ultrawork",
+  "/omp:ulw": "ultrawork",
+  "/omp:ultrawork": "ultrawork",
+  "team:": "team",
   "/team": "team",
+  "/omp:team": "team",
+  "eco:": "ecomode",
+  "ecomode:": "ecomode",
   "/eco": "ecomode",
+  "/ecomode": "ecomode",
+  "/omp:eco": "ecomode",
+  "/omp:ecomode": "ecomode",
+  "swarm:": "swarm",
   "/swarm": "swarm",
+  "/omp:swarm": "swarm",
+  "pipeline:": "pipeline",
   "/pipeline": "pipeline",
+  "/omp:pipeline": "pipeline",
+  "deep interview:": "deep-interview",
   "/deep-interview": "deep-interview",
+  "/omp:deep-interview": "deep-interview",
+  "plan:": "omp-plan",
+  "/plan": "omp-plan",
   "/omp-plan": "omp-plan",
+  "/omp:plan": "omp-plan",
+  "setup:": "omp-setup",
+  "/setup": "omp-setup",
   "/omp-setup": "omp-setup",
+  "/omp:setup": "omp-setup",
+  "mcp:": "mcp-setup",
+  "mcp-setup:": "mcp-setup",
+  "/mcp": "mcp-setup",
+  "/mcp-setup": "mcp-setup",
+  "/omp:mcp-setup": "mcp-setup",
   "/hud": "hud",
+  "hud:": "hud",
+  "/omp:hud": "hud",
   "/wiki": "wiki",
+  "wiki:": "wiki",
+  "/omp:wiki": "wiki",
   "/learner": "learner",
+  "learner:": "learner",
+  "/omp:learner": "learner",
   "/note": "note",
+  "note:": "note",
+  "/omp:note": "note",
   "/trace": "trace",
+  "trace:": "trace",
+  "/omp:trace": "trace",
   "/release": "release",
+  "release:": "release",
+  "/omp:release": "release",
   "/configure-notifications": "configure-notifications",
+  "configure-notifications:": "configure-notifications",
+  "/omp:configure-notifications": "configure-notifications",
   "/psm": "psm",
+  "psm:": "psm",
+  "/omp:psm": "psm",
   "/swe-bench": "swe-bench",
-  // v1.2 graph provider + spending skills
-  "graphify:":       "graphify",
-  "graphwiki:":      "graphwiki",
-  "graph:":          "graph-provider",
-  "spending:":       "spending",
-  "/graphify":       "graphify",
-  "/graphwiki":      "graphwiki",
+  "swe-bench:": "swe-bench",
+  "/omp:swe-bench": "swe-bench",
+  "graphify:": "graphify",
+  "graph build": "graphify",
+  "build graph": "graphify",
+  "graphwiki:": "graphwiki",
+  "graph:": "graph-provider",
+  "spending:": "spending",
+  "/graphify": "graphify",
+  "/omp:graphify": "graphify",
+  "/graphwiki": "graphwiki",
+  "/omp:graphwiki": "graphwiki",
   "/graph-provider": "graph-provider",
-  "/spending":       "spending",
+  "/omp:graph-provider": "graph-provider",
+  "/spending": "spending",
+  "/omp:spending": "spending",
 };
+
+const KEYWORD_ENTRIES = Object.entries(KEYWORD_MAP).sort(([a], [b]) => b.length - a.length);
 
 export interface HookInput {
   hook_type: "UserPromptSubmitted";
@@ -79,8 +121,8 @@ export interface HookOutput {
 function detectKeyword(prompt: string): KeywordMatch | null {
   const trimmed = prompt.trimStart();
 
-  // Case-sensitive check for : suffixed forms
-  for (const [keyword, skillId] of Object.entries(KEYWORD_MAP)) {
+  // Prefer the longest literal alias match first so /mcp-setup wins over /mcp.
+  for (const [keyword, skillId] of KEYWORD_ENTRIES) {
     if (trimmed.startsWith(keyword)) {
       return {
         keyword,
@@ -91,13 +133,12 @@ function detectKeyword(prompt: string): KeywordMatch | null {
   }
 
   // Case-insensitive check for slash forms
-  const slashPattern = /^\/([a-zA-Z]+)\b/;
+  const slashPattern = /^\/((?:omp:)?[a-zA-Z][a-zA-Z0-9-]*)\b/;
   const slashMatch = trimmed.match(slashPattern);
   if (slashMatch) {
     const cmd = slashMatch[1].toLowerCase();
-    // Map /autopilot -> autopilot, /ralph -> ralph, etc.
-    const skillId = KEYWORD_MAP[`${cmd}:`] || cmd;
-    if (skillId !== cmd || Object.values(KEYWORD_MAP).includes(cmd)) {
+    const skillId = KEYWORD_MAP[`/${cmd}`] ?? KEYWORD_MAP[`${cmd}:`];
+    if (skillId) {
       return {
         keyword: slashMatch[0],
         skillId,

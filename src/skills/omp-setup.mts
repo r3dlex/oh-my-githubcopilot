@@ -2,7 +2,7 @@
  * omp-setup skill
  *
  * ID:       omp-setup
- * Keywords: setup:, /setup
+ * Keywords: setup:, /setup, /omp:setup
  * Tier:     developer tool
  *
  * Orchestrates the OMP setup wizard:
