@@ -42,7 +42,7 @@ function processHook(input) {
           mutations: [
             {
               type: "stop",
-              reason: `${reason} Use /oh-my-githubcopilot:cancel to end it, or continue the session to keep going.`
+              reason: `${reason} Use /cancel to end it, or continue the session to keep going.`
             },
             { type: "log", level: "info", message: reason }
           ],
