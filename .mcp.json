@@ -8,7 +8,9 @@
       "env": {
         "OMP_STATE_DB": "~/.omp/state/omp.db",
         "OMP_FLEET_DB": "~/.omp/fleet/fleet.db",
-        "OMP_LOG_LEVEL": "info"
+        "OMP_LOG_LEVEL": "info",
+        "OMP_COPILOT_REQUIRED_EXPERIMENTAL_FEATURES": "STATUS_LINE,SHOW_FILE,EXTENSIONS,BACKGROUND_SESSIONS,CONFIGURE_COPILOT_AGENT,MULTI_TURN_AGENTS,SESSION_STORE",
+        "OMP_COPILOT_STATUS_LINE_COMMAND": "./bin/omp-statusline.sh"
       }
     }
   }

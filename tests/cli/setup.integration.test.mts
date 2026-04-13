@@ -30,6 +30,16 @@ afterEach(async () => {
   await fs.rm(tempDir, { recursive: true, force: true });
 });
 
+const REQUIRED_EXPERIMENTAL_FEATURES = [
+  "STATUS_LINE",
+  "SHOW_FILE",
+  "EXTENSIONS",
+  "BACKGROUND_SESSIONS",
+  "CONFIGURE_COPILOT_AGENT",
+  "MULTI_TURN_AGENTS",
+  "SESSION_STORE",
+];
+
 // ---------------------------------------------------------------------------
 // Helper: run omp CLI in a subprocess
 // ---------------------------------------------------------------------------
@@ -48,8 +58,13 @@ function runOmp(
     proc.stdout?.on("data", (d) => (stdout += d.toString()));
     proc.stderr?.on("data", (d) => (stderr += d.toString()));
     proc.on("close", (code) => resolve({ stdout, stderr, code: code ?? 0 }));
-    proc.on("error", (err) => resolve({ stdout, stderr, code: 1 }));
+    proc.on("error", (_err) => resolve({ stdout, stderr, code: 1 }));
   });
+}
+
+async function readCopilotConfig(): Promise<Record<string, unknown>> {
+  const raw = await fs.readFile(join(tempDir, ".copilot", "config.json"), "utf-8");
+  return JSON.parse(raw) as Record<string, unknown>;
 }
 
 // ---------------------------------------------------------------------------
@@ -104,5 +119,56 @@ describeOrSkip("omp setup without --mcp-only", () => {
 
     expect(code).toBe(0);
     expect(stdout).toMatch(/mcp|MCP/i);
+  });
+
+  it("enables Copilot experimental mode, merges required feature flags, and configures statusLine", async () => {
+    const { code } = await runOmp(["setup", "--non-interactive"], tempDir);
+
+    expect(code).toBe(0);
+
+    const config = await readCopilotConfig();
+    expect(config.experimental).toBe(true);
+    expect(config.experimentalFeatures).toEqual(
+      expect.arrayContaining(REQUIRED_EXPERIMENTAL_FEATURES)
+    );
+    expect(config.statusLine).toMatchObject({
+      type: "command",
+    });
+    expect(config.statusLine.command).toContain("omp-statusline.sh");
+  });
+
+  it("preserves existing Copilot flags and statusLine command while filling in missing OMP defaults", async () => {
+    await fs.mkdir(join(tempDir, ".copilot"), { recursive: true });
+    await fs.writeFile(
+      join(tempDir, ".copilot", "config.json"),
+      JSON.stringify(
+        {
+          experimental: false,
+          experimentalFeatures: ["CUSTOM_FLAG", "SHOW_FILE"],
+          statusLine: {
+            type: "command",
+            command: "/tmp/custom-statusline.sh",
+          },
+          trusted_folders: ["/tmp/existing"],
+        },
+        null,
+        2
+      )
+    );
+
+    const { code } = await runOmp(["setup", "--non-interactive"], tempDir);
+
+    expect(code).toBe(0);
+
+    const config = await readCopilotConfig();
+    expect(config.experimental).toBe(true);
+    expect(config.experimentalFeatures).toEqual(
+      expect.arrayContaining(["CUSTOM_FLAG", ...REQUIRED_EXPERIMENTAL_FEATURES])
+    );
+    expect(config.statusLine).toEqual({
+      type: "command",
+      command: "/tmp/custom-statusline.sh",
+    });
+    expect(config.trusted_folders).toEqual(["/tmp/existing"]);
   });
 });

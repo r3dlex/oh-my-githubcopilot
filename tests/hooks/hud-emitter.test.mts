@@ -2,10 +2,29 @@
  * hud-emitter hook tests
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "fs";
+import { join } from "path";
+import { tmpdir } from "os";
 import { processHook } from "../../src/hooks/hud-emitter.mts";
 
+let homeDir = "";
+
+function hudPath(...parts: string[]): string {
+  return join(homeDir, ".omp", ...parts);
+}
+
 describe("hud-emitter hook", () => {
+  beforeEach(() => {
+    homeDir = mkdtempSync(join(tmpdir(), "omp-hud-emitter-"));
+    vi.stubEnv("HOME", homeDir);
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    rmSync(homeDir, { recursive: true, force: true });
+  });
+
   describe("processHook", () => {
     it("should process SessionStart hook type", () => {
       const result = processHook({
@@ -27,15 +46,21 @@ describe("hud-emitter hook", () => {
       );
     });
 
-    it("should include emit_hud with session info on SessionStart", () => {
-      const result = processHook({
+    it("should write statusline artifacts on SessionStart", () => {
+      processHook({
         hook_type: "SessionStart",
         session_id: "my-session",
         model: "claude-opus-4.6",
       });
-      const hudMutation = result.mutations.find((m: any) => m.type === "emit_hud");
-      expect(hudMutation).toBeDefined();
-      expect(hudMutation.hudEmit.sessionId).toBe("my-session");
+
+      expect(existsSync(hudPath("hud", "status.json"))).toBe(true);
+      expect(existsSync(hudPath("hud", "display.txt"))).toBe(true);
+      expect(existsSync(hudPath("hud", "tmux-segment.sh"))).toBe(true);
+      expect(existsSync(hudPath("hud.line"))).toBe(true);
+
+      const display = readFileSync(hudPath("hud", "display.txt"), "utf-8").trim();
+      expect(display).toContain("claude-opus-4.6");
+      expect(display).toContain("idle");
     });
 
     it("should process PostToolUse hook type", () => {
@@ -60,18 +85,23 @@ describe("hud-emitter hook", () => {
     });
 
     it("should track tool usage in hud emit", () => {
+      processHook({
+        hook_type: "SessionStart",
+        session_id: "test-session",
+      });
       const result = processHook({
         hook_type: "PostToolUse",
         tool_name: "Read",
         session_id: "test-session",
       });
-      const hudMutation = result.mutations.find((m: any) => m.type === "emit_hud");
+      const hudMutation = result.mutations.find((m) => m.type === "emit_hud");
       expect(hudMutation).toBeDefined();
+      expect(readFileSync(hudPath("hud", "display.txt"), "utf-8")).toContain("tools:1/13");
     });
 
     it("should handle unknown hook type gracefully", () => {
       const result = processHook({
-        hook_type: "UnknownHook" as any,
+        hook_type: "UnknownHook" as never,
       });
       expect(result.status).toBe("skip");
     });
@@ -97,8 +127,9 @@ describe("hud-emitter hook", () => {
         hook_type: "SessionStart",
         session_id: "test",
       });
-      const hudMutation = result.mutations.find((m: any) => m.type === "emit_hud");
+      const hudMutation = result.mutations.find((m) => m.type === "emit_hud");
       expect(hudMutation).toBeDefined();
+      expect(readFileSync(hudPath("hud", "display.txt"), "utf-8")).toContain("claude-sonnet-4.5");
     });
   });
 });

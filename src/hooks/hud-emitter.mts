@@ -3,14 +3,15 @@
  * Trigger: post-cycle (PostToolUse + SessionStart)
  * Priority: 60
  *
- * Writes HUD statusline to ~/.omp/hud.line after every tool call.
- * Initializes session state on SessionStart.
+ * Writes HUD artifacts after every tool call and initializes session state.
  */
 
-import { readFileSync, writeFileSync, mkdirSync } from "fs";
+import { mkdirSync, readFileSync, writeFileSync } from "fs";
+import { createRequire } from "module";
 import { homedir } from "os";
 import { join } from "path";
-import { createRequire } from "module";
+import { writeHudArtifacts } from "../hud/statusline.mts";
+
 const _require = createRequire(import.meta.url);
 const { version: PKG_VERSION } = _require("../../package.json") as { version: string };
 
@@ -46,6 +47,7 @@ interface SessionState {
   version: string;
   session_id: string;
   started_at: number;
+  updated_at: number;
   model: string;
   tokens_estimated: number;
   token_budget: number;
@@ -54,61 +56,65 @@ interface SessionState {
   skills_used: string[];
   agents_used: string[];
   active_mode: string | null;
+  last_output: string;
+  task_progress: number;
+  status: "idle" | "running" | "waiting" | "complete" | "error" | "eco";
+  premium_requests: number;
+  premium_requests_total: number;
+  warning_active: boolean;
 }
 
 function getStatePath(sessionId?: string): string {
-  const base = join(homedir(), ".omp", "state");
+  const base = join(process.env["HOME"] || homedir(), ".omp", "state");
   if (sessionId) {
     return join(base, "sessions", sessionId, "session.json");
   }
   return join(base, "session.json");
 }
 
-function getHudLinePath(): string {
-  return join(homedir(), ".omp", "hud.line");
-}
-
 function ensureDir(path: string): void {
   mkdirSync(path.substring(0, path.lastIndexOf("/")), { recursive: true });
 }
 
-function formatAge(startedAt: number): string {
-  const elapsed = Date.now() - startedAt;
-  const mins = Math.floor(elapsed / 60000);
-  if (mins < 60) return `${mins}m`;
-  const hours = Math.floor(mins / 60);
-  const remainingMins = mins % 60;
-  return `${hours}h${remainingMins}m`;
+function stringifyOutput(value: unknown): string {
+  if (typeof value === "string") {
+    return value.trim().slice(0, 200);
+  }
+  if (value === undefined || value === null) {
+    return "";
+  }
+  try {
+    return JSON.stringify(value).slice(0, 200);
+  } catch {
+    return String(value).slice(0, 200);
+  }
 }
 
-function formatTokens(tokens: number): string {
-  if (tokens >= 1_000_000) return `~${(tokens / 1_000_000).toFixed(1)}M`;
-  if (tokens >= 1_000) return `~${(tokens / 1_000).toFixed(1)}k`;
-  return `~${tokens}`;
-}
-
-function buildHudLine(state: SessionState): string {
-  const age = formatAge(state.started_at);
-  const tokens = formatTokens(state.tokens_estimated);
-  const ctx = state.context_pct;
-  const tools = state.tools_used.length;
-  const skills = state.skills_used.length;
-  const agents = state.agents_used.length;
-  const mode = state.active_mode || "-";
-  const model = state.model || "sonnet";
-
-  return `OMP v${state.version} | ${model} | tkn: ${tokens}/${state.token_budget} | ctx: ${ctx}% | session: ${age} | tools: ${tools} | skills: ${skills} | agents: ${agents} | mode: ${mode}`;
+function buildEmit(state: SessionState): HudEmit {
+  return {
+    sessionId: state.session_id,
+    activeMode: state.active_mode,
+    contextPct: state.context_pct,
+    tokensUsed: state.tokens_estimated,
+    tokensTotal: state.token_budget,
+    agentsActive: state.agents_used,
+    lastAgent: state.agents_used[state.agents_used.length - 1] || "-",
+    lastOutput: state.last_output,
+    taskProgress: state.task_progress,
+  };
 }
 
 function processSessionStart(input: HookInput): HookOutput {
   const start = Date.now();
   const log: string[] = [];
   const sessionId = input.session_id || "default";
+  const now = Date.now();
 
   const state: SessionState = {
     version: PKG_VERSION,
     session_id: sessionId,
-    started_at: Date.now(),
+    started_at: now,
+    updated_at: now,
     model: input.model || "claude-sonnet-4.5",
     tokens_estimated: 0,
     token_budget: 200_000,
@@ -117,6 +123,12 @@ function processSessionStart(input: HookInput): HookOutput {
     skills_used: [],
     agents_used: [],
     active_mode: null,
+    last_output: "",
+    task_progress: 0,
+    status: "idle",
+    premium_requests: 0,
+    premium_requests_total: 1500,
+    warning_active: false,
   };
 
   const statePath = getStatePath(sessionId);
@@ -124,32 +136,14 @@ function processSessionStart(input: HookInput): HookOutput {
   writeFileSync(statePath, JSON.stringify(state), "utf-8");
   log.push(`Session initialized: ${sessionId}`);
 
-  const hudLine = buildHudLine(state);
-  const hudPath = getHudLinePath();
-  ensureDir(hudPath);
-  writeFileSync(hudPath, hudLine, "utf-8");
-  log.push(`HUD line written: ${hudLine}`);
+  const { line, state: hudState } = writeHudArtifacts(state);
+  log.push(`HUD artifacts written: ${line}`);
 
   return {
     status: "ok",
     latencyMs: Date.now() - start,
-    mutations: [
-      {
-        type: "emit_hud",
-        hudEmit: {
-          sessionId,
-          activeMode: null,
-          contextPct: 0,
-          tokensUsed: 0,
-          tokensTotal: 200_000,
-          agentsActive: [],
-          lastAgent: "-",
-          lastOutput: "",
-          taskProgress: 0,
-        },
-      },
-    ],
-    log,
+    mutations: [{ type: "emit_hud", hudEmit: buildEmit(state) }],
+    log: [...log, `HUD state version: ${hudState.version}`],
   };
 }
 
@@ -164,49 +158,43 @@ function processPostToolUse(input: HookInput): HookOutput {
     const raw = JSON.parse(readFileSync(statePath, "utf-8"));
     state = {
       ...raw,
+      version: typeof raw.version === "string" ? raw.version : PKG_VERSION,
+      session_id: typeof raw.session_id === "string" ? raw.session_id : input.session_id || "default",
+      started_at: typeof raw.started_at === "number" ? raw.started_at : Date.now(),
+      updated_at: Date.now(),
+      model: typeof raw.model === "string" ? raw.model : input.model || "claude-sonnet-4.5",
+      tokens_estimated: typeof raw.tokens_estimated === "number" ? raw.tokens_estimated : 0,
+      token_budget: typeof raw.token_budget === "number" ? raw.token_budget : 200_000,
+      context_pct: typeof raw.context_pct === "number" ? raw.context_pct : 0,
       tools_used: Array.isArray(raw.tools_used) ? raw.tools_used : [],
       skills_used: Array.isArray(raw.skills_used) ? raw.skills_used : [],
       agents_used: Array.isArray(raw.agents_used) ? raw.agents_used : [],
+      active_mode: typeof raw.active_mode === "string" ? raw.active_mode : null,
+      last_output: typeof raw.last_output === "string" ? raw.last_output : "",
+      task_progress: typeof raw.task_progress === "number" ? raw.task_progress : 0,
+      status: raw.status ?? "running",
+      premium_requests: typeof raw.premium_requests === "number" ? raw.premium_requests : 0,
+      premium_requests_total: typeof raw.premium_requests_total === "number" ? raw.premium_requests_total : 1500,
+      warning_active: typeof raw.warning_active === "boolean" ? raw.warning_active : false,
     };
   } catch {
-    // Fall back to session start behavior if no state
     return processSessionStart(input);
   }
 
-  // Update tools used
   if (input.tool_name && !state.tools_used.includes(input.tool_name)) {
     state.tools_used.push(input.tool_name);
   }
+  state.status = "running";
+  state.last_output = stringifyOutput(input.tool_output);
 
-  // Recalculate HUD line
-  const hudLine = buildHudLine(state);
-  const hudPath = getHudLinePath();
-  ensureDir(hudPath);
-  writeFileSync(hudPath, hudLine, "utf-8");
-  log.push(`HUD updated: ${hudLine}`);
-
-  // Write updated state
   writeFileSync(statePath, JSON.stringify(state), "utf-8");
+  const { line } = writeHudArtifacts(state);
+  log.push(`HUD updated: ${line}`);
 
   return {
     status: "ok",
     latencyMs: Date.now() - start,
-    mutations: [
-      {
-        type: "emit_hud",
-        hudEmit: {
-          sessionId: state.session_id,
-          activeMode: state.active_mode,
-          contextPct: state.context_pct,
-          tokensUsed: state.tokens_estimated,
-          tokensTotal: state.token_budget,
-          agentsActive: state.agents_used,
-          lastAgent: state.agents_used[state.agents_used.length - 1] || "-",
-          lastOutput: "",
-          taskProgress: 0,
-        },
-      },
-    ],
+    mutations: [{ type: "emit_hud", hudEmit: buildEmit(state) }],
     log,
   };
 }
@@ -226,7 +214,6 @@ export function processHook(input: HookInput): HookOutput {
   };
 }
 
-// Main entry point — only runs when executed directly (not imported)
 import { fileURLToPath } from "url";
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

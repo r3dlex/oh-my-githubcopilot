@@ -60,6 +60,20 @@ copilot plugin install r3dlex/oh-my-githubcopilot
 /mcp show
 ```
 
+`/omp:setup` now safely merges the required Copilot CLI experimental features into
+`~/.copilot/config.json` and fills in `statusLine` if you have not already configured one.
+After setup completes, restart the Copilot CLI session so the new experimental/status-line settings are picked up.
+
+Required feature flags ensured by setup:
+
+- `STATUS_LINE`
+- `SHOW_FILE`
+- `EXTENSIONS`
+- `BACKGROUND_SESSIONS`
+- `CONFIGURE_COPILOT_AGENT`
+- `MULTI_TURN_AGENTS`
+- `SESSION_STORE`
+
 ### 3) Start delegating work
 
 ```text
@@ -77,6 +91,7 @@ omp hud
 ```
 
 The `omp` CLI is a companion tool for local runtime features; the Copilot plugin works without it.
+Running `omp setup` performs the same non-destructive Copilot config merge as `/omp:setup`.
 
 ### Optional: adopt OMP into another repository
 

@@ -13,9 +13,33 @@
  */
 
 import { promises as fs } from "fs";
-import { join } from "path";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
 import { homedir } from "os";
 import { runMcpSetup, type SetupScope } from "../setup/mcp-config-wizard.js";
+
+const REQUIRED_COPILOT_EXPERIMENTAL_FEATURES = [
+  "STATUS_LINE",
+  "SHOW_FILE",
+  "EXTENSIONS",
+  "BACKGROUND_SESSIONS",
+  "CONFIGURE_COPILOT_AGENT",
+  "MULTI_TURN_AGENTS",
+  "SESSION_STORE",
+] as const;
+
+interface CopilotStatusLineConfig {
+  type?: "command";
+  command?: string;
+  padding?: number;
+}
+
+interface CopilotConfig {
+  experimental?: boolean;
+  experimentalFeatures?: string[];
+  statusLine?: CopilotStatusLineConfig;
+  [key: string]: unknown;
+}
 
 // ---------------------------------------------------------------------------
 // Phase 1: Base install
@@ -25,8 +49,93 @@ async function ensureDir(dirPath: string): Promise<void> {
   await fs.mkdir(dirPath, { recursive: true });
 }
 
+function getPackageRoot(): string {
+  return join(dirname(fileURLToPath(import.meta.url)), "..", "..");
+}
+
+function getUserHomeDir(): string {
+  return process.env["HOME"] || homedir();
+}
+
+function getCopilotConfigPath(): string {
+  return join(getUserHomeDir(), ".copilot", "config.json");
+}
+
+function getRequiredExperimentalFeatures(): string[] {
+  const raw = process.env["OMP_COPILOT_REQUIRED_EXPERIMENTAL_FEATURES"];
+  if (!raw) return [...REQUIRED_COPILOT_EXPERIMENTAL_FEATURES];
+  return raw
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+}
+
+function getStatusLineCommand(): string {
+  const configured = process.env["OMP_COPILOT_STATUS_LINE_COMMAND"];
+  return configured || join(getPackageRoot(), "bin", "omp-statusline.sh");
+}
+
+async function readJsonFile<T>(path: string, fallback: T): Promise<T> {
+  try {
+    const raw = await fs.readFile(path, "utf-8");
+    return JSON.parse(raw) as T;
+  } catch (error: unknown) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return fallback;
+    console.warn(`[omp] Warning: unable to parse ${path}; preserving no existing Copilot config.`);
+    return fallback;
+  }
+}
+
+async function maybeChmod0600(path: string): Promise<void> {
+  if (process.platform === "win32") return;
+  await fs.chmod(path, 0o600);
+}
+
+async function configureCopilotCli(): Promise<void> {
+  const configPath = getCopilotConfigPath();
+  const existing = await readJsonFile<CopilotConfig>(configPath, {});
+  const existingFeatures = Array.isArray(existing.experimentalFeatures)
+    ? existing.experimentalFeatures.filter((value): value is string => typeof value === "string")
+    : [];
+  const requiredFeatures = getRequiredExperimentalFeatures();
+  const experimentalFeatures = [...existingFeatures];
+
+  for (const feature of requiredFeatures) {
+    if (!experimentalFeatures.includes(feature)) {
+      experimentalFeatures.push(feature);
+    }
+  }
+
+  const defaultStatusLine: CopilotStatusLineConfig = {
+    type: "command",
+    command: getStatusLineCommand(),
+  };
+  const existingStatusLine =
+    existing.statusLine && typeof existing.statusLine === "object"
+      ? existing.statusLine
+      : undefined;
+
+  const nextConfig: CopilotConfig = {
+    ...existing,
+    experimental: true,
+    experimentalFeatures,
+    statusLine: existingStatusLine
+      ? { ...defaultStatusLine, ...existingStatusLine }
+      : defaultStatusLine,
+  };
+
+  await ensureDir(dirname(configPath));
+  await fs.writeFile(configPath, JSON.stringify(nextConfig, null, 2), "utf-8");
+  await maybeChmod0600(configPath);
+
+  console.log("Copilot CLI config updated.");
+  console.log(`  Config file: ${configPath}`);
+  console.log(`  Experimental features ensured: ${requiredFeatures.join(", ")}`);
+  console.log(`  Status line command: ${nextConfig.statusLine?.command}`);
+}
+
 async function runBaseSetup(): Promise<void> {
-  const baseDir = join(homedir(), ".omp");
+  const baseDir = join(getUserHomeDir(), ".omp");
   const dbPath = join(baseDir, "omp.db");
   const logsDir = join(baseDir, "logs");
 
@@ -40,13 +149,17 @@ async function runBaseSetup(): Promise<void> {
     if ((err as NodeJS.ErrnoException).code !== "EEXIST") throw err;
   }
 
+  await configureCopilotCli();
+
   console.log("OMP base setup complete.");
   console.log(`  Config directory: ${baseDir}`);
   console.log(`  Database: ${dbPath}`);
   console.log("\nFirst-run guidance:");
   console.log("  Run 'omp hud' to check the HUD display.");
   console.log("  Run 'omp setup --mcp-only' to configure external MCP servers.");
-  console.log("  Or run '/oh-my-githubcopilot:setup' from within a Copilot session.");
+  console.log("  Copilot experimental mode and status line are now configured in ~/.copilot/config.json.");
+  console.log("  Restart Copilot CLI after setup so the new config is loaded.");
+  console.log("  Or run '/omp:setup' from within a Copilot session.");
 }
 
 // ---------------------------------------------------------------------------

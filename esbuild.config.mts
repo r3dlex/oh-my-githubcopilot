@@ -65,20 +65,26 @@ await build({
 });
 console.log("Built MCP server: dist/mcp/server.mjs");
 
-// CLI tool
-await build({
-  entryPoints: ["src/index.mts"],
-  bundle: true,
-  platform: "node",
-  target: "node22",
-  format: "esm",
-  outfile: "bin/omp.mjs",
-  external: ["better-sqlite3"],
-  sourcemap: true,
-  minify: false,
-  banner: { js: "#!/usr/bin/env node" },
-});
-console.log("Built CLI tool: bin/omp.mjs");
+const cliEntries = [
+  { entry: "src/index.mts", outfile: "bin/omp.mjs", label: "CLI tool" },
+  { entry: "src/hud/statusline.mts", outfile: "bin/omp-statusline.mjs", label: "statusline entry" },
+];
+
+for (const { entry, outfile, label } of cliEntries) {
+  await build({
+    entryPoints: [entry],
+    bundle: true,
+    platform: "node",
+    target: "node22",
+    format: "esm",
+    outfile,
+    external: ["better-sqlite3"],
+    sourcemap: true,
+    minify: false,
+    banner: { js: "#!/usr/bin/env node" },
+  });
+  console.log(`Built ${label}: ${outfile}`);
+}
 
 // PSM, HUD, benchmark, sdk, utils — shared libs for type-checking only
 // These are not standalone entry points; they're imported by hooks/MCP/CLI
