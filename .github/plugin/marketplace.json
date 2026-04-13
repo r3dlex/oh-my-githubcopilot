@@ -5,13 +5,13 @@
   },
   "metadata": {
     "description": "Agent orchestration engine for GitHub Copilot CLI",
-    "version": "1.5.0"
+    "version": "1.5.1"
   },
   "plugins": [
     {
       "name": "oh-my-githubcopilot",
       "description": "Agent orchestration engine for GitHub Copilot CLI. 23 agents, 25 skills, HUD, PSM, SWE-bench.",
-      "version": "1.5.0",
+      "version": "1.5.1",
       "source": "."
     }
   ]

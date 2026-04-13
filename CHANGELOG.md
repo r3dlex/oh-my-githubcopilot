@@ -4,6 +4,16 @@ All notable changes to **oh-my-githubcopilot** are documented here, ordered newe
 
 ---
 
+## [v1.5.1] — Copilot CLI plugin loading fixes
+
+### Fixes
+- **`dist/` committed to git** — Copilot CLI git-clones the repo without running npm build; `dist/` was gitignored and missing, causing MCP server and hook load failures. Removed `dist/` from `.gitignore` and committed all built output.
+- **Agent frontmatter `model` field** — All 46 agent files (`agents/` + `.github/agents/`) had `model: [claude-sonnet-4-6]` (YAML array); Copilot CLI requires a plain string `model: claude-sonnet-4-6`
+- **Skill `SKILL.md` frontmatter** — All 25 `skills/*/SKILL.md` files were missing YAML frontmatter (`name`, `description`, `user-invocable`); Copilot CLI requires frontmatter to load skills
+- **Hooks config `entry` → `path`** — `hooks/hooks.json` used `"entry"` field; Copilot CLI schema expects `"path"`
+
+---
+
 ## [v1.5.0] — Copilot CLI native integration
 
 ### Features
