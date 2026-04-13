@@ -5,6 +5,13 @@ Each section corresponds to commits between conceptual version boundaries (no gi
 
 ---
 
+## [v1.4.2] — Dynamic version in HUD emitter
+
+### Fixes
+- **HUD version** — `hud-emitter` hook no longer hardcodes `"1.0.0"` as the session state version; reads from `package.json` via `createRequire` so `omp hud` always displays the installed package version
+
+---
+
 ## [v1.4.1] — CLI shebang fix, dynamic version
 
 ### Fixes

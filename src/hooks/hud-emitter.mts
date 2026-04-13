@@ -10,6 +10,9 @@
 import { readFileSync, writeFileSync, mkdirSync } from "fs";
 import { homedir } from "os";
 import { join } from "path";
+import { createRequire } from "module";
+const _require = createRequire(import.meta.url);
+const { version: PKG_VERSION } = _require("../../package.json") as { version: string };
 
 export interface HookInput {
   hook_type: "SessionStart" | "PostToolUse";
@@ -103,7 +106,7 @@ function processSessionStart(input: HookInput): HookOutput {
   const sessionId = input.session_id || "default";
 
   const state: SessionState = {
-    version: "1.0.0",
+    version: PKG_VERSION,
     session_id: sessionId,
     started_at: Date.now(),
     model: input.model || "claude-sonnet-4.5",
