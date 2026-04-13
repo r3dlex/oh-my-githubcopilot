@@ -1,7 +1,8 @@
 ---
 name: swarm
 description: Parallel agent swarm for independent subtasks
-user-invocable: true
+trigger: "swarm:, /swarm, /omp:swarm"
+autoinvoke: false
 ---
 # Skill: Swarm
 

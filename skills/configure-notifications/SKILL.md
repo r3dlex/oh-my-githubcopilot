@@ -1,7 +1,8 @@
 ---
 name: configure-notifications
 description: Configure session notification settings
-user-invocable: true
+trigger: "configure-notifications:, /configure-notifications, /omp:configure-notifications"
+autoinvoke: false
 ---
 # Skill: Configure-Notifications
 

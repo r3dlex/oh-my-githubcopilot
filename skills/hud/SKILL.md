@@ -1,7 +1,8 @@
 ---
 name: hud
 description: Display current HUD session state
-user-invocable: true
+trigger: "hud:, /hud, /omp:hud"
+autoinvoke: false
 ---
 # Skill: HUD
 

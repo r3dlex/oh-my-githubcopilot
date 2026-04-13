@@ -1,7 +1,8 @@
 ---
 name: graphwiki
 description: GraphWiki CLI operations: query, lint, build
-user-invocable: true
+trigger: "graphwiki:, /graphwiki, /omp:graphwiki"
+autoinvoke: false
 ---
 # Skill: GraphWiki
 

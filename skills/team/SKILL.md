@@ -1,7 +1,8 @@
 ---
 name: team
 description: Coordinated N-agent team with staged pipeline
-user-invocable: true
+trigger: "team:, /team, /omp:team"
+autoinvoke: false
 ---
 # Skill: Team
 

@@ -1,7 +1,8 @@
 ---
 name: ralph
 description: Persistence loop with architect verification gate
-user-invocable: true
+trigger: "ralph:, /ralph, /omp:ralph"
+autoinvoke: false
 ---
 # Skill: Ralph
 

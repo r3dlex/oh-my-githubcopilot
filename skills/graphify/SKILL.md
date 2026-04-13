@@ -1,7 +1,8 @@
 ---
 name: graphify
 description: Convert any input to a knowledge graph
-user-invocable: true
+trigger: "graphify:, /graphify, /omp:graphify, graph build, build graph"
+autoinvoke: false
 ---
 # Skill: Graphify
 

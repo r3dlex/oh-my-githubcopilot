@@ -1,7 +1,8 @@
 ---
 name: swe-bench
 description: SWE-bench evaluation harness runner
-user-invocable: true
+trigger: "swe-bench:, /swe-bench, /omp:swe-bench"
+autoinvoke: false
 ---
 # Skill: SWE-Bench
 

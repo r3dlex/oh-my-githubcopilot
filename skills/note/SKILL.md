@@ -1,7 +1,8 @@
 ---
 name: note
 description: Session notes and context management
-user-invocable: true
+trigger: "note:, /note, /omp:note"
+autoinvoke: false
 ---
 # Skill: Note
 

@@ -1,7 +1,8 @@
 ---
 name: mcp-setup
 description: MCP server configuration wizard
-user-invocable: true
+trigger: "mcp:, mcp-setup:, /mcp, /mcp-setup, /omp:mcp-setup"
+autoinvoke: false
 ---
 # Skill: MCP-Setup
 

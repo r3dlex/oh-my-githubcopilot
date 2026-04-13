@@ -1,7 +1,8 @@
 ---
 name: ultrawork
 description: Parallel multi-agent high-throughput implementation
-user-invocable: true
+trigger: "ulw:, ultrawork:, /ulw, /ultrawork, /omp:ulw, /omp:ultrawork"
+autoinvoke: false
 ---
 # Skill: Ultrawork
 

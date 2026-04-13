@@ -1,7 +1,8 @@
 ---
 name: omp-plan
 description: OMP-aware strategic planning
-user-invocable: true
+trigger: "plan:, /plan, /omp:plan, /omp-plan"
+autoinvoke: false
 ---
 # Skill: OMP-Plan
 

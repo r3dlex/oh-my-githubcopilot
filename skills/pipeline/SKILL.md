@@ -1,7 +1,8 @@
 ---
 name: pipeline
 description: Sequential stage-based execution pipeline
-user-invocable: true
+trigger: "pipeline:, /pipeline, /omp:pipeline"
+autoinvoke: false
 ---
 # Skill: Pipeline
 

@@ -1,7 +1,8 @@
 ---
 name: psm
 description: Plugin State Manager operations
-user-invocable: true
+trigger: "psm:, /psm, /omp:psm"
+autoinvoke: false
 ---
 # Skill: PSM
 

@@ -1,7 +1,8 @@
 ---
 name: setup
 description: OMP setup and onboarding wizard
-user-invocable: true
+trigger: "setup:, /setup, /omp:setup"
+autoinvoke: false
 ---
 # Skill: Setup
 

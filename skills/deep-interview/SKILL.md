@@ -1,7 +1,8 @@
 ---
 name: deep-interview
 description: Deep requirements interview workflow
-user-invocable: true
+trigger: "deep interview:, /deep-interview, /omp:deep-interview"
+autoinvoke: false
 ---
 # Skill: Deep-Interview
 

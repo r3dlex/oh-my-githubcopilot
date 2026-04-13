@@ -1,7 +1,8 @@
 ---
 name: spending
 description: Track and reset premium request usage
-user-invocable: true
+trigger: "spending:, /spending, /omp:spending"
+autoinvoke: false
 ---
 # Skill: Spending
 

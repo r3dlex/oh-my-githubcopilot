@@ -1,7 +1,8 @@
 ---
 name: wiki
 description: Project wiki operations and management
-user-invocable: true
+trigger: "wiki:, /wiki, /omp:wiki"
+autoinvoke: false
 ---
 # Skill: Wiki
 

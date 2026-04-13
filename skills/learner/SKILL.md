@@ -1,7 +1,8 @@
 ---
 name: learner
 description: Structured learning and knowledge sessions
-user-invocable: true
+trigger: "learner:, /learner, /omp:learner"
+autoinvoke: false
 ---
 # Skill: Learner
 

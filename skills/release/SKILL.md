@@ -1,7 +1,8 @@
 ---
 name: release
 description: Guided release workflow and automation
-user-invocable: true
+trigger: "release:, /release, /omp:release"
+autoinvoke: false
 ---
 # Skill: Release
 

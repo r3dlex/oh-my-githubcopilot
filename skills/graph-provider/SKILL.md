@@ -1,7 +1,8 @@
 ---
 name: graph-provider
 description: Manage and configure the active graph provider
-user-invocable: true
+trigger: "graph:, /graph-provider, /omp:graph-provider"
+autoinvoke: false
 ---
 # Skill: Graph Provider
 

@@ -1,7 +1,8 @@
 ---
 name: ecomode
 description: Cost-optimized execution with haiku model tier
-user-invocable: true
+trigger: "eco:, /eco, ecomode:, /omp:eco, /omp:ecomode"
+autoinvoke: false
 ---
 # Skill: Ecomode
 
