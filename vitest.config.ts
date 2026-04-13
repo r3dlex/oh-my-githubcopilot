@@ -28,9 +28,9 @@ export default defineConfig({
       },
     },
     testTimeout: 10000,
-    pool: "vmThreads",
+    pool: "forks",
     poolOptions: {
-      vmThreads: { singleThread: true },
+      forks: { singleFork: true },
     },
     teardownTimeout: 1000,
   },

@@ -13,6 +13,7 @@ All notable changes to **oh-my-githubcopilot** are documented here, ordered newe
 ### Release readiness
 - **Next release metadata advanced** — package, plugin, marketplace, and Claude plugin manifests move to `1.5.5` so the post-STATUS_LINE and post-doc-relocation state is ready for the next release cut.
 - **Release notes refreshed** — changelog and release docs now reflect the `.copilot/` doc boundary and the new release target.
+- **GitHub CI stability** — switched Vitest from `vmThreads` to `forks` single-process execution to avoid the segmentation faults seen in GitHub Actions on the `1.5.5` prep branch while preserving the same local coverage thresholds.
 
 ## [v1.5.4] — Experimental Copilot setup and STATUS_LINE integration
 
