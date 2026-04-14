@@ -24,6 +24,7 @@ build/                ← (unused — was planned for separate configs)
 ```
 
 **What does NOT exist:**
+
 - `src/agents/` — agents are Claude Code subagents, not local bundles
 - `build/hooks.mjs`, `build/mcp.mjs`, `build/cli.mjs` — all esbuild config is in `esbuild.config.mts`
 - `dist/agents/` — no agent bundles
@@ -108,10 +109,7 @@ await build({
 Two skills are currently built as individual ESM bundles. More follow the same pattern.
 
 ```typescript
-const skillEntries = [
-  "src/skills/setup.mts",
-  "src/skills/mcp-setup.mts",
-];
+const skillEntries = ["src/skills/setup.mts", "src/skills/mcp-setup.mts"];
 
 for (const entry of skillEntries) {
   const name = entry.replace("src/skills/", "").replace(".mts", "");
@@ -136,15 +134,15 @@ for (const entry of skillEntries) {
 ```json
 {
   "scripts": {
-    "build":      "node --import tsx esbuild.config.mts",
-    "dev":        "node --import tsx --watch esbuild.config.mts",
-    "test":       "vitest run",
+    "build": "node --import tsx esbuild.config.mts",
+    "dev": "node --import tsx --watch esbuild.config.mts",
+    "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "lint":       "eslint src/",
-    "format":     "prettier --write src/",
-    "typecheck":  "tsc --noEmit",
-    "sync-claude-plugin": "cp .github/plugin/plugin.json .claude-plugin/plugin.json",
+    "lint": "eslint src/",
+    "format": "prettier --write src/",
+    "typecheck": "tsc --noEmit",
+    "sync-claude-plugin": "cp plugin.json .claude-plugin/plugin.json",
     "prepublishOnly": "npm run build && npm run sync-claude-plugin"
   }
 }
@@ -156,12 +154,12 @@ Note: `typecheck` runs `tsc --noEmit` for static type checking only. TypeScript 
 
 The following packages are marked `external` in esbuild (not bundled):
 
-| Package | Used by | Reason |
-|---------|---------|--------|
-| `better-sqlite3` | Hooks, MCP, CLI | Native SQLite bindings; must not be bundled |
-| `@modelcontextprotocol/sdk` | `src/mcp/server.mts` | Resolved at runtime via npm |
-| `simple-git` | Hooks, core | External npm package |
-| `yaml` | Core, hooks | External npm package |
+| Package                     | Used by              | Reason                                      |
+| --------------------------- | -------------------- | ------------------------------------------- |
+| `better-sqlite3`            | Hooks, MCP, CLI      | Native SQLite bindings; must not be bundled |
+| `@modelcontextprotocol/sdk` | `src/mcp/server.mts` | Resolved at runtime via npm                 |
+| `simple-git`                | Hooks, core          | External npm package                        |
+| `yaml`                      | Core, hooks          | External npm package                        |
 
 ## 6. TypeScript Configuration Notes
 
@@ -219,6 +217,7 @@ npm test
 ```
 
 Expected build output:
+
 ```
 Built hook: dist/hooks/keyword-detector.mjs
 Built hook: dist/hooks/delegation-enforcer.mjs

@@ -4,27 +4,51 @@ All notable changes to **oh-my-githubcopilot** are documented here, ordered newe
 
 ---
 
+## [v1.5.7] — Release readiness refresh
+
+### Release readiness
+
+- **Version manifests advanced** — `package.json`, `package-lock.json`, `plugin.json`, `.github/plugin/plugin.json`, `.github/plugin/marketplace.json`, and `.claude-plugin/plugin.json` now all target `1.5.7` for the next publishable release.
+- **Release docs aligned** — README, RELEASING, and build/release notes stay aligned with the current release workflow: bracketed changelog headings, root `plugin.json` → `.claude-plugin/plugin.json` sync, and coverage as a required release verification step.
+
+### Verification
+
+- **UltraQA release gate** — fresh verification on the release candidate remains green: `npm run build`, `npm run typecheck`, `npm test`, and `npm run test:coverage` all pass, with coverage still above the required floor (statements `89.35%`, branches `80.65%`, functions `93.65%`, lines `89.35%`).
+
 ## [v1.5.6] — HUD watch daemon and model/budget fixes
 
 ### Features
+
 - **HUD background watch daemon** — `omp hud --watch` (or `npm run hud:watch`) launches a daemon that polls session state every 2 seconds (configurable via `OMP_HUD_INTERVAL`), shows a real-time elapsed timer, and refreshes all three HUD artifacts on every cycle. SIGINT and SIGTERM are handled gracefully.
 
 ### Fixes
+
 - **HUD model fallback** — corrected default model fallback from `claude-sonnet-4.5` to `claude-sonnet-4.6`.
 - **HUD token budget** — token budget is now resolved per-model from the `MODEL_CONTEXTS` map instead of using a fixed constant.
 - **HUD premium requests total** — total premium request count is now configurable via the `OMP_PREMIUM_REQUESTS_TOTAL` environment variable.
 - **HUD skills total** — `skillsTotal` corrected from 21 to 25, matching the actual number of shipped skills.
 - **Model router advisory** — updated the model-router advisory string to reference `claude-sonnet-4.6`.
+- **CLI coverage harness** — the `src/index.mts` test suite now executes the real `hud`, `hud --watch`, `version`, `psm`, `bench`, and unknown-subcommand flows so release coverage thresholds are protected by behavior-level assertions instead of placeholder checks.
+
+### Documentation
+
+- **Release docs aligned with current repo state** — README, release instructions, and build notes now agree on the bracketed changelog heading format, the root `plugin.json` → `.claude-plugin/plugin.json` sync step, and the need to run coverage as part of release verification.
+
+### Verification
+
+- **Fresh coverage evidence** — `npm run test:coverage` now reports `89.35%` statements, `80.65%` branches, `93.65%` functions, and `89.35%` lines.
 
 ---
 
 ## [v1.5.5] — Copilot docs move and release refresh
 
 ### Documentation
+
 - **Copilot docs moved to `.copilot/`** — relocated Copilot-facing instructions, agent docs, skill docs, and plugin skill docs out of `.github/` so `.copilot/` is now the single home for Copilot-specific documentation.
 - **Adoption flow updated** — `scripts/omp-adopt.sh` now installs Copilot docs under `.copilot/` while leaving `.github/` focused on workflows, plugin metadata, and hook entrypoints.
 
 ### Release readiness
+
 - **Next release metadata advanced** — package, plugin, marketplace, and Claude plugin manifests move to `1.5.5` so the post-STATUS_LINE and post-doc-relocation state is ready for the next release cut.
 - **Release notes refreshed** — changelog and release docs now reflect the `.copilot/` doc boundary and the new release target.
 - **GitHub CI stability** — switched Vitest from `vmThreads` to `forks` single-process execution to avoid the segmentation faults seen in GitHub Actions on the `1.5.5` prep branch while preserving the same local coverage thresholds.
@@ -32,45 +56,54 @@ All notable changes to **oh-my-githubcopilot** are documented here, ordered newe
 ## [v1.5.4] — Experimental Copilot setup and STATUS_LINE integration
 
 ### Features
+
 - **Experimental Copilot defaults in setup** — `omp setup` now merges the required Copilot experimental feature flags into `~/.copilot/config.json`, preserves existing flags and custom status-line commands, and writes the packaged OMP status-line command when needed.
 - **Packaged STATUS_LINE support** — added a dedicated `src/hud/statusline.mts` entrypoint plus `bin/omp-statusline.sh` wrapper so Copilot CLI can render OMP session state directly from the installed plugin.
 - **HUD artifact export for status line rendering** — `hud-emitter` now writes the minimal status-line artifacts needed by the STATUS_LINE command in addition to the legacy HUD line output.
 
 ### Fixes
+
 - **Setup verification harness** — added direct temp-HOME setup tests so Copilot config merging is exercised without depending on the limited top-level `omp` CLI subcommand surface.
 - **STATUS_LINE verification harness** — updated HUD/statusline tests so temp-HOME artifact paths are asserted correctly and lint-cleanly under the new status-line flow.
 
 ### Verification
+
 - **Coverage remains above release floor** — fresh coverage evidence remains above the required 80% thresholds: statements `88.26%`, branches `83.98%`, functions `92.4%`.
 - **Focused addendum verification** — setup and status-line focused suites, typecheck, lint, build, and wrapper smoke all pass on the merged leader tree, with the remaining skipped integration setup test called out as pre-existing infrastructure debt rather than an addendum regression.
 
 ## [v1.5.3] — Release readiness and CI enforcement
 
 ### Fixes
+
 - **Version bump for the next publishable release** — advanced package, plugin, marketplace, and Claude plugin manifests to `1.5.3`, which clears the existing `v1.5.1` / `v1.5.2` tag history and avoids the next release colliding with already-used versions.
 - **Real CI test failures** — removed the `|| true` bypasses from the main CI test and coverage jobs so GitHub Actions now fails when tests or coverage regress.
 - **Claude plugin manifest sync** — normalized `.claude-plugin/plugin.json` to a single version field by re-syncing it from the root `plugin.json`.
 
 ### Verification
+
 - **Fresh coverage evidence** — `npm run test:coverage` now reports `88.26%` statements, `83.96%` branches, and `92.4%` functions, satisfying the repo's `80%` thresholds.
 - **Fresh local CI parity run** — `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`, `npx archgate check`, and `npm pack --dry-run` all pass on the release candidate branch.
 
 ### Documentation
+
 - **Release process clarified** — `RELEASING.md` now calls out syncing all plugin manifests plus marketplace metadata and choosing the next unreleased semver before tagging.
 
 ## [v1.5.0] — Copilot CLI release alignment
 
 ### Features
+
 - **Copilot-ready agent metadata** — normalized `src/agents/*.md` frontmatter for Copilot-compatible agent loading fields while preserving the existing prompt bodies.
 - **Copilot instructions refresh** — rewrote the Copilot instructions with an OMP overview, delegation guidance, agent catalog, skill catalog, HUD reference, and keyword quick reference, now carried under the Copilot-facing docs set instead of `.github/` docs.
 - **README quick start refresh** — replaced the install flow with `copilot plugin install ...`, `/omp:setup`, and first-run Copilot commands.
 
 ### Fixes
+
 - **Version sync to `1.5.0`** — aligned `package.json`, `package-lock.json`, root/plugin manifests, and marketplace metadata on the release target.
 - **Plugin manifest agent path** — `.github/plugin/plugin.json` now points at `./agents` so the manifest matches the Copilot-facing agent bundle.
 - **Release notes alignment** — consolidated the current Copilot CLI packaging/runtime fixes under the `v1.5.0` release line for a single consumer-facing release target.
 
 ### Documentation
+
 - **Release expectations clarified** — release docs now call out the committed `dist/` expectation for plugin consumers.
 
 ---
@@ -78,6 +111,7 @@ All notable changes to **oh-my-githubcopilot** are documented here, ordered newe
 ## [v1.4.2] — Dynamic version in HUD emitter
 
 ### Fixes
+
 - **HUD version** — `hud-emitter` hook no longer hardcodes `"1.0.0"` as the session state version; reads from `package.json` via `createRequire` so `omp hud` always displays the installed package version
 
 ---
@@ -85,6 +119,7 @@ All notable changes to **oh-my-githubcopilot** are documented here, ordered newe
 ## [v1.4.1] — CLI shebang fix, dynamic version
 
 ### Fixes
+
 - **CLI shebang** — `bin/omp.mjs` now includes `#!/usr/bin/env node` banner (via esbuild `banner` option); the binary is executable directly without explicit `node` invocation (`550b764`)
 - **Dynamic version** — `omp version` now reads name and version from `package.json` at runtime via `createRequire`; no more hardcoded version string in source (`550b764`)
 
@@ -93,10 +128,12 @@ All notable changes to **oh-my-githubcopilot** are documented here, ordered newe
 ## [v1.4.0] — Package renamed to oh-my-githubcopilot
 
 ### Breaking Changes
+
 - **Package renamed** — npm package renamed from `oh-my-copilot` to `oh-my-githubcopilot`; GitHub Packages now publishes as `@r3dlex/oh-my-githubcopilot`; install with `npm install oh-my-githubcopilot`
 - **Repository moved** — git remote updated to `git@github.com:r3dlex/oh-my-githubcopilot.git`
 
 ### Changes
+
 - All source files, tests, specs, docs, and manifests updated to reflect the new package name
 - MCP server identity updated to `oh-my-githubcopilot`
 - All 11 localized READMEs, archgate ADRs, and release docs updated
@@ -109,16 +146,19 @@ All notable changes to **oh-my-githubcopilot** are documented here, ordered newe
 Commits: `fd366e6`…`a26f673`
 
 ### Features
+
 - **Continuous alpha releases** — every push to `main` publishes `X.Y.Z-alpha.<sha>` to the `alpha` dist-tag; tagged commits (`vX.Y.Z`) publish stable to `latest` (`ec8fffa`)
 - **Hybrid dual-registry publish** — publishes to GitHub Packages (`@r3dlex/oh-my-githubcopilot`) always via `GITHUB_TOKEN`; publishes to npmjs.com (`oh-my-githubcopilot`) when `NPM_TOKEN` secret is configured; graceful skip with notice if absent (`ee42604`)
 - **npm release CI pipeline** — `release.yml` with four jobs: `build` (version resolution + artifact), `test` (CHANGELOG gate for stable only), `publish` (dual-registry), `github-release` (stable only, attaches `.tgz`) (`5a3ae67`)
 
 ### Fixes
+
 - **Workflow parse error** — replaced `secrets.NPM_TOKEN != ''` in step `if:` conditions with a dedicated check step outputting `available=true/false` (`e82e807`)
 - **Version-agnostic plugin test assertions** — `plugin-install.test.mts` now reads version from `packageJson().version`; `marketplace.json` metadata.version synced (`7f99f14`)
 - **Stale agent/skill counts** — JSON descriptors and e2e tests corrected to 23 agents / 25 skills (`74c5122`)
 
 ### Documentation
+
 - **CHANGELOG rewritten** — entries now derived from actual git log commit ranges per version (`a26f673`)
 - **Agent and skill docs normalized** — all 23 agent descriptors and 25 skill `SKILL.md` files updated to consistent format (`fd366e6`)
 
@@ -129,6 +169,7 @@ Commits: `fd366e6`…`a26f673`
 Commits: `a234799`, `feb5e65` (PR #10)
 
 ### Features
+
 - **GraphProvider abstraction** — new `src/graph/` module with `GraphBuildable` and `GraphWikiClient` interfaces; provider resolved from `.omp/config.json` `graph.provider` with local > global > default (`graphwiki`) resolution
 - **GraphifyAdapter** — extracted graphify CLI wrapper from `src/skills/graphify.mts` into `src/graph/graphify-adapter.mts`; graphify skill now delegates to the adapter (public API unchanged)
 - **GraphwikiAdapter** — new `src/graph/graphwiki-adapter.mts` wrapping the `graphwiki` npm CLI (`npm install -g graphwiki`); implements both `GraphBuildable` and `GraphWikiClient`
@@ -138,6 +179,7 @@ Commits: `a234799`, `feb5e65` (PR #10)
 - **keyword-detector wiring** — 8 new keyword entries: `graphify:`, `graphwiki:`, `graph:`, `spending:`, `/graphify`, `/graphwiki`, `/graph-provider`, `/spending`
 
 ### Fixes
+
 - **plugin.json** — removed non-existent `./agents` path from agents array; added `graphify`, `graphwiki`, `graph-provider`, `spending` to skills list (25 skills total)
 - **gitignore** — untracked `coverage/.tmp`, `.omc/` state files, `devops.md` (`a234799`)
 
@@ -148,10 +190,12 @@ Commits: `a234799`, `feb5e65` (PR #10)
 Commits: `ce6f3bd`…`051ac20` (PR #9)
 
 ### Features
+
 - **HUD format: `tools:N` → `tools:N/M`** — all count fields (tools, skills, agents) now display as used/total (e.g., `tools:12/13`, `skills:5/25`, `agents:3/23`); added `toolsTotal`, `skillsTotal`, `agentsTotal` fields to `HudState` and `HudMetrics`
 - **CLI elicitation support** — expanded OMP setup wizard to handle interactive CLI prompts during MCP config generation
 
 ### Fixes
+
 - **CI: zero-install artifact pattern** — build artifact uploaded once in `build` job and downloaded in `test`/`publish` jobs; eliminates redundant `npm install` across CI jobs (`d46f647`)
 - **CI: vitest hanging** — added `< /dev/null` stdin redirect and `timeout 120` to prevent vitest blocking indefinitely in non-TTY environments (`fa9fdfb`)
 - **CI: vitest `--forceExit`** — added flag to ensure process exits after tests complete in CI (`c88c2c7`)
@@ -168,6 +212,7 @@ Commits: `804fc37`…`0f96d48` (initial implementation + `6ee243f` rename)
 Initial release of **oh-my-githubcopilot (OMP)** — a multi-agent orchestration plugin for GitHub Copilot CLI.
 
 ### Features
+
 - **23 specialized agents** via Claude Code subagents: orchestrator, explorer, planner, executor, verifier, writer, reviewer, designer, researcher, tester, debugger, architect, security-reviewer, simplifier, test-engineer, critic, tracer, scientist, code-reviewer, document-specialist, qa-tester, git-master, analyst
 - **22 skills** including: `setup`, `mcp-setup`, `autopilot`, `ralph`, `ultrawork`, `team`, `ecomode`, `swarm`, `pipeline`, `plan`, `omp-plan`, `hud`, `note`, `trace`, `learner`, `swe-bench`, `wiki`, `psm`, `release`, `graphify`, `spending`, `spawn`
 - **6 hooks**: `keyword-detector`, `delegation-enforcer`, `model-router`, `token-tracker`, `hud-emitter`, `stop-continuation`
@@ -181,6 +226,7 @@ Initial release of **oh-my-githubcopilot (OMP)** — a multi-agent orchestration
 - **OMP rename** — project renamed from `oh-my-claudecode (OMC)` to `oh-my-githubcopilot (OMP)` targeting GitHub Copilot CLI (`6ee243f`)
 
 ### Documentation
+
 - `AGENTS.md` — agent registry and delegation rules
 - `CLAUDE.md` — project instructions and quick reference
 - `SECURITY.md` — vulnerability reporting policy

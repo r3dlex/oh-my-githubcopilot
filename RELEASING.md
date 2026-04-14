@@ -27,14 +27,15 @@ Alpha releases allow users to test new features and fixes immediately without wa
 
 The publish job writes to **two registries** on every release:
 
-| Registry | Package Name | Auth | Condition |
-|----------|-------------|------|-----------|
-| GitHub Packages | `@r3dlex/oh-my-githubcopilot` | `GITHUB_TOKEN` (built-in) | Always |
-| npmjs.com | `oh-my-githubcopilot` | `NPM_TOKEN` secret | When `NPM_TOKEN` is set |
+| Registry        | Package Name                  | Auth                      | Condition               |
+| --------------- | ----------------------------- | ------------------------- | ----------------------- |
+| GitHub Packages | `@r3dlex/oh-my-githubcopilot` | `GITHUB_TOKEN` (built-in) | Always                  |
+| npmjs.com       | `oh-my-githubcopilot`         | `NPM_TOKEN` secret        | When `NPM_TOKEN` is set |
 
 GitHub Packages always publishes (no extra secret required). npmjs.com publishes only when the `NPM_TOKEN` secret is configured — if absent, the step logs a notice and the job succeeds.
 
 **Install from GitHub Packages:**
+
 ```bash
 # Requires: ~/.npmrc with //npm.pkg.github.com/:_authToken=<PAT>
 npm install @r3dlex/oh-my-githubcopilot@alpha    # latest alpha
@@ -42,6 +43,7 @@ npm install @r3dlex/oh-my-githubcopilot          # stable
 ```
 
 **Install from npmjs.com (public, no auth):**
+
 ```bash
 npm install oh-my-githubcopilot@alpha    # latest alpha
 npm install oh-my-githubcopilot          # stable
@@ -49,10 +51,10 @@ npm install oh-my-githubcopilot          # stable
 
 ## npm Dist Tags
 
-| Dist Tag | Version Scheme | When Published | Install Command |
-|----------|---|---|---|
-| `latest` | `X.Y.Z` (stable) | On tagged commits (`vX.Y.Z`) | `npm install oh-my-githubcopilot` |
-| `alpha` | `X.Y.Z-alpha.<sha>` | On every push to `main` | `npm install oh-my-githubcopilot@alpha` |
+| Dist Tag | Version Scheme      | When Published               | Install Command                         |
+| -------- | ------------------- | ---------------------------- | --------------------------------------- |
+| `latest` | `X.Y.Z` (stable)    | On tagged commits (`vX.Y.Z`) | `npm install oh-my-githubcopilot`       |
+| `alpha`  | `X.Y.Z-alpha.<sha>` | On every push to `main`      | `npm install oh-my-githubcopilot@alpha` |
 
 ## Stable Release Process
 
@@ -112,23 +114,36 @@ The CI will fail the publish step if the plugin manifests drift from the release
 
 ### Step 4: Write CHANGELOG.md
 
-Add a section for the new version describing changes. The section heading **must** contain the version number (e.g., `# oh-my-githubcopilot v1.2.0`).
+Add a section for the new version describing changes. The section heading **must** contain the version number and should follow the bracketed format already used in this repository (for example, `## [v1.2.0] — Short summary`).
 
 Example:
 
 ```markdown
-# oh-my-githubcopilot v1.2.0
+## [v1.2.0] — Short summary
 
-## Features
+### Features
+
 - New feature A
 - New feature B
 
-## Fixes
+### Fixes
+
 - Fixed bug X
 - Fixed bug Y
 ```
 
-### Step 5: Create the release commit and tag
+### Step 5: Run release-candidate verification
+
+Before tagging, run the same checks the release candidate is expected to satisfy locally:
+
+```bash
+npm run typecheck
+npm run test:coverage
+npm run build
+npm pack --dry-run
+```
+
+### Step 6: Create the release commit and tag
 
 After writing the CHANGELOG and syncing manifests, create the release commit and tag:
 
@@ -140,7 +155,7 @@ git tag vX.Y.Z
 
 Do not force-move an existing version tag. If `vX.Y.Z` already exists, choose the next unreleased version and repeat the version-sync step instead.
 
-### Step 6: Push with `--follow-tags`
+### Step 7: Push with `--follow-tags`
 
 ```bash
 git push origin main --follow-tags
@@ -148,7 +163,7 @@ git push origin main --follow-tags
 
 The `--follow-tags` flag ensures the tag is pushed together with the commit and triggers the Release workflow.
 
-### Step 6: Monitor CI
+### Step 8: Monitor CI
 
 The `Release` GitHub Actions workflow runs automatically and executes 4 jobs in sequence:
 
@@ -162,7 +177,7 @@ Monitor at: `https://github.com/r3dlex/oh-my-githubcopilot/actions`
 ## CHANGELOG.md Requirement
 
 - **Alpha releases**: CHANGELOG.md is NOT required
-- **Stable releases**: CHANGELOG.md MUST have a section heading containing the version (e.g., `# oh-my-githubcopilot v1.2.0`)
+- **Stable releases**: CHANGELOG.md MUST have a section heading containing the version (for example, `## [v1.2.0] — Short summary`)
 
 The test job in CI explicitly checks for this. If the version heading is missing, the pipeline will fail with a clear error message before publishing.
 

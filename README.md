@@ -19,16 +19,16 @@
 
 Every software team juggles implementation, architecture, security review, testing, and DevOps — all simultaneously. OMP orchestrates specialized agents so every dimension gets expert attention, in parallel, without you herding cats.
 
-| What you get | Why it matters |
-|--------------|----------------|
-| **23 agents** | executor, architect, planner, reviewer, debugger, designer, security-reviewer, scientist, analyst, and more — each tuned to a different craft |
-| **25 skills** | `autopilot`, `ralph`, `ultrawork`, `team`, `ecomode`, `swarm`, `pipeline`, `omp-plan`, `graphify`, `spending`, and more — trigger with a slash command |
-| **6 hooks** | Keyword detection, delegation routing, model selection, token tracking, HUD emission, stop-continuation |
-| **MCP server** | Built-in tools for extended capabilities |
-| **HUD display** | Real-time session context and progress tracking |
-| **PSM** | Plugin State Manager with SQLite persistence across sessions |
-| **SWE-bench** | Benchmark harness for reproducible evaluation |
-| **Copilot repo layout** | Copilot-facing docs live under `.copilot/`; `.github/` is reserved for workflows, plugin metadata, and hook entrypoints |
+| What you get            | Why it matters                                                                                                                                         |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **23 agents**           | executor, architect, planner, reviewer, debugger, designer, security-reviewer, scientist, analyst, and more — each tuned to a different craft          |
+| **25 skills**           | `autopilot`, `ralph`, `ultrawork`, `team`, `ecomode`, `swarm`, `pipeline`, `omp-plan`, `graphify`, `spending`, and more — trigger with a slash command |
+| **6 hooks**             | Keyword detection, delegation routing, model selection, token tracking, HUD emission, stop-continuation                                                |
+| **MCP server**          | Built-in tools for extended capabilities                                                                                                               |
+| **HUD display**         | Real-time session context and progress tracking                                                                                                        |
+| **PSM**                 | Plugin State Manager with SQLite persistence across sessions                                                                                           |
+| **SWE-bench**           | Benchmark harness for reproducible evaluation                                                                                                          |
+| **Copilot repo layout** | Copilot-facing docs live under `.copilot/`; `.github/` is reserved for workflows, plugin metadata, and hook entrypoints                                |
 
 <p align="center">
   <img src="assets/buddy-swarm.png" alt="OMP swarm mode" width="600"/>
@@ -87,11 +87,14 @@ Required feature flags ensured by setup:
 ```bash
 npm install -g oh-my-githubcopilot
 omp setup
+omp version
 omp hud
+omp hud --watch
 ```
 
 The `omp` CLI is a companion tool for local runtime features; the Copilot plugin works without it.
 Running `omp setup` performs the same non-destructive Copilot config merge as `/setup` (or `/omp:setup`).
+Use `omp hud --watch` when you want the local HUD daemon to keep refreshing session artifacts in the background.
 
 ### Optional: adopt OMP into another repository
 
@@ -132,37 +135,37 @@ git clone https://github.com/r3dlex/oh-my-githubcopilot.git /tmp/omp
 
 OMP provides 23 specialized agents, each with Copilot-compatible frontmatter for native discovery:
 
-| Agent | Model tier | Use case |
-|-------|-----------|---------|
-| executor | standard | Implementation, file edits, testing |
-| architect | high | Architecture decisions and verification |
-| planner | high | Strategic planning and sequencing |
-| verifier | standard | Build/test/diagnostic validation |
-| writer | standard | Documentation and changelog work |
-| explorer | fast | Read-only codebase surveys |
-| debugger | standard | Root-cause analysis |
-| reviewer | high | General quality review |
-| security-reviewer | standard | Security review |
-| ... | ... | 23 total roles across implementation, planning, QA, and documentation |
+| Agent             | Model tier | Use case                                                              |
+| ----------------- | ---------- | --------------------------------------------------------------------- |
+| executor          | standard   | Implementation, file edits, testing                                   |
+| architect         | high       | Architecture decisions and verification                               |
+| planner           | high       | Strategic planning and sequencing                                     |
+| verifier          | standard   | Build/test/diagnostic validation                                      |
+| writer            | standard   | Documentation and changelog work                                      |
+| explorer          | fast       | Read-only codebase surveys                                            |
+| debugger          | standard   | Root-cause analysis                                                   |
+| reviewer          | high       | General quality review                                                |
+| security-reviewer | standard   | Security review                                                       |
+| ...               | ...        | 23 total roles across implementation, planning, QA, and documentation |
 
 ### Skills
 
 25 skills, each triggerable via slash command or keyword:
 
-| Skill | Trigger | Purpose |
-|------|---------|---------|
-| autopilot | `/omp:autopilot` | Autonomous end-to-end execution |
-| ralph | `/omp:ralph` | Persistent completion loop |
-| ultrawork | `/omp:ultrawork` | Parallel multi-agent high-throughput implementation |
-| team | `/omp:team` | Coordinated multi-agent execution |
-| deep-interview | `/omp:deep-interview` | Requirements clarification |
-| omp-plan | `/omp:plan` | Strategic planning |
-| omp-setup | `/setup`, `/omp:setup` | Guided OMP setup |
-| graphify | `/omp:graphify` | Knowledge graph generation |
-| graphwiki | `/omp:graphwiki` | Query and maintain graphwiki knowledge |
-| graph-provider | `/omp:graph-provider` | Manage the active graph backend |
-| spending | `/omp:spending` | Track premium request usage |
-| ... | ... | 25 total skills |
+| Skill          | Trigger                | Purpose                                             |
+| -------------- | ---------------------- | --------------------------------------------------- |
+| autopilot      | `/omp:autopilot`       | Autonomous end-to-end execution                     |
+| ralph          | `/omp:ralph`           | Persistent completion loop                          |
+| ultrawork      | `/omp:ultrawork`       | Parallel multi-agent high-throughput implementation |
+| team           | `/omp:team`            | Coordinated multi-agent execution                   |
+| deep-interview | `/omp:deep-interview`  | Requirements clarification                          |
+| omp-plan       | `/omp:plan`            | Strategic planning                                  |
+| omp-setup      | `/setup`, `/omp:setup` | Guided OMP setup                                    |
+| graphify       | `/omp:graphify`        | Knowledge graph generation                          |
+| graphwiki      | `/omp:graphwiki`       | Query and maintain graphwiki knowledge              |
+| graph-provider | `/omp:graph-provider`  | Manage the active graph backend                     |
+| spending       | `/omp:spending`        | Track premium request usage                         |
+| ...            | ...                    | 25 total skills                                     |
 
 ## Repository Layout
 
@@ -195,6 +198,7 @@ Before release or plugin publication, verify at least:
 ```bash
 npm run build
 npm run typecheck
+npm run test:coverage
 npm test
 ```
 
