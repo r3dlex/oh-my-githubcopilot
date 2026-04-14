@@ -2,8 +2,45 @@
  * keyword-detector hook tests
  */
 
+import { readFileSync, readdirSync } from "node:fs";
 import { describe, it, expect } from "vitest";
 import { processHook } from "../../src/hooks/keyword-detector.mts";
+
+function loadDeclaredSkillAliases(): string[] {
+  const aliases = new Set<string>();
+  const skillsDir = new URL("../../skills/", import.meta.url);
+
+  for (const entry of readdirSync(skillsDir, { withFileTypes: true })) {
+    if (!entry.isDirectory()) {
+      continue;
+    }
+
+    const skillFile = new URL(`./${entry.name}/SKILL.md`, skillsDir);
+    const triggerLine = readFileSync(skillFile, "utf8")
+      .split("\n")
+      .find((line) => line.startsWith("trigger:"));
+
+    if (!triggerLine) {
+      continue;
+    }
+
+    const rawTriggers = triggerLine
+      .slice("trigger:".length)
+      .trim()
+      .replace(/^"|"$/g, "");
+
+    for (const alias of rawTriggers.split(",").map((value) => value.trim()).filter(Boolean)) {
+      aliases.add(alias);
+    }
+  }
+
+  return Array.from(aliases).sort();
+}
+
+const DECLARED_SKILL_ALIASES = loadDeclaredSkillAliases();
+const DECLARED_OMP_NAMESPACE_COMMANDS = DECLARED_SKILL_ALIASES.filter((alias) => alias.startsWith("/omp:")).map((alias) =>
+  alias.slice("/omp:".length),
+);
 
 describe("keyword-detector hook", () => {
   describe("processHook", () => {
@@ -205,5 +242,35 @@ describe("keyword-detector hook", () => {
       expect(result.status).toBe("ok");
       expect(result.modifiedPrompt).toContain("/omp:spending");
     });
+
+    it.each(DECLARED_SKILL_ALIASES)("should route declared skill alias %s", (alias) => {
+      const result = processHook({ hook_type: "UserPromptSubmitted", prompt: `${alias} smoke-test` });
+
+      expect(result.status).toBe("ok");
+      expect(result.modifiedPrompt).toBeDefined();
+    });
+
+    it.each(DECLARED_OMP_NAMESPACE_COMMANDS)(
+      "should canonicalize long namespace alias oh-my-githubcopilot:%s the same as /omp:%s",
+      (command) => {
+        const canonical = processHook({
+          hook_type: "UserPromptSubmitted",
+          prompt: `/omp:${command} smoke-test`,
+        });
+        const bareLongNamespace = processHook({
+          hook_type: "UserPromptSubmitted",
+          prompt: `oh-my-githubcopilot:${command} smoke-test`,
+        });
+        const slashLongNamespace = processHook({
+          hook_type: "UserPromptSubmitted",
+          prompt: `/oh-my-githubcopilot:${command} smoke-test`,
+        });
+
+        expect(canonical.status).toBe("ok");
+        expect(canonical.modifiedPrompt).toBeDefined();
+        expect(bareLongNamespace.modifiedPrompt).toBe(canonical.modifiedPrompt);
+        expect(slashLongNamespace.modifiedPrompt).toBe(canonical.modifiedPrompt);
+      },
+    );
   });
 });
