@@ -79,6 +79,24 @@ describe("keyword-detector hook", () => {
       expect(result.modifiedPrompt).toBe("/omp:ralph implement the feature");
     });
 
+    it("should detect long namespace alias oh-my-githubcopilot:ralph", () => {
+      const result = processHook({
+        hook_type: "UserPromptSubmitted",
+        prompt: "oh-my-githubcopilot:ralph fix this",
+      });
+      expect(result.status).toBe("ok");
+      expect(result.modifiedPrompt).toBe("/omp:ralph fix this");
+    });
+
+    it("should detect long namespace alias /oh-my-githubcopilot:ralph", () => {
+      const result = processHook({
+        hook_type: "UserPromptSubmitted",
+        prompt: "/oh-my-githubcopilot:ralph",
+      });
+      expect(result.status).toBe("ok");
+      expect(result.modifiedPrompt).toBe("/omp:ralph");
+    });
+
     it("should handle planner keyword", () => {
       const result = processHook({ hook_type: "UserPromptSubmitted", prompt: "plan: some task" });
       expect(result.status).toBe("ok");

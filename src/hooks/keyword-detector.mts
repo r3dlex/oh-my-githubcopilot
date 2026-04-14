@@ -152,6 +152,25 @@ function detectKeyword(prompt: string): KeywordMatch | null {
     }
   }
 
+  // Compatibility: support long namespace aliases like
+  // "oh-my-githubcopilot:ralph" (or "/oh-my-githubcopilot:ralph")
+  const longNamespacePattern = /^\/?oh-my-githubcopilot:([a-zA-Z][a-zA-Z0-9-]*)\b/i;
+  const longNamespaceMatch = trimmed.match(longNamespacePattern);
+  if (longNamespaceMatch) {
+    const cmd = longNamespaceMatch[1].toLowerCase();
+    const skillId =
+      KEYWORD_MAP[`/omp:${cmd}`] ??
+      KEYWORD_MAP[`/${cmd}`] ??
+      KEYWORD_MAP[`${cmd}:`];
+    if (skillId) {
+      return {
+        keyword: longNamespaceMatch[0],
+        skillId,
+        position: 0,
+      };
+    }
+  }
+
   return null;
 }
 
