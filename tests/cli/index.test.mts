@@ -2,9 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const consoleLog = vi.spyOn(console, "log").mockImplementation(() => {});
 const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
-const processExit = vi.spyOn(process, "exit").mockImplementation((code?: string | number | null) => {
-  throw new Error(`process.exit(${code ?? ""})`);
-}) as unknown as ReturnType<typeof vi.spyOn>;
+const processExit = vi.spyOn(process, "exit").mockImplementation(() => undefined as never);
 
 async function runIndex(argv: string[]) {
   const originalArgv = process.argv;
@@ -12,10 +10,7 @@ async function runIndex(argv: string[]) {
     process.argv = ["node", "omp", ...argv];
     await vi.resetModules();
     await import("../../src/index.mts");
-  } catch (error) {
-    if (!(error instanceof Error) || !error.message.startsWith("process.exit(")) {
-      throw error;
-    }
+    await new Promise((resolve) => setImmediate(resolve));
   } finally {
     process.argv = originalArgv;
   }
@@ -78,7 +73,7 @@ describe("src/index.mts CLI", () => {
 
     expect(consoleLog).toHaveBeenCalledWith("PSM commands:");
     expect(consoleLog).toHaveBeenCalledWith(expect.stringContaining("create <name>"));
-    expect(consoleLog).toHaveBeenCalledWith(expect.stringContaining("destroy session"));
+    expect(consoleLog).toHaveBeenCalledWith(expect.stringContaining("Destroy session"));
   });
 
   it("prints SWE-bench guidance", async () => {
