@@ -7,10 +7,12 @@ All notable changes to **oh-my-githubcopilot** are documented here, ordered newe
 ## [v1.5.7] — Release readiness refresh
 
 ### Release readiness
+
 - **Version manifests advanced** — `package.json`, `package-lock.json`, `plugin.json`, `.github/plugin/plugin.json`, `.github/plugin/marketplace.json`, and `.claude-plugin/plugin.json` now all target `1.5.7` for the next publishable release.
 - **Release docs aligned** — README, RELEASING, and build/release notes stay aligned with the current release workflow: bracketed changelog headings, root `plugin.json` → `.claude-plugin/plugin.json` sync, and coverage as a required release verification step.
 
 ### Verification
+
 - **UltraQA release gate** — fresh verification on the release candidate remains green: `npm run build`, `npm run typecheck`, `npm test`, and `npm run test:coverage` all pass, with coverage still above the required floor (statements `89.35%`, branches `80.65%`, functions `93.65%`, lines `89.35%`).
 
 ## [v1.5.6] — HUD watch daemon and model/budget fixes

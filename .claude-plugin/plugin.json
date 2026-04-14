@@ -16,9 +16,7 @@
     "hud",
     "copilot-cli"
   ],
-  "agents": [
-    "./agents"
-  ],
+  "agents": ["./agents"],
   "skills": [
     "./skills/autopilot",
     "./skills/ralph",

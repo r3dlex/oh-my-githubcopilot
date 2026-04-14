@@ -7,16 +7,8 @@
   },
   "repository": "https://github.com/r3dlex/oh-my-githubcopilot",
   "license": "Apache-2.0",
-  "keywords": [
-    "orchestration",
-    "multi-agent",
-    "autopilot",
-    "swe-bench",
-    "hud"
-  ],
-  "agents": [
-    "./agents"
-  ],
+  "keywords": ["orchestration", "multi-agent", "autopilot", "swe-bench", "hud"],
+  "agents": ["./agents"],
   "skills": [
     "./skills/autopilot",
     "./skills/ralph",
