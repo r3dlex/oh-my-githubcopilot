@@ -4,6 +4,14 @@ All notable changes to **oh-my-githubcopilot** are documented here, ordered newe
 
 ---
 
+## [1.5.8] — 2026-04-16
+
+### Improved
+- Raised test coverage across hooks, mcp, and psm modules
+- Branch coverage: 80.65% → 85.65% (+5pp above 80% threshold)
+- Statement coverage: 89.35% → 93.95%; Function coverage: 93.65% → 95.23%
+- New test files: stop-continuation, token-tracker (hooks), memory-store, state-manager (mcp), session, worktree (psm)
+
 ## [v1.5.7] — Release readiness refresh
 
 ### Release readiness
