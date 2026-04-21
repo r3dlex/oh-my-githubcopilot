@@ -1,6 +1,8 @@
 import * as vscode from "vscode";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { basename, join, relative } from "node:path";
+import { join, relative } from "node:path";
+import { OmpStateAdapter } from "../state/adapter";
+import type { AgentInfo } from "../state/reader";
 
 const STATE_DIRECTORY_CANDIDATES = [join(".omx", "state"), join(".omp", "state")] as const;
 const IGNORED_STATE_FILES = new Set([
@@ -28,27 +30,24 @@ export function registerTreeViews(
 ): void {
   const workflowProvider = new WorkflowTreeProvider(workspace);
   const agentProvider = new AgentTreeProvider(workspace);
-  const planProvider = new PlanTreeProvider(workspace);
+  const taskProvider = new TaskTreeProvider();
 
   context.subscriptions.push(
     vscode.window.createTreeView("omp.workflows", { treeDataProvider: workflowProvider }),
     vscode.window.createTreeView("omp.agents", { treeDataProvider: agentProvider }),
-    vscode.window.createTreeView("omp.plans", { treeDataProvider: planProvider }),
+    vscode.window.createTreeView("omp.tasks", { treeDataProvider: taskProvider }),
   );
 
   const refreshAll = (): void => {
     workflowProvider.refresh();
     agentProvider.refresh();
-    planProvider.refresh();
+    taskProvider.refresh();
   };
 
   const watchers = [
+    vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(workspace, ".omc/**/*.json")),
     vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(workspace, ".omx/**/*.json")),
     vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(workspace, ".omp/**/*.json")),
-    vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(workspace, ".copilot/agents/**/*")),
-    vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(workspace, ".github/agents/**/*")),
-    vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(workspace, "agents/**/*")),
-    vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(workspace, ".omx/plans/**/*")),
   ];
 
   for (const watcher of watchers) {
@@ -62,11 +61,15 @@ export function registerTreeViews(
 class WorkflowTreeProvider implements vscode.TreeDataProvider<WorkflowItem> {
   private readonly onDidChangeEmitter = new vscode.EventEmitter<WorkflowItem | undefined>();
   readonly onDidChangeTreeData = this.onDidChangeEmitter.event;
+  private _debounceTimer: NodeJS.Timeout | undefined;
 
   constructor(private readonly workspace: vscode.WorkspaceFolder) {}
 
   refresh(): void {
-    this.onDidChangeEmitter.fire(undefined);
+    if (this._debounceTimer) clearTimeout(this._debounceTimer);
+    this._debounceTimer = setTimeout(() => {
+      this.onDidChangeEmitter.fire(undefined);
+    }, 200);
   }
 
   getTreeItem(element: WorkflowItem): vscode.TreeItem {
@@ -116,55 +119,51 @@ class WorkflowItem extends vscode.TreeItem {
   }
 }
 
-class AgentTreeProvider implements vscode.TreeDataProvider<AgentCategoryItem | AgentLeafItem> {
-  private readonly onDidChangeEmitter = new vscode.EventEmitter<AgentCategoryItem | AgentLeafItem | undefined>();
+class AgentTreeProvider implements vscode.TreeDataProvider<AgentLeafItem> {
+  private readonly onDidChangeEmitter = new vscode.EventEmitter<AgentLeafItem | undefined>();
   readonly onDidChangeTreeData = this.onDidChangeEmitter.event;
+  private _debounceTimer: NodeJS.Timeout | undefined;
+  private readonly adapter: OmpStateAdapter;
 
-  constructor(private readonly workspace: vscode.WorkspaceFolder) {}
-
-  refresh(): void {
-    this.onDidChangeEmitter.fire(undefined);
+  constructor(private readonly workspace: vscode.WorkspaceFolder) {
+    this.adapter = new OmpStateAdapter(workspace.uri.fsPath);
   }
 
-  getTreeItem(element: AgentCategoryItem | AgentLeafItem): vscode.TreeItem {
+  refresh(): void {
+    if (this._debounceTimer) clearTimeout(this._debounceTimer);
+    this._debounceTimer = setTimeout(() => {
+      this.onDidChangeEmitter.fire(undefined);
+    }, 200);
+  }
+
+  getTreeItem(element: AgentLeafItem): vscode.TreeItem {
     return element;
   }
 
-  getChildren(element?: AgentCategoryItem | AgentLeafItem): Array<AgentCategoryItem | AgentLeafItem> {
-    if (element instanceof AgentCategoryItem) {
-      return element.children;
+  getChildren(): AgentLeafItem[] {
+    const agents = this.adapter.getAgents();
+    if (agents.length === 0) {
+      return [new AgentLeafItem("No agents running", "Subagent data will appear when OMP workflows are active")];
     }
-    if (element instanceof AgentLeafItem) {
-      return [];
-    }
-
-    const sources = discoverAgentFiles(this.workspace.uri.fsPath);
-    if (sources.length === 0) {
-      return [new AgentLeafItem("No agents found", "Initialize this workspace to install agent templates")];
-    }
-
-    const categories = new Map<string, AgentLeafItem[]>();
-    for (const source of sources) {
-      const bucket = categories.get(source.category) ?? [];
-      bucket.push(new AgentLeafItem(source.label, source.description, source.filePath));
-      categories.set(source.category, bucket);
-    }
-
-    return [...categories.entries()]
-      .sort(([left], [right]) => left.localeCompare(right))
-      .map(([category, children]) => new AgentCategoryItem(category, children));
+    return agents.map((agent) => agentToItem(agent));
   }
 }
 
-class AgentCategoryItem extends vscode.TreeItem {
-  constructor(
-    label: string,
-    readonly children: AgentLeafItem[],
-  ) {
-    super(label, vscode.TreeItemCollapsibleState.Expanded);
-    this.description = String(children.length);
-    this.iconPath = new vscode.ThemeIcon("folder-library");
+function agentToItem(agent: AgentInfo): AgentLeafItem {
+  let icon: string;
+  if (agent.status === "running") {
+    icon = "$(sync~spin)";
+  } else if (agent.status === "completed") {
+    icon = "$(check)";
+  } else if (agent.status === "failed") {
+    icon = "$(error)";
+  } else {
+    icon = "$(circle-outline)";
   }
+
+  const label = `${icon} ${agent.type}`;
+  const description = [agent.teamName, agent.status].filter(Boolean).join(" · ");
+  return new AgentLeafItem(label, description);
 }
 
 class AgentLeafItem extends vscode.TreeItem {
@@ -184,57 +183,32 @@ class AgentLeafItem extends vscode.TreeItem {
   }
 }
 
-class PlanTreeProvider implements vscode.TreeDataProvider<PlanItem> {
-  private readonly onDidChangeEmitter = new vscode.EventEmitter<PlanItem | undefined>();
+class TaskTreeProvider implements vscode.TreeDataProvider<TaskItem> {
+  private readonly onDidChangeEmitter = new vscode.EventEmitter<TaskItem | undefined>();
   readonly onDidChangeTreeData = this.onDidChangeEmitter.event;
-
-  constructor(private readonly workspace: vscode.WorkspaceFolder) {}
+  private _debounceTimer: NodeJS.Timeout | undefined;
 
   refresh(): void {
-    this.onDidChangeEmitter.fire(undefined);
+    if (this._debounceTimer) clearTimeout(this._debounceTimer);
+    this._debounceTimer = setTimeout(() => {
+      this.onDidChangeEmitter.fire(undefined);
+    }, 200);
   }
 
-  getTreeItem(element: PlanItem): vscode.TreeItem {
+  getTreeItem(element: TaskItem): vscode.TreeItem {
     return element;
   }
 
-  getChildren(): PlanItem[] {
-    const plansDirectory = join(this.workspace.uri.fsPath, ".omx", "plans");
-    if (!existsSync(plansDirectory)) {
-      return [new PlanItem("No plans found", "Plan artifacts will appear under .omx/plans")];
-    }
-
-    const files = readdirSync(plansDirectory)
-      .filter((entry) => entry.endsWith(".md"))
-      .sort();
-
-    if (files.length === 0) {
-      return [new PlanItem("No plans found", "Plan artifacts will appear under .omx/plans")];
-    }
-
-    return files.map((entry) => {
-      const filePath = join(plansDirectory, entry);
-      const label = derivePlanLabel(entry);
-      const item = new PlanItem(label, relative(this.workspace.uri.fsPath, filePath), filePath);
-      return item;
-    });
+  getChildren(): TaskItem[] {
+    return [new TaskItem("No task data", "Tasks are tracked via GitHub Copilot native tools")];
   }
 }
 
-class PlanItem extends vscode.TreeItem {
-  constructor(label: string, description: string, filePath?: string) {
+class TaskItem extends vscode.TreeItem {
+  constructor(label: string, description: string) {
     super(label, vscode.TreeItemCollapsibleState.None);
     this.description = description;
-    this.iconPath = new vscode.ThemeIcon("note");
-    if (filePath) {
-      const uri = vscode.Uri.file(filePath);
-      this.resourceUri = uri;
-      this.command = {
-        command: "vscode.open",
-        title: "Open plan file",
-        arguments: [uri],
-      };
-    }
+    this.iconPath = new vscode.ThemeIcon("checklist");
   }
 }
 
@@ -316,53 +290,3 @@ function asString(value: unknown): string | undefined {
   return typeof value === "string" && value.length > 0 ? value : undefined;
 }
 
-function discoverAgentFiles(workspaceRoot: string): Array<{
-  category: string;
-  label: string;
-  description: string;
-  filePath: string;
-}> {
-  const roots = [
-    { path: join(workspaceRoot, ".copilot", "agents"), category: "Workspace agents" },
-    { path: join(workspaceRoot, ".github", "agents"), category: "GitHub agents" },
-    { path: join(workspaceRoot, "agents"), category: "Built-in agents" },
-  ].filter((entry) => existsSync(entry.path));
-
-  return roots.flatMap(({ path, category }) =>
-    readdirSync(path)
-      .filter((entry) => entry.endsWith(".md"))
-      .sort()
-      .map((entry) => {
-        const filePath = join(path, entry);
-        const label = `@${basename(entry, ".md")}`;
-        const description = readAgentDescription(filePath) ?? relative(workspaceRoot, filePath);
-        return { category, label, description, filePath };
-      }),
-  );
-}
-
-function readAgentDescription(filePath: string): string | undefined {
-  try {
-    const content = readFileSync(filePath, "utf8");
-    const descriptionLine = content
-      .split(/\r?\n/)
-      .find((line) => line.toLowerCase().startsWith("description:"));
-    if (!descriptionLine) {
-      return undefined;
-    }
-
-    return descriptionLine.slice(descriptionLine.indexOf(":") + 1).trim() || undefined;
-  } catch {
-    return undefined;
-  }
-}
-
-function derivePlanLabel(fileName: string): string {
-  if (fileName.startsWith("prd-")) {
-    return `PRD: ${fileName.slice(4, -3)}`;
-  }
-  if (fileName.startsWith("test-spec-")) {
-    return `Test spec: ${fileName.slice(10, -3)}`;
-  }
-  return basename(fileName, ".md");
-}

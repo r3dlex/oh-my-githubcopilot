@@ -4,6 +4,19 @@ All notable changes to **oh-my-githubcopilot** are documented here, ordered newe
 
 ---
 
+## oh-my-githubcopilot v1.7.0 — 2026-04-21
+
+### Features
+
+- **vscode-omp**: Add VS Code extension for real-time workflow/agent visualization
+  - Workflows, Agents, Tasks panels in the activity bar
+  - StateReader interface with OmpStateAdapter (reads `.omc/state/*-state.json` and `subagent-tracking.json`)
+  - 200ms debounced FileSystemWatcher — prevents UI thrashing during heavy execution
+  - Live status bar showing active workflow count and running agents
+  - MCP server provider registration
+
+---
+
 ## oh-my-githubcopilot v1.6.0 — 2026-04-21
 
 ### Features

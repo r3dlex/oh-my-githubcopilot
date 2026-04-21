@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { OmpStateAdapter } from "../state/adapter";
 
 const STATE_DIRECTORY_CANDIDATES = [join(".omx", "state"), join(".omp", "state")] as const;
 const STATE_FILE_SUFFIX = "-state.json";
@@ -27,10 +28,16 @@ export function createStatusBar(
   statusBar.tooltip = "OMP workflow status — click for details";
   context.subscriptions.push(statusBar);
 
-  const update = (): void => updateStatusBar(statusBar, workspace);
-  update();
+  let debounceTimer: NodeJS.Timeout | undefined;
+  const update = (): void => {
+    if (debounceTimer) clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => updateStatusBar(statusBar, workspace), 200);
+  };
+  updateStatusBar(statusBar, workspace);
 
   const watchers = [
+    vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(workspace, ".omc/state/*-state.json")),
+    vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(workspace, ".omc/state/subagent-tracking.json")),
     vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(workspace, ".omx/**/*.json")),
     vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(workspace, ".omp/**/*.json")),
   ];
@@ -54,9 +61,13 @@ function updateStatusBar(statusBar: vscode.StatusBarItem, workspace: vscode.Work
     return;
   }
 
+  const adapter = new OmpStateAdapter(workspace.uri.fsPath);
+  const runningAgents = adapter.getAgents().filter((a) => a.status === "running");
+  const agentSuffix = runningAgents.length > 0 ? ` [${runningAgents.length} agents]` : "";
+
   const active = readWorkflowStates(workspace.uri.fsPath).filter((workflow) => workflow.active);
   if (active.length === 0) {
-    statusBar.text = "$(zap) OMP: idle";
+    statusBar.text = `$(zap) OMP: idle${agentSuffix}`;
     statusBar.backgroundColor = undefined;
     statusBar.tooltip = "OMP is installed, but no active workflows were found.";
     statusBar.show();
@@ -66,9 +77,9 @@ function updateStatusBar(statusBar: vscode.StatusBarItem, workspace: vscode.Work
   if (active.length === 1) {
     const [workflow] = active;
     const phase = workflow.phase ? ` [${workflow.phase}]` : "";
-    statusBar.text = `$(sync~spin) OMP: ${workflow.label}${phase}`;
+    statusBar.text = `$(sync~spin) OMP: ${workflow.label}${phase}${agentSuffix}`;
   } else {
-    statusBar.text = `$(sync~spin) OMP: ${active.length} active workflows`;
+    statusBar.text = `$(sync~spin) OMP: ${active.length} active${agentSuffix}`;
   }
 
   statusBar.backgroundColor = new vscode.ThemeColor("statusBarItem.warningBackground");

@@ -99,13 +99,27 @@ Use `omp hud --watch` when you want the local HUD daemon to keep refreshing sess
 `~/.omp/state/update-check.json`) and prompts before running `npm install -g oh-my-githubcopilot@latest`.
 Set `OMP_AUTO_UPDATE=0` (or `OMP_DISABLE_UPDATE_CHECK=true`) to disable the check.
 
-### Optional: package the VS Code companion extension
+### Optional: install the VS Code extension (vscode-omp)
 
-OMP's primary runtime target is the GitHub Copilot CLI plugin in this repository root. When the optional
-`vscode-omp/` workspace package is present, it builds a companion VS Code extension that can be packaged as a
-`.vsix` for editor-side surfaces such as tree views, status-bar affordances, and trusted MCP handoff flows.
+OMP ships a companion VS Code extension (`vscode-omp/`) that visualizes live agent and workflow state directly
+in your editor:
 
-See `vscode-omp/README.md` for the package-local build/test/package flow and `RELEASING.md` for the additional
+- **Activity bar panels** — Workflows, Agents, and Tasks views update in real time
+- **Live status bar** — shows active workflow count and running agent names at a glance
+- **StateReader / OmpStateAdapter** — reads `.omc/state/*-state.json` and `subagent-tracking.json` with a
+  200 ms debounced `FileSystemWatcher` to prevent UI thrashing during heavy execution
+- **MCP server integration** — registers the OMP MCP server provider so Copilot and the extension share state
+
+To package and install the extension locally:
+
+```bash
+cd vscode-omp
+npm install
+npm run package          # produces oh-my-githubcopilot-*.vsix
+code --install-extension oh-my-githubcopilot-*.vsix
+```
+
+See `vscode-omp/README.md` for the full build/test/package flow and `RELEASING.md` for the additional
 release checks to run before publishing a VSIX artifact.
 
 ### Optional: adopt OMP into another repository

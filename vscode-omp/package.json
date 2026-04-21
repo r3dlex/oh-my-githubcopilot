@@ -71,8 +71,8 @@
           "name": "Agents"
         },
         {
-          "id": "omp.plans",
-          "name": "Plans"
+          "id": "omp.tasks",
+          "name": "Tasks"
         }
       ]
     },
