@@ -58,7 +58,6 @@ jobs:
   vscode-omp:
     runs-on: ubuntu-latest
     needs: build
-    if: ${{ hashFiles('vscode-omp/package.json') != '' }}
     steps:
       - uses: actions/checkout@v4
       - name: Download artifact
