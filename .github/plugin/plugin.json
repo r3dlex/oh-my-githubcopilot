@@ -1,7 +1,7 @@
 {
   "name": "oh-my-githubcopilot",
-  "description": "Multi-agent orchestration for GitHub Copilot CLI. 23 agents, 25 skills, parallel execution, HUD, PSM, SWE-bench.",
-  "version": "1.5.9",
+  "description": "Multi-agent orchestration for GitHub Copilot CLI. 23 agents, 39 skills, parallel execution, HUD, PSM, SWE-bench.",
+  "version": "1.6.0",
   "author": {
     "name": "r3dlex"
   },
@@ -34,7 +34,21 @@
     "./skills/graphify",
     "./skills/graphwiki",
     "./skills/graph-provider",
-    "./skills/spending"
+    "./skills/spending",
+    "./skills/ai-slop-cleaner",
+    "./skills/doctor",
+    "./skills/graph-context",
+    "./skills/improve-codebase-architecture",
+    "./skills/interactive-menu",
+    "./skills/interview",
+    "./skills/notifications",
+    "./skills/omp-doctor",
+    "./skills/omp-reference",
+    "./skills/ralplan",
+    "./skills/research",
+    "./skills/session",
+    "./skills/skillify",
+    "./skills/tdd"
   ],
   "hooks": "./hooks/hooks.json",
   "mcp": "./.mcp.json"
