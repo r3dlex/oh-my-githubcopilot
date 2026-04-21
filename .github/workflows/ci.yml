@@ -91,29 +91,3 @@ jobs:
             vscode-omp/dist/**
             vscode-omp/out/**
           if-no-files-found: ignore
-
-  pnpm-package:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - uses: actions/checkout@v4
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: ci-artifact
-          path: .
-      - name: Extract artifact
-        run: tar xzf ci-artifact.tar.gz && rm ci-artifact.tar.gz
-      - name: Setup pnpm
-        run: |
-          corepack enable
-          corepack prepare pnpm@latest --activate
-      - name: Import lockfile
-        run: pnpm import
-      - name: Pack package
-        run: pnpm pack
-      - name: Upload package artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: pnpm-package
-          path: "*.tgz"
