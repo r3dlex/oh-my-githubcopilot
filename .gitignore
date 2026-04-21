@@ -7,6 +7,9 @@
 .omc/logs/
 .omc/state/
 .omc/sessions/
+.omx/logs/
+.omx/state/
+.omx/sessions/
 
 # Coverage reports
 coverage/
