@@ -5,6 +5,7 @@ import { registerHealthCheckCommand } from './commands/health-check';
 import { registerMcpProvider } from './mcp/provider';
 import { createStatusBar } from './ui/status-bar';
 import { registerTreeViews } from './ui/tree-view';
+import { checkExternalSessions, registerResumeExternalCommand } from './commands/resume-external';
 
 export function activate(context: vscode.ExtensionContext) {
   const outputChannel = vscode.window.createOutputChannel('OMG');
@@ -14,6 +15,7 @@ export function activate(context: vscode.ExtensionContext) {
   registerCommands(context, outputChannel);
   registerClearStateCommand(context, outputChannel);
   registerHealthCheckCommand(context, outputChannel);
+  registerResumeExternalCommand(context, outputChannel);
 
   // Only start background features in OMG-enabled, trusted workspaces
   const ws = vscode.workspace.workspaceFolders?.[0];
@@ -53,6 +55,9 @@ function startBackgroundFeatures(
   if (config.get<boolean>('showStatusBar', true)) {
     createStatusBar(context, ws);
   }
+
+  // External session detection (once at activation)
+  checkExternalSessions(context, ws, outputChannel);
 }
 
 export function deactivate() {

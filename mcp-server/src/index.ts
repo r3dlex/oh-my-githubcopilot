@@ -8,6 +8,7 @@ import { registerWorkflowTools } from "./workflow-tools.js";
 import { registerMemoryTools } from "./memory-tools.js";
 import { registerCheckpointTools } from "./checkpoint-tools.js";
 import { registerModelRouter } from "./model-router.js";
+import { registerBridgeTools } from "./bridge/tools.js";
 
 const server = new McpServer({
   name: "omg-workflow",
@@ -21,6 +22,7 @@ registerWorkflowTools(server);
 registerMemoryTools(server);
 registerCheckpointTools(server);
 registerModelRouter(server);
+registerBridgeTools(server);
 
 // Start server
 async function main() {

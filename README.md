@@ -16,7 +16,7 @@
   <a href="https://github.com/jmstar85/oh-my-githubcopilot/releases"><img src="https://img.shields.io/github/v/release/jmstar85/oh-my-githubcopilot?label=release&color=blue" alt="Latest Release"></a>
   <a href="https://github.com/jmstar85/oh-my-githubcopilot/stargazers"><img src="https://img.shields.io/github/stars/jmstar85/oh-my-githubcopilot?style=social" alt="GitHub Stars"></a>
   <img src="https://img.shields.io/badge/Agents-28-blueviolet" alt="28 Agents">
-  <img src="https://img.shields.io/badge/Skills-22-orange" alt="22 Skills">
+  <img src="https://img.shields.io/badge/Skills-23-orange" alt="23 Skills">
   <img src="https://img.shields.io/badge/MCP-Stateful%20Workflow-0A66C2" alt="MCP Stateful Workflow">
   <img src="https://img.shields.io/badge/Hooks-pre%20%2F%20post%20tool--use-6f42c1" alt="Pre/Post Hooks">
 </p>
@@ -512,6 +512,18 @@ Available trailers: `Constraint`, `Rejected`, `Directive`, `Confidence`, `Scope-
 ---
 
 ## What's New
+
+### v1.4.0 (2026-05-03) — Claude Code / OMC Session Bridge
+
+**One-directional bridge: resume interrupted Claude Code or OMC sessions in GitHub Copilot**
+
+- **Claude Code JSONL importer**: Parses `~/.claude/projects/` session logs to extract modified files, last user prompt, and last assistant response. Supports Write/Edit/MultiEdit tool_use block detection.
+- **OMC importer**: Maps `.omc/` state directory (PRD, workflow state, checkpoint, project memory) to `.omg/` equivalents with mtime-based conflict resolution.
+- **3 new MCP tools**: `omg_detect_external_session` (read-only detection), `omg_import_external_session` (performs import with backup), `omg_compare_checkpoints` (timestamp comparison).
+- **VS Code auto-detection**: On activation, detects external sessions and shows notification ("이어받기 / 무시 / 항상 무시"). Skips if OMG checkpoint is fresh (< 30 min).
+- **`/resume-claude` skill**: 6-step workflow — detect → compare → confirm → import → summarize → continue. Keyword triggers: "resume claude", "claude 이어받기", "이어서 작업".
+- **Security**: Imported checkpoint files set to `chmod 0600`. Existing checkpoints backed up to `.previous.json` before import.
+- **Checkpoint schema extension**: 4 new optional fields — `source_tool`, `source_session_id`, `imported_at`, `imported_summary` (backward-compatible).
 
 ### v1.3.1 (2026-04-23) — Copilot CLI Support
 

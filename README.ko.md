@@ -508,6 +508,18 @@ Scope-risk: narrow
 
 ## What's New
 
+### v1.4.0 (2026-05-03) — Claude Code / OMC 세션 브릿지
+
+**단방향 브릿지: 중단된 Claude Code 또는 OMC 세션을 GitHub Copilot에서 이어서 작업**
+
+- **Claude Code JSONL 임포터**: `~/.claude/projects/` 세션 로그를 파싱하여 수정된 파일, 마지막 사용자 프롬프트, 마지막 어시스턴트 응답을 추출. Write/Edit/MultiEdit tool_use 블록 감지 지원.
+- **OMC 임포터**: `.omc/` 상태 디렉토리(PRD, 워크플로 상태, 체크포인트, 프로젝트 메모리)를 `.omg/` 등가물로 매핑. mtime 기반 충돌 해결.
+- **새 MCP 도구 3종**: `omg_detect_external_session`(읽기 전용 감지), `omg_import_external_session`(백업 후 임포트), `omg_compare_checkpoints`(타임스탬프 비교).
+- **VS Code 자동 감지**: 활성화 시 외부 세션을 감지하여 알림 표시 ("이어받기 / 무시 / 항상 무시"). OMG 체크포인트가 30분 이내이면 건너뜀.
+- **`/resume-claude` 스킬**: 6단계 워크플로 — 감지 → 비교 → 확인 → 임포트 → 요약 → 계속. 키워드 트리거: "resume claude", "claude 이어받기", "이어서 작업".
+- **보안**: 임포트된 체크포인트 파일에 `chmod 0600` 적용. 기존 체크포인트는 임포트 전 `.previous.json`으로 백업.
+- **체크포인트 스키마 확장**: 4개 선택 필드 추가 — `source_tool`, `source_session_id`, `imported_at`, `imported_summary` (하위 호환).
+
 ### v1.3.1 (2026-04-23) — Copilot CLI 지원
 
 **VS Code 에이전트 모드와 독립형 Copilot CLI 이중 호환** (Issue #4)

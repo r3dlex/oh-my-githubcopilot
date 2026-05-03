@@ -11,6 +11,7 @@ export interface WorkflowState {
   current_phase?: number;
   phase_name?: string;
   updated_at?: string;
+  source_tool?: 'copilot' | 'claude-code' | 'omc' | null;
 }
 
 export function getActiveWorkflows(stateDir: string): WorkflowState[] {
@@ -48,6 +49,7 @@ export interface PrdData {
     description?: string;
     acceptance_criteria?: string[];
   }>;
+  source_tool?: 'copilot' | 'claude-code' | 'omc' | null;
 }
 
 export function readPrd(prdPath: string): PrdData | null {

@@ -462,6 +462,18 @@ Trailers disponibles: `Constraint`, `Rejected`, `Directive`, `Confidence`, `Scop
 
 ## What's New
 
+### v1.4.0 (2026-05-03) — Puente de sesión Claude Code / OMC
+
+**Puente unidireccional: reanuda sesiones interrumpidas de Claude Code u OMC en GitHub Copilot**
+
+- **Importador JSONL de Claude Code**: Analiza los logs de sesión en `~/.claude/projects/` para extraer archivos modificados, último prompt del usuario y última respuesta del asistente. Soporte de detección de bloques Write/Edit/MultiEdit tool_use.
+- **Importador OMC**: Mapea el directorio de estado `.omc/` (PRD, estado de workflow, checkpoint, memoria de proyecto) a equivalentes `.omg/` con resolución de conflictos basada en mtime.
+- **3 nuevas herramientas MCP**: `omg_detect_external_session` (detección de solo lectura), `omg_import_external_session` (importación con respaldo), `omg_compare_checkpoints` (comparación de timestamps).
+- **Auto-detección en VS Code**: Al activarse, detecta sesiones externas y muestra notificación ("Reanudar / Ignorar / Siempre ignorar"). Se omite si el checkpoint OMG tiene menos de 30 min.
+- **Skill `/resume-claude`**: Flujo de 6 pasos — detectar → comparar → confirmar → importar → resumir → continuar. Palabras clave: "resume claude", "claude 이어받기", "이어서 작업".
+- **Seguridad**: Archivos de checkpoint importados con `chmod 0600`. Checkpoints existentes respaldados como `.previous.json` antes de importar.
+- **Extensión del esquema de checkpoint**: 4 nuevos campos opcionales — `source_tool`, `source_session_id`, `imported_at`, `imported_summary` (retrocompatible).
+
 ### v1.3.1 (2026-04-23) — Soporte Copilot CLI
 
 **Compatibilidad dual para el modo agente de VS Code y Copilot CLI independiente** (Issue #4)

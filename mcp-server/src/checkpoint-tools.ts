@@ -77,6 +77,10 @@ export function registerCheckpointTools(server: McpServer): void {
         modified_files: modifiedFiles,
         context_bytes_estimate: contextBytes,
         estimated_tokens: Math.round(contextBytes / 4),
+        source_tool: "copilot" as const,
+        source_session_id: null as string | null,
+        imported_at: null as string | null,
+        imported_summary: null as string | null,
       };
 
       safeWriteFile(getCheckpointPath(), JSON.stringify(checkpoint, null, 2));

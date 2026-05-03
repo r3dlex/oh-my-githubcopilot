@@ -73,6 +73,7 @@ Invoke via `/skill-name`. These are available as slash commands:
 
 ### Utility Skills
 - `/remember` - Save information to project memory
+- `/resume-claude` - Resume interrupted Claude Code / OMC session
 - `/cancel` - Cancel active execution modes
 - `/status` - Show current workflow status
 
@@ -88,6 +89,7 @@ These keywords automatically activate the corresponding skill:
 - "security scan", "check secrets", "audit deps" → `/security-scan`
 - "stocktake", "skill audit" → `/skill-stocktake`
 - "coding standards", "style guide", "naming rules" → `/coding-standards`
+- "resume claude", "claude 이어받기", "이어서 작업", "rate limit" → `/resume-claude`
 - "cancelomc", "cancel omg" → `/cancel`
 
 ## Completion Rules
@@ -183,6 +185,7 @@ When the OMG MCP server is available, use these tools:
 - `omg_select_model` - Get model recommendation based on complexity
 - `omg_read_memory` / `omg_write_memory` / `omg_search_memory` / `omg_delete_memory` - Project memory access (search supports keyword match across keys, values, tags)
 - `omg_checkpoint` / `omg_restore_checkpoint` / `omg_context_status` - Session checkpoint and context pressure management
+- `omg_detect_external_session` / `omg_import_external_session` / `omg_compare_checkpoints` - Cross-tool session bridge (Claude Code / OMC → OMG)
 
 ## Context Pressure & Checkpoint Protocol
 The post-tool-use hook tracks cumulative tool I/O bytes as a proxy for context window usage.
@@ -201,6 +204,25 @@ The post-tool-use hook tracks cumulative tool I/O bytes as a proxy for context w
 - Before major phase transitions (spec → plan → execution → validation), call `omg_checkpoint`
 - Before delegating to a new subagent for complex work, checkpoint current state
 - Use `omg_context_status` to check current context pressure percentage
+
+## External Session Resumption
+OMG can import interrupted sessions from Claude Code or OMC (oh-my-claudecode) so work can resume seamlessly across tools.
+
+### Automatic Detection
+- At session start, call `omg_detect_external_session` to check for Claude Code or OMC sessions in the workspace
+- If an external session is found that is newer than the current OMG checkpoint, prompt the user: "External session detected ({source}, {age} ago). Resume?"
+- If user confirms, call `omg_import_external_session` with the appropriate source
+
+### Manual Resumption
+- User can invoke `/resume-claude` to manually trigger detection and import
+- Keywords: "resume claude", "claude 이어받기", "이어서 작업", "rate limit"
+- Use `omg_compare_checkpoints` to show side-by-side timestamp comparison before importing
+
+### Import Behavior
+- **OMC sessions** (.omc/): Direct file mapping — PRD, state, memory files are copied to .omg/ equivalents
+- **Claude Code sessions** (~/.claude/projects/): Lossy import — extracts last user prompt, assistant response, and modified file paths from JSONL session logs
+- Existing OMG checkpoint is backed up to `session-checkpoint.previous.json` before import
+- Imported checkpoint includes `source_tool`, `source_session_id`, and `imported_at` metadata
 
 ## Cancellation
 `/cancel` ends active execution modes. Cancel when done+verified or blocked. Don't cancel if work is incomplete.

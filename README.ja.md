@@ -468,6 +468,18 @@ Scope-risk: narrow
 
 ## What's New
 
+### v1.4.0 (2026-05-03) — Claude Code / OMC セッションブリッジ
+
+**一方向ブリッジ：中断した Claude Code または OMC セッションを GitHub Copilot で再開**
+
+- **Claude Code JSONL インポーター**: `~/.claude/projects/` のセッションログを解析し、変更ファイル、最後のユーザープロンプト、最後のアシスタント応答を抽出。Write/Edit/MultiEdit tool_use ブロック検出対応。
+- **OMC インポーター**: `.omc/` 状態ディレクトリ（PRD、ワークフロー状態、チェックポイント、プロジェクトメモリ）を `.omg/` 等価物にマッピング。mtime ベースの競合解決。
+- **新規 MCP ツール 3 種**: `omg_detect_external_session`（読み取り専用検出）、`omg_import_external_session`（バックアップ付きインポート）、`omg_compare_checkpoints`（タイムスタンプ比較）。
+- **VS Code 自動検出**: アクティベーション時に外部セッションを検出し通知を表示（"引き継ぐ / 無視 / 常に無視"）。OMG チェックポイントが 30 分以内なら省略。
+- **`/resume-claude` スキル**: 6 ステップワークフロー — 検出 → 比較 → 確認 → インポート → 要約 → 続行。キーワードトリガー："resume claude"、"claude 이어받기"、"이어서 작업"。
+- **セキュリティ**: インポートされたチェックポイントファイルに `chmod 0600` を適用。既存チェックポイントはインポート前に `.previous.json` としてバックアップ。
+- **チェックポイントスキーマ拡張**: 4 つのオプションフィールド追加 — `source_tool`、`source_session_id`、`imported_at`、`imported_summary`（後方互換）。
+
 ### v1.3.1 (2026-04-23) — Copilot CLI サポート
 
 **VS Code エージェントモードとスタンドアロン Copilot CLI のデュアル互換性** (Issue #4)
