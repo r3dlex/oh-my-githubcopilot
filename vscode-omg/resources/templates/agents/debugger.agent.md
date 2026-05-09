@@ -4,7 +4,7 @@ description: >
   Root-cause analysis, regression isolation, stack trace analysis, build/compilation error resolution.
   Use when: debugging bugs, fixing build errors, tracing stack traces, resolving compilation failures,
   import errors, dependency issues, type errors, configuration errors.
-model: claude-sonnet-4-6
+model: "GPT-5.5 (copilot)"
 tools: [readFile, read, editFiles, edit, search, codebase, problems, runInTerminal, shell, usages]
 agents: [architect]
 user-invocable: true

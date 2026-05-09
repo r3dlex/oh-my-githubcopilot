@@ -4,7 +4,7 @@ description: >
   UI/UX Designer-Developer for stunning interfaces.
   Use when: UI design, component implementation, visual design, interaction design,
   frontend development, styling, animation, responsive design, accessibility.
-model: claude-sonnet-4-6
+model: "GPT-5.5 (copilot)"
 tools: [readFile, read, editFiles, edit, search, codebase, problems, runInTerminal, shell]
 user-invocable: true
 ---

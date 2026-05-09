@@ -464,6 +464,48 @@ Scope-risk: narrow
 
 ## What's New
 
+### v1.4.1 (2026-05-09) — 基于代理角色的模型路由
+
+**将全部 28 个代理重新映射到更适合任务类型的 Copilot 模型偏好**
+
+- 将代理 `model:` frontmatter 更新为 `GPT-5.5 (copilot)`、`Claude Sonnet 4.6 (copilot)` 等 qualified model name 字符串。
+- 高风险推理与审批代理保持使用 Claude Opus 4.7；调试、验证、研究、测试、设计和专业审查代理使用 GPT-5.5；执行、探索、文档、QA 驱动、git 和简化工作流使用 Claude Sonnet 4.6。
+- `omg_select_model` 现在使用同一组允许模型和基于角色的代理 override，移除过时的 `gpt-4.1`、`gpt-4.1-mini` 和点格式 Claude 模型推荐。
+- 模型 smoke test: `GPT-5.5 (copilot)` 调用成功；`Claude Opus 4.7 (copilot)` 被 Copilot 识别，但在当前环境中因 cost-tier 限制被阻止，并非 stale 模型字符串问题。
+
+| 代理 | 模型 |
+|---|---|
+| `analyst` | `Claude Opus 4.7 (copilot)` |
+| `architect` | `Claude Opus 4.7 (copilot)` |
+| `code-reviewer` | `Claude Opus 4.7 (copilot)` |
+| `critic` | `Claude Opus 4.7 (copilot)` |
+| `omg-coordinator` | `Claude Opus 4.7 (copilot)` |
+| `planner` | `Claude Opus 4.7 (copilot)` |
+| `security-reviewer` | `Claude Opus 4.7 (copilot)` |
+| `csharp-reviewer` | `GPT-5.5 (copilot)` |
+| `database-reviewer` | `GPT-5.5 (copilot)` |
+| `debugger` | `GPT-5.5 (copilot)` |
+| `designer` | `GPT-5.5 (copilot)` |
+| `document-specialist` | `GPT-5.5 (copilot)` |
+| `go-reviewer` | `GPT-5.5 (copilot)` |
+| `java-reviewer` | `GPT-5.5 (copilot)` |
+| `python-reviewer` | `GPT-5.5 (copilot)` |
+| `rust-reviewer` | `GPT-5.5 (copilot)` |
+| `scientist` | `GPT-5.5 (copilot)` |
+| `swift-reviewer` | `GPT-5.5 (copilot)` |
+| `test-engineer` | `GPT-5.5 (copilot)` |
+| `tracer` | `GPT-5.5 (copilot)` |
+| `typescript-reviewer` | `GPT-5.5 (copilot)` |
+| `verifier` | `GPT-5.5 (copilot)` |
+| `code-simplifier` | `Claude Sonnet 4.6 (copilot)` |
+| `executor` | `Claude Sonnet 4.6 (copilot)` |
+| `explore` | `Claude Sonnet 4.6 (copilot)` |
+| `git-master` | `Claude Sonnet 4.6 (copilot)` |
+| `qa-tester` | `Claude Sonnet 4.6 (copilot)` |
+| `writer` | `Claude Sonnet 4.6 (copilot)` |
+
+Opus 4.6 仅作为模型路由器中的显式 fallback 备选保留，不作为任何代理的默认模型。
+
 ### v1.4.0 (2026-05-03) — Claude Code / OMC 会话桥接
 
 **单向桥接：在 GitHub Copilot 中恢复中断的 Claude Code 或 OMC 会话**

@@ -5,7 +5,7 @@ description: >
   Use when: finding files, searching code patterns, locating implementations,
   mapping project structure, understanding code relationships, answering
   "where is X?" questions.
-model: claude-haiku-4-5
+model: "Claude Sonnet 4.6 (copilot)"
 tools: [readFile, read, search, codebase, problems, runInTerminal, shell, usages]
 agents: [document-specialist]
 user-invocable: true

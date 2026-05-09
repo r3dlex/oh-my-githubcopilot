@@ -462,6 +462,48 @@ Trailers disponibles: `Constraint`, `Rejected`, `Directive`, `Confidence`, `Scop
 
 ## What's New
 
+### v1.4.1 (2026-05-09) — Enrutamiento de modelos por rol de agente
+
+**Se remapearon los 28 agentes a preferencias de modelo Copilot adecuadas para cada tarea**
+
+- Se actualizó el frontmatter `model:` para usar nombres de modelo calificados como `GPT-5.5 (copilot)` y `Claude Sonnet 4.6 (copilot)`.
+- Los agentes de razonamiento y aprobación de alto riesgo se mantienen en Claude Opus 4.7; depuración, verificación, investigación, pruebas, diseño y revisiones especializadas usan GPT-5.5; ejecución, exploración, documentación, QA interactivo, git y simplificación usan Claude Sonnet 4.6.
+- `omg_select_model` ahora usa el mismo conjunto de modelos permitidos y overrides por rol, eliminando recomendaciones obsoletas como `gpt-4.1`, `gpt-4.1-mini` y modelos Claude con formato de punto.
+- Smoke test de modelos: `GPT-5.5 (copilot)` se invocó correctamente; `Claude Opus 4.7 (copilot)` fue reconocido por Copilot pero bloqueado por el límite de cost-tier del entorno actual, no por una cadena de modelo obsoleta.
+
+| Agente | Modelo |
+|---|---|
+| `analyst` | `Claude Opus 4.7 (copilot)` |
+| `architect` | `Claude Opus 4.7 (copilot)` |
+| `code-reviewer` | `Claude Opus 4.7 (copilot)` |
+| `critic` | `Claude Opus 4.7 (copilot)` |
+| `omg-coordinator` | `Claude Opus 4.7 (copilot)` |
+| `planner` | `Claude Opus 4.7 (copilot)` |
+| `security-reviewer` | `Claude Opus 4.7 (copilot)` |
+| `csharp-reviewer` | `GPT-5.5 (copilot)` |
+| `database-reviewer` | `GPT-5.5 (copilot)` |
+| `debugger` | `GPT-5.5 (copilot)` |
+| `designer` | `GPT-5.5 (copilot)` |
+| `document-specialist` | `GPT-5.5 (copilot)` |
+| `go-reviewer` | `GPT-5.5 (copilot)` |
+| `java-reviewer` | `GPT-5.5 (copilot)` |
+| `python-reviewer` | `GPT-5.5 (copilot)` |
+| `rust-reviewer` | `GPT-5.5 (copilot)` |
+| `scientist` | `GPT-5.5 (copilot)` |
+| `swift-reviewer` | `GPT-5.5 (copilot)` |
+| `test-engineer` | `GPT-5.5 (copilot)` |
+| `tracer` | `GPT-5.5 (copilot)` |
+| `typescript-reviewer` | `GPT-5.5 (copilot)` |
+| `verifier` | `GPT-5.5 (copilot)` |
+| `code-simplifier` | `Claude Sonnet 4.6 (copilot)` |
+| `executor` | `Claude Sonnet 4.6 (copilot)` |
+| `explore` | `Claude Sonnet 4.6 (copilot)` |
+| `git-master` | `Claude Sonnet 4.6 (copilot)` |
+| `qa-tester` | `Claude Sonnet 4.6 (copilot)` |
+| `writer` | `Claude Sonnet 4.6 (copilot)` |
+
+Opus 4.6 se conserva solo como alternativa fallback explícita en el router de modelos, no como modelo predeterminado de ningún agente.
+
 ### v1.4.0 (2026-05-03) — Puente de sesión Claude Code / OMC
 
 **Puente unidireccional: reanuda sesiones interrumpidas de Claude Code u OMC en GitHub Copilot**

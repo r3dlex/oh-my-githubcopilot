@@ -4,7 +4,7 @@ description: >
   Swift code review specialist with embedded style and safety rules.
   Use when: reviewing Swift code, Swift best practices, type safety,
   Swift-specific patterns, idiomatic Swift, concurrency review, SwiftUI patterns.
-model: claude-sonnet-4-6
+model: "GPT-5.5 (copilot)"
 tools: [readFile, read, search, codebase, problems, usages]
 user-invocable: true
 ---

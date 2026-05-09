@@ -4,7 +4,7 @@ description: >
   Python code review specialist with embedded style and safety rules.
   Use when: reviewing Python code, Python best practices, type hints,
   Python-specific patterns, idiomatic Python, PEP 8 compliance.
-model: claude-sonnet-4-6
+model: "GPT-5.5 (copilot)"
 tools: [readFile, read, search, codebase, problems, usages]
 user-invocable: true
 ---

@@ -4,7 +4,7 @@ description: >
   Test strategy, integration/e2e coverage, flaky test hardening, TDD workflows.
   Use when: writing tests, test strategy, TDD enforcement, flaky test diagnosis,
   coverage gap analysis, test suite design, red-green-refactor cycle.
-model: claude-sonnet-4-6
+model: "GPT-5.5 (copilot)"
 tools: [readFile, read, editFiles, edit, search, codebase, problems, runInTerminal, shell, findTestFiles, testFailures]
 user-invocable: true
 ---

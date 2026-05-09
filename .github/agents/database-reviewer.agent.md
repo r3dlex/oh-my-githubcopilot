@@ -4,7 +4,7 @@ description: >
   Database code review specialist with embedded style and safety rules.
   Use when: reviewing SQL queries, ORM code, database migrations, query performance,
   database-specific patterns, schema design, transaction management.
-model: claude-sonnet-4-6
+model: "GPT-5.5 (copilot)"
 tools: [readFile, read, search, codebase, problems, usages]
 user-invocable: true
 ---

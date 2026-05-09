@@ -4,7 +4,7 @@ description: >
   Data analysis and research execution specialist (READ-ONLY).
   Use when: data analysis, statistical analysis, hypothesis testing,
   visualization, research execution, data exploration, report generation.
-model: claude-sonnet-4-6
+model: "GPT-5.5 (copilot)"
 tools: [readFile, read, search, codebase, runInTerminal, shell]
 user-invocable: true
 ---

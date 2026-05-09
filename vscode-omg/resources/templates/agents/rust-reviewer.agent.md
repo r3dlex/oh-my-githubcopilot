@@ -4,7 +4,7 @@ description: >
   Rust code review specialist with embedded style and safety rules.
   Use when: reviewing Rust code, Rust best practices, memory safety,
   Rust-specific patterns, idiomatic Rust, ownership and borrowing.
-model: claude-sonnet-4-6
+model: "GPT-5.5 (copilot)"
 tools: [readFile, read, search, codebase, problems, usages]
 user-invocable: true
 ---

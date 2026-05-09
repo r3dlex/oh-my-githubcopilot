@@ -4,7 +4,7 @@ description: >
   Strategic Architecture & Debugging Advisor (READ-ONLY).
   Use when: architecture analysis, code diagnosis, debugging root causes,
   implementation verification, structural recommendations, system design review.
-model: claude-opus-4-7
+model: "Claude Opus 4.7 (copilot)"
 tools: [readFile, read, search, codebase, problems, runInTerminal, shell, usages]
 agents: [critic]
 user-invocable: true

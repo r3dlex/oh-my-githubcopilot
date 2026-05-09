@@ -508,6 +508,48 @@ Scope-risk: narrow
 
 ## What's New
 
+### v1.4.1 (2026-05-09) — 역할 기반 에이전트 모델 라우팅
+
+**전체 28개 에이전트를 작업 성격에 맞는 Copilot 모델 선호값으로 재매핑**
+
+- 에이전트 `model:` 프론트매터를 `GPT-5.5 (copilot)`, `Claude Sonnet 4.6 (copilot)` 같은 공식 qualified model-name 문자열로 업데이트.
+- 고위험 추론/승인 에이전트는 Claude Opus 4.7 유지, 디버깅·검증·리서치·테스트·디자인·전문 리뷰 에이전트는 GPT-5.5로 라우팅, 실행·탐색·문서·QA 드라이빙·git·단순화 워크플로는 Claude Sonnet 4.6으로 라우팅.
+- `omg_select_model` 추천도 동일한 허용 모델 집합과 역할 기반 에이전트 override를 사용하도록 업데이트하여 오래된 `gpt-4.1`, `gpt-4.1-mini`, dot-format Claude 모델 추천 제거.
+- 모델 smoke test 결과: `GPT-5.5 (copilot)` 호출 성공. `Claude Opus 4.7 (copilot)`은 Copilot이 모델명을 인식했지만 현재 환경의 cost-tier 제한으로 차단되었으며, stale 모델 문자열 문제는 아님.
+
+| 에이전트 | 모델 |
+|---|---|
+| `analyst` | `Claude Opus 4.7 (copilot)` |
+| `architect` | `Claude Opus 4.7 (copilot)` |
+| `code-reviewer` | `Claude Opus 4.7 (copilot)` |
+| `critic` | `Claude Opus 4.7 (copilot)` |
+| `omg-coordinator` | `Claude Opus 4.7 (copilot)` |
+| `planner` | `Claude Opus 4.7 (copilot)` |
+| `security-reviewer` | `Claude Opus 4.7 (copilot)` |
+| `csharp-reviewer` | `GPT-5.5 (copilot)` |
+| `database-reviewer` | `GPT-5.5 (copilot)` |
+| `debugger` | `GPT-5.5 (copilot)` |
+| `designer` | `GPT-5.5 (copilot)` |
+| `document-specialist` | `GPT-5.5 (copilot)` |
+| `go-reviewer` | `GPT-5.5 (copilot)` |
+| `java-reviewer` | `GPT-5.5 (copilot)` |
+| `python-reviewer` | `GPT-5.5 (copilot)` |
+| `rust-reviewer` | `GPT-5.5 (copilot)` |
+| `scientist` | `GPT-5.5 (copilot)` |
+| `swift-reviewer` | `GPT-5.5 (copilot)` |
+| `test-engineer` | `GPT-5.5 (copilot)` |
+| `tracer` | `GPT-5.5 (copilot)` |
+| `typescript-reviewer` | `GPT-5.5 (copilot)` |
+| `verifier` | `GPT-5.5 (copilot)` |
+| `code-simplifier` | `Claude Sonnet 4.6 (copilot)` |
+| `executor` | `Claude Sonnet 4.6 (copilot)` |
+| `explore` | `Claude Sonnet 4.6 (copilot)` |
+| `git-master` | `Claude Sonnet 4.6 (copilot)` |
+| `qa-tester` | `Claude Sonnet 4.6 (copilot)` |
+| `writer` | `Claude Sonnet 4.6 (copilot)` |
+
+Opus 4.6은 기본 에이전트 모델이 아니라 모델 라우터의 명시적 fallback 대안으로만 유지됩니다.
+
 ### v1.4.0 (2026-05-03) — Claude Code / OMC 세션 브릿지
 
 **단방향 브릿지: 중단된 Claude Code 또는 OMC 세션을 GitHub Copilot에서 이어서 작업**

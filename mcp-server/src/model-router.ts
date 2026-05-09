@@ -8,6 +8,50 @@ interface ModelRecommendation {
   alternatives: string[];
 }
 
+const MODELS = {
+  opus47: "Claude Opus 4.7 (copilot)",
+  opus46: "Claude Opus 4.6 (copilot)",
+  gpt55: "GPT-5.5 (copilot)",
+  sonnet46: "Claude Sonnet 4.6 (copilot)",
+} as const;
+
+const OPUS_47_AGENTS = new Set([
+  "analyst",
+  "architect",
+  "code-reviewer",
+  "critic",
+  "omg-coordinator",
+  "planner",
+  "security-reviewer",
+]);
+
+const GPT_55_AGENTS = new Set([
+  "csharp-reviewer",
+  "database-reviewer",
+  "debugger",
+  "designer",
+  "document-specialist",
+  "go-reviewer",
+  "java-reviewer",
+  "python-reviewer",
+  "rust-reviewer",
+  "scientist",
+  "swift-reviewer",
+  "test-engineer",
+  "tracer",
+  "typescript-reviewer",
+  "verifier",
+]);
+
+const SONNET_46_AGENTS = new Set([
+  "code-simplifier",
+  "executor",
+  "explore",
+  "git-master",
+  "qa-tester",
+  "writer",
+]);
+
 const COMPLEXITY_THRESHOLDS = {
   high: {
     file_count: 10,
@@ -76,24 +120,24 @@ function recommend(tier: "high" | "medium" | "low"): ModelRecommendation {
   switch (tier) {
     case "high":
       return {
-        recommended_model: "claude-sonnet-4.6",
+        recommended_model: MODELS.opus47,
         tier: "HIGH",
         reason: "Complex task requiring deep reasoning and architecture decisions",
-        alternatives: ["gpt-4.1"],
+        alternatives: [MODELS.gpt55, MODELS.opus46],
       };
     case "medium":
       return {
-        recommended_model: "gpt-4.1",
+        recommended_model: MODELS.gpt55,
         tier: "MEDIUM",
         reason: "Standard implementation task with moderate complexity",
-        alternatives: ["claude-sonnet-4.6"],
+        alternatives: [MODELS.sonnet46, MODELS.opus47],
       };
     case "low":
       return {
-        recommended_model: "gpt-4.1-mini",
+        recommended_model: MODELS.sonnet46,
         tier: "LOW",
         reason: "Simple task suitable for fast, lightweight model",
-        alternatives: ["gpt-4.1"],
+        alternatives: [MODELS.gpt55],
       };
   }
 }
@@ -115,19 +159,19 @@ export function registerModelRouter(server: McpServer): void {
     },
     async ({ task, file_count, agent_type }) => {
       const complexity = assessComplexity(task, file_count);
-
-      // Agent type overrides: some agents always need high-tier models
-      const highTierAgents = ["architect", "critic", "analyst", "planner"];
-      const lowTierAgents = ["writer", "git-master", "code-simplifier", "explore"];
+      const normalizedAgentType = agent_type?.replace(/^@/, "").toLowerCase();
 
       let recommendation: ModelRecommendation;
 
-      if (agent_type && highTierAgents.includes(agent_type)) {
+      if (normalizedAgentType && OPUS_47_AGENTS.has(normalizedAgentType)) {
         recommendation = recommend("high");
-        recommendation.reason = `Agent type "${agent_type}" requires high-tier model for quality reasoning`;
-      } else if (agent_type && lowTierAgents.includes(agent_type)) {
+        recommendation.reason = `Agent type "${normalizedAgentType}" requires Claude Opus 4.7 for high-stakes reasoning and review`;
+      } else if (normalizedAgentType && GPT_55_AGENTS.has(normalizedAgentType)) {
+        recommendation = recommend("medium");
+        recommendation.reason = `Agent type "${normalizedAgentType}" is optimized for GPT-5.5 deep reasoning, debugging, analysis, or specialist review`;
+      } else if (normalizedAgentType && SONNET_46_AGENTS.has(normalizedAgentType)) {
         recommendation = recommend("low");
-        recommendation.reason = `Agent type "${agent_type}" works well with lightweight model`;
+        recommendation.reason = `Agent type "${normalizedAgentType}" works well with Claude Sonnet 4.6 for balanced coding, documentation, or operational workflows`;
       } else {
         recommendation = recommend(complexity.tier);
       }

@@ -4,7 +4,7 @@ description: >
   TypeScript code review specialist with embedded style and safety rules.
   Use when: reviewing TypeScript code, TypeScript best practices, type safety,
   TypeScript-specific patterns, idiomatic TypeScript, strict mode compliance.
-model: claude-sonnet-4-6
+model: "GPT-5.5 (copilot)"
 tools: [readFile, read, search, codebase, problems, usages]
 user-invocable: true
 ---

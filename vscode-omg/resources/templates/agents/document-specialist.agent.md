@@ -5,7 +5,7 @@ description: >
   Use when: looking up external documentation, API references, framework docs,
   package evaluation, version compatibility, academic papers, standards lookup,
   external literature research.
-model: claude-sonnet-4-6
+model: "GPT-5.5 (copilot)"
 tools: [readFile, read, search, codebase, fetch, runInTerminal, shell]
 agents: [explore]
 user-invocable: true

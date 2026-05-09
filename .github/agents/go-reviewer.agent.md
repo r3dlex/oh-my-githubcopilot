@@ -4,7 +4,7 @@ description: >
   Go code review specialist with embedded style and safety rules.
   Use when: reviewing Go code, Go best practices, goroutine safety,
   Go-specific patterns, idiomatic Go, concurrency correctness.
-model: claude-sonnet-4-6
+model: "GPT-5.5 (copilot)"
 tools: [readFile, read, search, codebase, problems, usages]
 user-invocable: true
 ---

@@ -468,6 +468,48 @@ Scope-risk: narrow
 
 ## What's New
 
+### v1.4.1 (2026-05-09) — エージェント役割ベースのモデルルーティング
+
+**全28エージェントをタスク適性に合わせた Copilot モデル設定へ再マッピング**
+
+- エージェントの `model:` frontmatter を `GPT-5.5 (copilot)` や `Claude Sonnet 4.6 (copilot)` などの qualified model name へ更新。
+- 高リスクの推論・承認エージェントは Claude Opus 4.7 を維持。デバッグ、検証、調査、テスト、デザイン、専門レビューは GPT-5.5、実装、探索、ドキュメント、QA 操作、git、簡素化は Claude Sonnet 4.6 にルーティング。
+- `omg_select_model` も同じ許可モデルセットと役割ベース override を使うよう更新し、`gpt-4.1`、`gpt-4.1-mini`、ドット形式の Claude モデル推薦を削除。
+- モデル smoke test: `GPT-5.5 (copilot)` は呼び出し成功。`Claude Opus 4.7 (copilot)` は Copilot に認識されたものの、現在環境の cost-tier 制限でブロックされました。古いモデル文字列による失敗ではありません。
+
+| エージェント | モデル |
+|---|---|
+| `analyst` | `Claude Opus 4.7 (copilot)` |
+| `architect` | `Claude Opus 4.7 (copilot)` |
+| `code-reviewer` | `Claude Opus 4.7 (copilot)` |
+| `critic` | `Claude Opus 4.7 (copilot)` |
+| `omg-coordinator` | `Claude Opus 4.7 (copilot)` |
+| `planner` | `Claude Opus 4.7 (copilot)` |
+| `security-reviewer` | `Claude Opus 4.7 (copilot)` |
+| `csharp-reviewer` | `GPT-5.5 (copilot)` |
+| `database-reviewer` | `GPT-5.5 (copilot)` |
+| `debugger` | `GPT-5.5 (copilot)` |
+| `designer` | `GPT-5.5 (copilot)` |
+| `document-specialist` | `GPT-5.5 (copilot)` |
+| `go-reviewer` | `GPT-5.5 (copilot)` |
+| `java-reviewer` | `GPT-5.5 (copilot)` |
+| `python-reviewer` | `GPT-5.5 (copilot)` |
+| `rust-reviewer` | `GPT-5.5 (copilot)` |
+| `scientist` | `GPT-5.5 (copilot)` |
+| `swift-reviewer` | `GPT-5.5 (copilot)` |
+| `test-engineer` | `GPT-5.5 (copilot)` |
+| `tracer` | `GPT-5.5 (copilot)` |
+| `typescript-reviewer` | `GPT-5.5 (copilot)` |
+| `verifier` | `GPT-5.5 (copilot)` |
+| `code-simplifier` | `Claude Sonnet 4.6 (copilot)` |
+| `executor` | `Claude Sonnet 4.6 (copilot)` |
+| `explore` | `Claude Sonnet 4.6 (copilot)` |
+| `git-master` | `Claude Sonnet 4.6 (copilot)` |
+| `qa-tester` | `Claude Sonnet 4.6 (copilot)` |
+| `writer` | `Claude Sonnet 4.6 (copilot)` |
+
+Opus 4.6 はどのエージェントの既定モデルでもなく、モデルルーター内の明示的な fallback 代替としてのみ保持されます。
+
 ### v1.4.0 (2026-05-03) — Claude Code / OMC セッションブリッジ
 
 **一方向ブリッジ：中断した Claude Code または OMC セッションを GitHub Copilot で再開**
