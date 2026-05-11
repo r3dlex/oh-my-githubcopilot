@@ -329,7 +329,7 @@ OMG incorpora hooks en `.github/hooks/` para actuar como red de seguridad.
 | Período de desarrollo | 12 días (6–17 de abril de 2026) |
 | Total de commits | 33 |
 | Agentes | 28 (20 núcleo + 8 revisores de lenguaje) |
-| Skills | 22 |
+| Skills | 24 |
 | Herramientas MCP | 19 |
 
 ### Métricas de calidad
@@ -443,7 +443,7 @@ Trailers disponibles: `Constraint`, `Rejected`, `Directive`, `Confidence`, `Scop
 | Plataforma objetivo | Claude Code CLI | GitHub Copilot (VS Code) |
 | Instalación | paquete npm / marketplace de plugins | clonar repositorio + compilar MCP server |
 | Número de agentes | 19+ | 28 agentes (20 core + 8 revisores de lenguaje) |
-| Skills | 10+ skills de workflow | 22 skills con disparadores por palabra clave |
+| Skills | 10+ skills de workflow | 24 skills con disparadores por palabra clave |
 | Gestión de estado | directorio `.omc/` | `.omg/` gestionado por MCP |
 | Multi-modelo | Codex/Gemini vía tmux CLI | análisis consultivo mediante `ccg` |
 | Configuración | `~/.claude/settings.json` | `.github/` + `.vscode/mcp.json` |
@@ -461,6 +461,22 @@ Trailers disponibles: `Constraint`, `Rejected`, `Directive`, `Confidence`, `Scop
 ---
 
 ## What's New
+
+### v1.4.3 (2026-05-11) — Puente bidireccional: OMG → OMC Push
+
+**Cierra el puente de v1.4.0 en un viaje de ida y vuelta OMG ↔ OMC completo.** v1.4.0 envió solo la importación `omc → omg`; v1.4.3 añade la dirección inversa `omg → omc` para que el trabajo realizado en GitHub Copilot pueda continuar en Claude Code.
+
+- **Nuevo módulo `mcp-server/src/bridge/omg-exporter.ts`**: composición (no copia ciega) — `prd.json` y `project-memory.json` son copias de archivo; `active_modes[]` del checkpoint OMG se **descompone** en archivos `.omc/state/{mode}-state.json` por modo (operación inversa de la composición del omc-importer de v1.4.0); `.omc/state/session-checkpoint.json` se compone con provenance traducida.
+- **Nuevo helper compartido `mcp-server/src/bridge/conflict-utils.ts`**: `shouldSkipForConflict()` usa el campo `timestamp` embebido como primitiva de conflicto principal para `session-checkpoint.json` (mtime como fallback en otros archivos — resuelve la fragilidad de git-checkout que muta mtime); `rotateBackup()` mantiene las últimas N=3 instantáneas `.previous.{ISO}.json` con timestamp, aplicado simétricamente en los lados de import y export.
+- **Nueva herramienta MCP `omg_export_external_session({target: "omc", force?})`** con contrato de atomicidad: `.omg/state/last-export-token.json` es el ÚLTIMO efecto secundario — los fallos de escritura parcial no dejan token, por lo que las operaciones siguientes tratan correctamente la transacción como no confirmada.
+- **Seguridad ida-y-vuelta vía guardia de bucle con doble escritura**: el importer lee `.omg/state/last-export-token.json` o el `source_origin === "bridged-from-omg"` del checkpoint destino — la guardia sobrevive si se borra cualquiera de los dos lados. Sin TTL temporal; el token se invalida solo cuando el `source_origin` del destino vuelve a `"native"` o cambia el `source_session_id`.
+- **Schema de provenance extendido** (compatible con versiones anteriores): el nuevo campo `source_origin` (`"native" | "bridged-from-omc" | "bridged-from-claude-code" | "bridged-from-omg"`) es la señal de provenance autoritativa; el legado `source_tool: "copilot"` se mantiene. El nuevo campo `workspace_root` impulsa una guardia de identidad de proyecto que aborta antes de cualquier mutación cuando el path del workspace en el checkpoint origen no coincide con el workspace actual.
+- **Skill `/push-omc` (6 pasos)**: detect → compare → confirm → export → summarize → continue. Palabras clave de disparo: `/push-omc`, `"push omc"`, `"omc 푸시"`, `"omc로 보내기"`, `"sync to omc"`, `"export to omc"`. Espejo en `vscode-omg/resources/templates/skills/push-omc/SKILL.md`.
+- **Comando VS Code `omg.pushExternal`** ("OMG: Push to External Session (OMC)"): solo iniciado por el usuario — sin notificación de push en activación (el push permanece como acción deliberada del usuario).
+- **`omg_compare_checkpoints` reporta ambas direcciones**: ahora retorna `omg_newer_than_external` junto a `newer_than_omg`, de modo que `/push-omc` y `/resume-claude` comparten la misma superficie de comparación.
+- **Pruebas crecen de 8 → 18+** distribuidas en 6 zonas (Unit, Provenance, Round-trip guard, Composition, Conflict-path, Project-identity).
+- **Diferido a v1.5.x**: dirección `omg → claude-code`. Requeriría sintetizar cadenas UUID de `tool_use`/`tool_result` válidas y compatibles con el contrato de resume-by-id de Claude Code; tracking: TBD.
+- VSIX: `oh-my-githubcopilot-1.4.3.vsix`.
 
 ### v1.4.2 (2026-05-10) — Arreglo de respaldo Opus 4.7 → 4.6
 

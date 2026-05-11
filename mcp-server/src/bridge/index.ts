@@ -4,25 +4,34 @@ import { getWorkspaceRoot, ensureDir, safeReadFile, safeWriteFile } from "../uti
 import { getStateDir } from "../state-tools.js";
 import { detectOmcSession, importOmcSession, type ImportResult } from "./omc-importer.js";
 import { detectClaudeSession, importClaudeSession } from "./claude-jsonl-importer.js";
+import {
+  detectOmgSession,
+  exportOmgSession,
+  recordExportToken,
+  type ExportResult,
+} from "./omg-exporter.js";
+import { rotateBackup, type SourceOrigin } from "./conflict-utils.js";
 
 export type { ImportResult } from "./omc-importer.js";
+export type { ExportResult } from "./omg-exporter.js";
 
 export interface DetectedSession {
-  source: "omc" | "claude-code";
+  source: "omc" | "claude-code" | "omg";
   exists: boolean;
   mtime: string | null;
   session_id: string | null;
   details: string;
+  has_checkpoint?: boolean;
 }
 
 /**
- * Detect all external sessions (OMC + Claude Code) for the current workspace.
+ * Detect all sessions for the current workspace — external (OMC + Claude Code) and
+ * the local OMG itself (so the new /push-omc skill can show what would be exported).
  */
 export function detectExternalSessions(workspaceRoot?: string): DetectedSession[] {
   const root = workspaceRoot ?? getWorkspaceRoot();
   const sessions: DetectedSession[] = [];
 
-  // Check OMC
   const omc = detectOmcSession(root);
   if (omc.exists) {
     sessions.push({
@@ -34,7 +43,6 @@ export function detectExternalSessions(workspaceRoot?: string): DetectedSession[
     });
   }
 
-  // Check Claude Code
   const claude = detectClaudeSession(root);
   if (claude.exists) {
     sessions.push({
@@ -46,12 +54,24 @@ export function detectExternalSessions(workspaceRoot?: string): DetectedSession[
     });
   }
 
+  const omg = detectOmgSession(root);
+  if (omg.exists) {
+    sessions.push({
+      source: "omg",
+      exists: true,
+      mtime: omg.mtime,
+      session_id: null,
+      details: omg.details,
+      has_checkpoint: omg.has_checkpoint,
+    });
+  }
+
   return sessions;
 }
 
 /**
  * Import an external session and write to OMG checkpoint format.
- * Backs up existing checkpoint before overwriting.
+ * Backs up existing checkpoint via rotating snapshots before overwriting.
  */
 export function importExternalSession(
   source: "omc" | "claude-code",
@@ -68,17 +88,18 @@ export function importExternalSession(
     result = importClaudeSession(root);
   }
 
-  // If import found anything, write checkpoint with source metadata
+  // Skip downstream checkpoint composition if a guard fired.
+  if (result.loop_blocked || result.workspace_mismatch) return result;
+
   if (result.imported_files.length > 0 || result.session_id) {
     const stateDir = getStateDir();
     ensureDir(stateDir);
 
     const checkpointPath = path.join(stateDir, "session-checkpoint.json");
 
-    // Backup existing checkpoint
+    // AC-10b: OMG-side checkpoint backup uses rotateBackup (was single-slot prior to v1.4.3).
     if (fs.existsSync(checkpointPath)) {
-      const backupPath = path.join(stateDir, "session-checkpoint.previous.json");
-      fs.copyFileSync(checkpointPath, backupPath);
+      rotateBackup(checkpointPath, 3);
     }
 
     const checkpoint = {
@@ -90,13 +111,14 @@ export function importExternalSession(
       modified_files: result.imported_files,
       context_bytes_estimate: 0,
       estimated_tokens: 0,
-      source_tool: result.source,
+      source_tool: "copilot" as const,
+      source_origin: (source === "omc" ? "bridged-from-omc" : "bridged-from-claude-code") as SourceOrigin,
       source_session_id: result.session_id,
       imported_at: new Date().toISOString(),
       imported_summary: result.summary,
+      workspace_root: root,
     };
 
-    // For OMC imports, also carry over active modes from imported state files
     if (source === "omc") {
       const importedStateDir = path.join(root, ".omg", "state");
       if (fs.existsSync(importedStateDir)) {
@@ -122,7 +144,6 @@ export function importExternalSession(
     const content = JSON.stringify(checkpoint, null, 2);
     safeWriteFile(checkpointPath, content);
 
-    // Set file permissions to 0600 (owner read/write only) for sensitive data
     try {
       fs.chmodSync(checkpointPath, 0o600);
     } catch { /* chmod may fail on some systems, non-critical */ }
@@ -132,11 +153,44 @@ export function importExternalSession(
 }
 
 /**
- * Compare current OMG checkpoint timestamp with external source timestamps.
+ * Export the local OMG session to an external target (currently `omc`).
+ *
+ * Atomicity (AC-22b): writes the export token AS THE LAST SIDE-EFFECT only when
+ * `exportOmgSession` returns success. A partial-write failure leaves no token,
+ * so subsequent operations correctly treat the transaction as uncommitted.
+ */
+export function exportExternalSession(
+  target: "omc",
+  options: { force?: boolean; workspaceRoot?: string } = {},
+): ExportResult {
+  const root = options.workspaceRoot ?? getWorkspaceRoot();
+  const force = options.force ?? false;
+
+  if (target !== "omc") {
+    throw new Error(`Unsupported export target: ${target}`);
+  }
+
+  const result = exportOmgSession(root, force);
+
+  if (result.success && result.session_id) {
+    recordExportToken(root, result.session_id);
+  }
+
+  return result;
+}
+
+/**
+ * Compare timestamps between the current OMG checkpoint and any external sessions.
+ * Reports BOTH directions: external_newer_than_omg AND omg_newer_than_external.
  */
 export function compareCheckpoints(workspaceRoot?: string): {
   omg: { exists: boolean; timestamp: string | null };
-  external: Array<{ source: string; timestamp: string | null; newer_than_omg: boolean }>;
+  external: Array<{
+    source: string;
+    timestamp: string | null;
+    newer_than_omg: boolean;
+    omg_newer_than_external: boolean;
+  }>;
 } {
   const root = workspaceRoot ?? getWorkspaceRoot();
   const stateDir = path.join(root, ".omg", "state");
@@ -153,14 +207,22 @@ export function compareCheckpoints(workspaceRoot?: string): {
     }
   }
 
-  const sessions = detectExternalSessions(root);
-  const external = sessions.map((s) => ({
-    source: s.source,
-    timestamp: s.mtime,
-    newer_than_omg: !omgTimestamp || !s.mtime
-      ? !!s.mtime
-      : new Date(s.mtime).getTime() > new Date(omgTimestamp).getTime(),
-  }));
+  const sessions = detectExternalSessions(root).filter((s) => s.source !== "omg");
+
+  const external = sessions.map((s) => {
+    const extTime = s.mtime ? new Date(s.mtime).getTime() : null;
+    const omgTime = omgTimestamp ? new Date(omgTimestamp).getTime() : null;
+    const newer_than_omg =
+      extTime !== null && (omgTime === null || extTime > omgTime);
+    const omg_newer_than_external =
+      omgTime !== null && extTime !== null && omgTime > extTime;
+    return {
+      source: s.source,
+      timestamp: s.mtime,
+      newer_than_omg,
+      omg_newer_than_external,
+    };
+  });
 
   return {
     omg: { exists: !!omgTimestamp, timestamp: omgTimestamp },

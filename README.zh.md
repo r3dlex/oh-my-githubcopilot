@@ -391,7 +391,7 @@ oh-my-githubcopilot/
 ├── .github/
 │   ├── copilot-instructions.md    # 根级编排说明
 │   ├── agents/                    # 28 个专业代理定义（20 核心 + 8 语言审查）
-│   ├── skills/                    # 22 个技能例程
+│   ├── skills/                    # 24 个技能例程
 │   ├── hooks/                     # pre/post tool-use 安全 hooks
 │   └── prompts/                   # quick-fix、quick-plan、quick-review 模板
 ├── mcp-server/                    # TypeScript MCP 服务器
@@ -463,6 +463,22 @@ Scope-risk: narrow
 ---
 
 ## What's New
+
+### v1.4.3 (2026-05-11) — 双向桥接:OMG → OMC 推送
+
+**将 v1.4.0 的单向桥接补齐为 OMG ↔ OMC 完整往返。** v1.4.0 只提供 `omc → omg` 单向导入,v1.4.3 增加了反向的 `omg → omc` 导出,使 GitHub Copilot 中的工作可以在 Claude Code 中继续。
+
+- **新模块 `mcp-server/src/bridge/omg-exporter.ts`**:采用组合(composition)而非简单复制 — `prd.json` 和 `project-memory.json` 为文件级复制;OMG 检查点中的 `active_modes[]` 会被**分解(decompose)**为按模式拆分的 `.omc/state/{mode}-state.json` 文件(v1.4.0 omc-importer 组合操作的反向);`.omc/state/session-checkpoint.json` 以转换后的来源信息(provenance)重新组合。
+- **新共享辅助 `mcp-server/src/bridge/conflict-utils.ts`**:`shouldSkipForConflict()` 在判断 `session-checkpoint.json` 冲突时,优先使用嵌入的 `timestamp` 字段(其他文件回退到 mtime — 解决 git checkout 触碰 mtime 的脆弱性);`rotateBackup()` 保留最近 N=3 个带时间戳的 `.previous.{ISO}.json` 快照,在 import/export 两侧对称应用。
+- **新 MCP 工具 `omg_export_external_session({target: "omc", force?})`** 的原子性契约:`.omg/state/last-export-token.json` 的写入是最后一个副作用 — 部分写入失败时不会留下 token,后续操作将事务正确地视为未提交。
+- **双写循环守卫保证往返安全**:importer 读取 `.omg/state/last-export-token.json` 或目标检查点的 `source_origin === "bridged-from-omg"`,任意一侧匹配即触发守卫。一侧被擦除也仍然受保护。无时间 TTL;只有当目标的 `source_origin` 翻为 `"native"` 或 `source_session_id` 改变时,token 才失效。
+- **来源元数据 schema 扩展**(向后兼容):新增 `source_origin` 字段(`"native" | "bridged-from-omc" | "bridged-from-claude-code" | "bridged-from-omg"`)为权威 provenance 信号;旧的 `source_tool: "copilot"` 保留。新增 `workspace_root` 字段驱动项目身份守卫,当源检查点的 workspace 路径与当前 workspace 不一致时,在**任何文件变更之前**中止。
+- **`/push-omc` 技能(6 步)**:detect → compare → confirm → export → summarize → continue。触发关键字:`/push-omc`、`"push omc"`、`"omc 푸시"`、`"omc로 보내기"`、`"sync to omc"`、`"export to omc"`。镜像位于 `vscode-omg/resources/templates/skills/push-omc/SKILL.md`。
+- **VS Code 命令 `omg.pushExternal`** ("OMG: Push to External Session (OMC)"):仅由用户触发 — 激活时不弹出推送通知(推送始终为显式用户操作)。
+- **`omg_compare_checkpoints` 双向报告**:除 `newer_than_omg` 外现在还返回 `omg_newer_than_external`,使 `/push-omc` 与 `/resume-claude` 共用同一比较表面。
+- **测试 8 → 18+**,分布在 6 个分区(Unit、Provenance、Round-trip guard、Composition、Conflict-path、Project-identity)。
+- **延后至 v1.5.x**:`omg → claude-code` 方向。需要合成与 Claude Code resume-by-id 契约兼容的有效 `tool_use`/`tool_result` UUID 链;tracking:TBD。
+- VSIX:`oh-my-githubcopilot-1.4.3.vsix`。
 
 ### v1.4.2 (2026-05-10) — Opus 4.7 → 4.6 回退数组
 

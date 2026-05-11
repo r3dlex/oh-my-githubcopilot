@@ -2,7 +2,7 @@
   "name": "oh-my-githubcopilot",
   "displayName": "oh-my-githubcopilot (OMG)",
   "description": "Multi-agent orchestration for GitHub Copilot — install, manage, and monitor OMG workflows",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "publisher": "jmstar85",
   "license": "MIT",
   "repository": {
@@ -49,6 +49,10 @@
       {
         "command": "omg.resumeExternal",
         "title": "OMG: Resume External Session (Claude Code / OMC)"
+      },
+      {
+        "command": "omg.pushExternal",
+        "title": "OMG: Push to External Session (OMC)"
       },
       {
         "command": "omg.showStatus",

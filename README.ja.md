@@ -395,7 +395,7 @@ oh-my-githubcopilot/
 ├── .github/
 │   ├── copilot-instructions.md    # ルートオーケストレーション指示
 │   ├── agents/                    # 28 の専門エージェント定義 (20コア + 8言語レビュアー)
-│   ├── skills/                    # 22 のスキルルーチン
+│   ├── skills/                    # 24 のスキルルーチン
 │   ├── hooks/                     # pre/post tool-use ガード
 │   └── prompts/                   # quick-fix、quick-plan、quick-review テンプレート
 ├── mcp-server/                    # TypeScript MCP サーバー
@@ -467,6 +467,22 @@ Scope-risk: narrow
 ---
 
 ## What's New
+
+### v1.4.3 (2026-05-11) — 双方向ブリッジ: OMG → OMC プッシュ
+
+**v1.4.0 の片方向ブリッジを OMG ↔ OMC の往復構成へ完成させます。** v1.4.0 は `omc → omg` のインポートのみを提供しました。v1.4.3 はその逆方向 `omg → omc` エクスポートを追加し、GitHub Copilot で行った作業を Claude Code で継続できるようにします。
+
+- **新モジュール `mcp-server/src/bridge/omg-exporter.ts`**: 単純コピーではなくコンポジション方式 — `prd.json` と `project-memory.json` はファイルコピー、OMG チェックポイントの `active_modes[]` はモード単位の `.omc/state/{mode}-state.json` ファイルへ **分解** (v1.4.0 omc-importer コンポジションの逆操作)。`.omc/state/session-checkpoint.json` は変換された provenance とともに新規構築されます。
+- **新共通ヘルパー `mcp-server/src/bridge/conflict-utils.ts`**: `shouldSkipForConflict()` は `session-checkpoint.json` の競合判定に埋め込み `timestamp` フィールドを最優先で使用 (他ファイルは mtime フォールバック — git checkout が mtime を変える脆弱性に対処)。`rotateBackup()` は最新 N=3 件のタイムスタンプ付き `.previous.{ISO}.json` スナップショットを import/export の両側で対称に保持します。
+- **新 MCP ツール `omg_export_external_session({target: "omc", force?})`** の原子性契約: `.omg/state/last-export-token.json` の書き込みが最後の副作用 — 途中の書き込み失敗ではトークンが残らないため、後続処理はトランザクション未コミットとして正しく扱われます。
+- **二重書き込みのループガードでラウンドトリップ安全**: importer は `.omg/state/last-export-token.json` か、宛先チェックポイントの `source_origin === "bridged-from-omg"` のいずれかが一致すればガードを発動。片側が消えても保護されます。時間ベースの TTL はなく、トークンは宛先の `source_origin` が `"native"` に変わるか `source_session_id` が変更されたときのみ無効化されます。
+- **provenance スキーマの拡張** (後方互換): 新フィールド `source_origin` (`"native" | "bridged-from-omc" | "bridged-from-claude-code" | "bridged-from-omg"`) が provenance の権威信号となり、従来の `source_tool: "copilot"` も保持されます。新フィールド `workspace_root` はプロジェクト識別ガードを駆動し、ソースチェックポイントのワークスペースパスが現在のワークスペースと一致しないときは **どのファイル変更も行う前に** 中断します。
+- **`/push-omc` スキル (6 ステップ)**: detect → compare → confirm → export → summarize → continue。トリガーキーワード: `/push-omc`, `"push omc"`, `"omc 푸시"`, `"omc로 보내기"`, `"sync to omc"`, `"export to omc"`。ミラー: `vscode-omg/resources/templates/skills/push-omc/SKILL.md`。
+- **VS Code コマンド `omg.pushExternal`** ("OMG: Push to External Session (OMC)"): ユーザー起動のみ — アクティベーション時のプッシュ通知なし (プッシュは常に明示的なユーザー操作)。
+- **`omg_compare_checkpoints` の双方向レポート**: `newer_than_omg` に加えて `omg_newer_than_external` も返すようになり、`/push-omc` と `/resume-claude` が同じ比較サーフェスを共有します。
+- **テストは 8 → 18+** 6 ゾーン (Unit, Provenance, Round-trip guard, Composition, Conflict-path, Project-identity) に分散。
+- **v1.5.x へ延期**: `omg → claude-code` 方向。Claude Code の resume-by-id 契約と互換性のある有効な `tool_use`/`tool_result` UUID チェーンの合成が必要; tracking: TBD。
+- VSIX: `oh-my-githubcopilot-1.4.3.vsix`。
 
 ### v1.4.2 (2026-05-10) — Opus 4.7 → 4.6 フォールバック配列
 

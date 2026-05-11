@@ -74,6 +74,7 @@ Invoke via `/skill-name`. These are available as slash commands:
 ### Utility Skills
 - `/remember` - Save information to project memory
 - `/resume-claude` - Resume interrupted Claude Code / OMC session
+- `/push-omc` - Push OMG session into OMC (omg → omc, counterpart of /resume-claude)
 - `/cancel` - Cancel active execution modes
 - `/status` - Show current workflow status
 
@@ -90,6 +91,7 @@ These keywords automatically activate the corresponding skill:
 - "stocktake", "skill audit" → `/skill-stocktake`
 - "coding standards", "style guide", "naming rules" → `/coding-standards`
 - "resume claude", "claude 이어받기", "이어서 작업", "rate limit" → `/resume-claude`
+- "push omc", "omc 푸시", "omc로 보내기", "sync to omc", "export to omc" → `/push-omc`
 - "cancelomc", "cancel omg" → `/cancel`
 
 ## Completion Rules

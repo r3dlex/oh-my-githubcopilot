@@ -437,7 +437,7 @@ oh-my-githubcopilot/
 ├── .github/
 │   ├── copilot-instructions.md    # 루트 오케스트레이션 지침
 │   ├── agents/                    # 28개 전문 에이전트 정의 (20개 코어 + 8개 언어 리뷰어)
-│   ├── skills/                    # 22개 스킬 루틴
+│   ├── skills/                    # 24개 스킬 루틴
 │   ├── hooks/                     # pre/post tool-use 가드
 │   └── prompts/                   # quick-fix, quick-plan, quick-review 템플릿
 ├── mcp-server/                    # TypeScript MCP 서버
@@ -507,6 +507,22 @@ Scope-risk: narrow
 ---
 
 ## What's New
+
+### v1.4.3 (2026-05-11) — 양방향 브리지: OMG → OMC 푸시
+
+**v1.4.0 단방향 브리지를 OMG ↔ OMC 양방향으로 완성합니다.** v1.4.0은 `omc → omg` 단방향 import만 제공했고, v1.4.3은 반대 방향 `omg → omc` export를 추가하여 GitHub Copilot에서 한 작업을 Claude Code에서 이어갈 수 있게 합니다.
+
+- **신규 모듈 `mcp-server/src/bridge/omg-exporter.ts`**: 단순 복사가 아닌 컴포지션 방식 — `prd.json`과 `project-memory.json`은 파일 복사이지만, OMG 체크포인트의 `active_modes[]`는 모드별 `.omc/state/{mode}-state.json` 파일로 **분해**(decompose)됩니다(v1.4.0 omc-importer 컴포지션의 역연산). `.omc/state/session-checkpoint.json`은 변환된 provenance와 함께 새로 작성됩니다.
+- **신규 공용 헬퍼 `mcp-server/src/bridge/conflict-utils.ts`**: `shouldSkipForConflict()`는 `session-checkpoint.json`의 충돌 판단에 임베디드 `timestamp` 필드를 우선 사용하고(다른 파일은 mtime 폴백 — git checkout이 mtime을 건드리는 문제 해소), `rotateBackup()`은 최대 N=3개의 타임스탬프 `.previous.{ISO}.json` 스냅샷을 import/export 양쪽에 동일하게 적용합니다.
+- **신규 MCP 도구 `omg_export_external_session({target: "omc", force?})`** 원자성 보장: `.omg/state/last-export-token.json` 작성이 마지막 부수효과 — 부분 실패 시 토큰이 남지 않아 후속 작업이 트랜잭션을 미커밋으로 올바르게 인식합니다.
+- **이중 토큰 기반 라운드트립 가드**: importer는 `.omg/state/last-export-token.json` 또는 대상 체크포인트의 `source_origin === "bridged-from-omg"` 중 하나만 일치해도 가드를 발동시킵니다. 한쪽이 삭제돼도 보호됩니다. 시간 기반 TTL은 없으며, 토큰은 대상의 `source_origin`이 `"native"`로 바뀌거나 `source_session_id`가 변경될 때 무효화됩니다.
+- **provenance 스키마 확장** (하위 호환): 새 `source_origin` 필드(`"native" | "bridged-from-omc" | "bridged-from-claude-code" | "bridged-from-omg"`)가 권위 있는 provenance 신호이고, 기존 `source_tool: "copilot"`은 그대로 유지됩니다. 새 `workspace_root` 필드는 프로젝트 식별 가드를 구동하여, 소스 체크포인트의 워크스페이스 경로가 현재 워크스페이스와 다르면 **모든 파일 변경 전에** 중단합니다.
+- **`/push-omc` 스킬 (6단계)**: detect → compare → confirm → export → summarize → continue. 트리거 키워드: `/push-omc`, `"push omc"`, `"omc 푸시"`, `"omc로 보내기"`, `"sync to omc"`, `"export to omc"`. 미러본 `vscode-omg/resources/templates/skills/push-omc/SKILL.md`.
+- **VS Code 명령 `omg.pushExternal`** ("OMG: Push to External Session (OMC)"): 사용자 트리거 전용 — activation 시점 푸시 알림 없음(푸시는 항상 명시적 사용자 동작).
+- **`omg_compare_checkpoints` 양방향 보고**: 이제 `newer_than_omg`와 `omg_newer_than_external`을 함께 반환하여 `/push-omc`와 `/resume-claude`가 같은 비교 surface를 공유합니다.
+- **테스트 8 → 18+** 6개 존(Unit, Provenance, Round-trip guard, Composition, Conflict-path, Project-identity)에 분산.
+- **v1.5.x로 보류**: `omg → claude-code` 방향. Claude Code의 resume-by-id 계약과 호환되는 유효한 `tool_use`/`tool_result` UUID 체인을 합성해야 함; tracking: TBD.
+- VSIX: `oh-my-githubcopilot-1.4.3.vsix`.
 
 ### v1.4.2 (2026-05-10) — Opus 4.7 → 4.6 Fallback 배열
 

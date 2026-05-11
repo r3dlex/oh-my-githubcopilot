@@ -16,7 +16,7 @@
   <a href="https://github.com/jmstar85/oh-my-githubcopilot/releases"><img src="https://img.shields.io/github/v/release/jmstar85/oh-my-githubcopilot?label=release&color=blue" alt="Latest Release"></a>
   <a href="https://github.com/jmstar85/oh-my-githubcopilot/stargazers"><img src="https://img.shields.io/github/stars/jmstar85/oh-my-githubcopilot?style=social" alt="GitHub Stars"></a>
   <img src="https://img.shields.io/badge/Agents-28-blueviolet" alt="28 Agents">
-  <img src="https://img.shields.io/badge/Skills-23-orange" alt="23 Skills">
+  <img src="https://img.shields.io/badge/Skills-24-orange" alt="24 Skills">
   <img src="https://img.shields.io/badge/MCP-Stateful%20Workflow-0A66C2" alt="MCP Stateful Workflow">
   <img src="https://img.shields.io/badge/Hooks-pre%20%2F%20post%20tool--use-6f42c1" alt="Pre/Post Hooks">
 </p>
@@ -354,7 +354,7 @@ OMG includes pre/post tool-use hooks (`.github/hooks/`) that act as safety nets:
 | Development span | 12 days (Apr 6–17, 2026) |
 | Total commits | 33 |
 | Agents | 28 (20 core + 8 language reviewers) |
-| Skills | 22 |
+| Skills | 24 |
 | MCP tools | 19 |
 
 ### Quality Metrics
@@ -416,7 +416,7 @@ oh-my-githubcopilot/
 ├── .github/
 │   ├── copilot-instructions.md    # Root orchestration instructions
 │   ├── agents/                    # 28 specialized agent definitions (20 core + 8 language reviewers)
-│   ├── skills/                    # 22 workflow skill routines
+│   ├── skills/                    # 24 workflow skill routines
 │   ├── hooks/                     # Pre/post tool-use safety guards
 │   └── prompts/                   # Quick-fix, quick-plan, quick-review templates
 ├── mcp-server/                    # TypeScript MCP server
@@ -468,7 +468,7 @@ Available trailers: `Constraint`, `Rejected`, `Directive`, `Confidence`, `Scope-
 | Target Platform | Claude Code CLI | GitHub Copilot (VS Code) |
 | Installation | npm package / plugin marketplace | Clone + build MCP server |
 | Agent Count | 19+ (with tier variants) | 28 agents (20 core + 8 language reviewers) |
-| Skills | 10+ workflow skills | 22 skills with keyword triggers |
+| Skills | 10+ workflow skills | 24 skills with keyword triggers |
 | State Management | `.omc/` directory | `.omg/` via MCP server |
 | Multi-model | Codex/Gemini via tmux CLI | ccg skill (advisory) |
 | Configuration | `~/.claude/settings.json` | `.github/` + `.vscode/mcp.json` |
@@ -486,6 +486,22 @@ Available trailers: `Constraint`, `Rejected`, `Directive`, `Confidence`, `Scope-
 ---
 
 ## What's New
+
+### v1.4.3 (2026-05-11) — Bidirectional Bridge: OMG → OMC Push
+
+**Closes the v1.4.0 bridge into a full OMG ↔ OMC round-trip.** v1.4.0 shipped one-way `omc → omg` import; v1.4.3 adds the reverse `omg → omc` export so work done in GitHub Copilot can continue in Claude Code.
+
+- **New module `mcp-server/src/bridge/omg-exporter.ts`**: composes (does not blindly copy) — `prd.json` and `project-memory.json` are file-copies; `active_modes[]` from the OMG checkpoint is **decomposed** into per-mode `.omc/state/{mode}-state.json` files (the inverse of v1.4.0's omc-importer composition); `.omc/state/session-checkpoint.json` is composed with translated provenance.
+- **New shared helper `mcp-server/src/bridge/conflict-utils.ts`**: `shouldSkipForConflict()` uses embedded `timestamp` field as primary conflict primitive for `session-checkpoint.json` (mtime fallback elsewhere — addresses git-checkout-touches-mtime brittleness); `rotateBackup()` keeps last N=3 timestamped `.previous.{ISO}.json` snapshots, applied symmetrically on both import and export sides.
+- **New MCP tool `omg_export_external_session({target: "omc", force?})`** with atomicity contract: `.omg/state/last-export-token.json` is the LAST side-effect — partial-write failures leave no token, so subsequent operations correctly treat the transaction as uncommitted.
+- **Round-trip safety via dual-write loop guard**: importer reads either `.omg/state/last-export-token.json` OR the destination checkpoint's `source_origin === "bridged-from-omg"` — guard survives wipe of either side. No time-based TTL; token invalidates only when destination's `source_origin` flips to `"native"` or `source_session_id` changes.
+- **Provenance schema extended** (backward-compatible): new `source_origin` field (`"native" | "bridged-from-omc" | "bridged-from-claude-code" | "bridged-from-omg"`) is the authoritative provenance signal; legacy `source_tool: "copilot"` is retained. New `workspace_root` field powers a project-identity guard that aborts before any mutation when source checkpoint's workspace path doesn't match the current workspace.
+- **`/push-omc` skill (6 steps)**: detect → compare → confirm → export → summarize → continue. Trigger keywords: `/push-omc`, `"push omc"`, `"omc 푸시"`, `"omc로 보내기"`, `"sync to omc"`, `"export to omc"`. Mirror at `vscode-omg/resources/templates/skills/push-omc/SKILL.md`.
+- **VS Code command `omg.pushExternal`** ("OMG: Push to External Session (OMC)"): user-initiated only — no activation-time push notification (push remains a deliberate user action).
+- **`omg_compare_checkpoints` reports both directions**: now returns `omg_newer_than_external` alongside `newer_than_omg` so `/push-omc` and `/resume-claude` share the same comparison surface.
+- **Tests grow 8 → 18+** across 6 zones (Unit, Provenance, Round-trip guard, Composition, Conflict-path, Project-identity).
+- **Deferred to v1.5.x**: `omg → claude-code` direction. Would require synthesizing valid `tool_use`/`tool_result` UUID chains compatible with Claude Code's resume-by-id contract; tracking: TBD.
+- VSIX: `oh-my-githubcopilot-1.4.3.vsix`.
 
 ### v1.4.2 (2026-05-10) — Opus 4.7 → 4.6 Fallback Array
 
