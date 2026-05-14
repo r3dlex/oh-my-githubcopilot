@@ -154,9 +154,30 @@ async function copyTemplates(templatesDir: string, targetDir: string, outputChan
     outputChannel.appendLine(`OMG: Copied ${item.src} → ${item.dest}`);
   }
 
-  // Ensure .vscode directory exists (but don't overwrite existing mcp.json)
+  // Ensure .vscode directory exists and write mcp.json if not already present.
+  // Writing it here (before the MCP server build) ensures the config is always in
+  // place after workspace initialization, regardless of VS Code version or the timing
+  // of extension activation relative to Copilot Chat's MCP enumeration.
   const vscodeDir = path.join(targetDir, '.vscode');
   fs.mkdirSync(vscodeDir, { recursive: true });
+
+  const mcpConfigPath = path.join(vscodeDir, 'mcp.json');
+  if (!fs.existsSync(mcpConfigPath)) {
+    const mcpConfig = {
+      servers: {
+        'omg-workflow': {
+          type: 'stdio',
+          command: 'node',
+          args: ['${workspaceFolder}/mcp-server/dist/index.js'],
+          env: {
+            WORKSPACE_ROOT: '${workspaceFolder}',
+          },
+        },
+      },
+    };
+    fs.writeFileSync(mcpConfigPath, JSON.stringify(mcpConfig, null, 2));
+    outputChannel.appendLine('OMG: Generated .vscode/mcp.json');
+  }
 }
 
 function copyDirRecursive(src: string, dest: string) {
