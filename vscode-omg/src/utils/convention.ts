@@ -59,9 +59,9 @@ export function checkConventionFiles(rootDir: string): ConventionCheckResult[] {
     }
   }
 
-  // Check skills (tiered: warn < 18 core, info 18–21 extended, silent >= 22)
-  const CORE_SKILL_COUNT = 18;
-  const EXTENDED_SKILL_COUNT = 22;
+  // Check skills (tiered: warn < 24 core, info 24–36 extended, silent >= 37)
+  const CORE_SKILL_COUNT = 24;
+  const EXTENDED_SKILL_COUNT = 37;
   const skillsDir = path.join(rootDir, '.github', 'skills');
   if (!fs.existsSync(skillsDir)) {
     issues.push({ severity: 'error', message: 'Missing .github/skills/ directory', fix: 'Run "OMG: Initialize Workspace"' });

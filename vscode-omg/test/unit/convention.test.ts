@@ -57,24 +57,33 @@ describe('convention', () => {
       expect(issues.filter(i => i.message.includes('agent'))).toHaveLength(0);
     });
 
-    it('warns when skill count is less than 18', () => {
+    it('warns when skill count is less than 24', () => {
       setupFullWorkspace(tmpDir, { skillCount: 3 });
       const issues = checkConventionFiles(tmpDir);
       const warnings = issues.filter(i => i.severity === 'warning');
-      expect(warnings.some(w => w.message.includes('3/18'))).toBe(true);
+      expect(warnings.some(w => w.message.includes('3/24'))).toBe(true);
     });
 
-    it('emits info when skill count is between 18 and 21 (extended tier)', () => {
-      setupFullWorkspace(tmpDir, { skillCount: 20 });
+    it('emits info when skill count is between 24 and 36 (extended tier)', () => {
+      setupFullWorkspace(tmpDir, { skillCount: 26 });
       const issues = checkConventionFiles(tmpDir);
       const warnings = issues.filter(i => i.severity === 'warning');
       const infos = issues.filter(i => i.severity === 'info');
       expect(warnings.some(w => w.message.includes('skill'))).toBe(false);
-      expect(infos.some(i => i.message.includes('20/22'))).toBe(true);
+      expect(infos.some(i => i.message.includes('26/37'))).toBe(true);
     });
 
-    it('emits no skill issues when count is 22 or more', () => {
-      setupFullWorkspace(tmpDir, { skillCount: 22 });
+    it('emits info at current core skill count until extended skills are installed', () => {
+      setupFullWorkspace(tmpDir, { skillCount: 24 });
+      const issues = checkConventionFiles(tmpDir);
+      const warnings = issues.filter(i => i.severity === 'warning');
+      const infos = issues.filter(i => i.severity === 'info');
+      expect(warnings.some(w => w.message.includes('skill'))).toBe(false);
+      expect(infos.some(i => i.message.includes('24/37'))).toBe(true);
+    });
+
+    it('emits no skill issues when count is 37 or more', () => {
+      setupFullWorkspace(tmpDir, { skillCount: 37 });
       const issues = checkConventionFiles(tmpDir);
       expect(issues.filter(i => i.message.includes('skill'))).toHaveLength(0);
     });
@@ -223,7 +232,7 @@ function setupFullWorkspace(
   root: string,
   opts: { agentCount?: number; skillCount?: number; mcpBuilt?: boolean } = {},
 ) {
-  const { agentCount = 20, skillCount = 18, mcpBuilt = true } = opts;
+  const { agentCount = 20, skillCount = 24, mcpBuilt = true } = opts;
 
   // Required files
   fs.mkdirSync(path.join(root, '.github', 'hooks'), { recursive: true });

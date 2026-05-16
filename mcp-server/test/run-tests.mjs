@@ -14,6 +14,13 @@ import {
 } from "../dist/utils.js";
 
 import { getStatePath } from "../dist/state-tools.js";
+import {
+  checkpointUltragoal,
+  completeUltragoal,
+  createUltragoalGoal,
+  getUltragoalLedgerPath,
+  getUltragoalStatus,
+} from "../dist/ultragoal-tools.js";
 
 // ──────────────────────────────────────────────
 // utils.ts tests
@@ -150,5 +157,81 @@ describe("getStatePath", () => {
     assert.throws(() => getStatePath("../../etc"), /Invalid mode name/);
     assert.throws(() => getStatePath("foo bar"), /Invalid mode name/);
     assert.throws(() => getStatePath(""), /Invalid mode name/);
+  });
+});
+
+// ──────────────────────────────────────────────
+// ultragoal-tools.ts tests
+// ──────────────────────────────────────────────
+
+describe("ultragoal helpers", () => {
+  let tmpDir;
+  let previousWorkspaceRoot;
+
+  before(() => {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "omg-ultragoal-test-"));
+    previousWorkspaceRoot = process.env.WORKSPACE_ROOT;
+    process.env.WORKSPACE_ROOT = tmpDir;
+  });
+
+  after(() => {
+    if (previousWorkspaceRoot === undefined) {
+      delete process.env.WORKSPACE_ROOT;
+    } else {
+      process.env.WORKSPACE_ROOT = previousWorkspaceRoot;
+    }
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  it("rejects empty objectives without creating artifacts", () => {
+    assert.throws(() => createUltragoalGoal("   "), /objective is required/i);
+    assert.equal(fs.existsSync(getUltragoalLedgerPath()), false);
+  });
+
+  it("creates, checkpoints, and completes an active ultragoal", () => {
+    const created = createUltragoalGoal("Port ultragoal to OMG");
+    assert.equal(created.active, true);
+    assert.equal(created.active_goal.objective, "Port ultragoal to OMG");
+    assert.match(created.handoff_text, /Active ultragoal/);
+
+    const goalId = created.active_goal.id;
+    const checkpointed = checkpointUltragoal(goalId, "MCP helper tests are running", "test checkpoint");
+    assert.equal(checkpointed.active_goal.checkpoints.length, 1);
+    assert.equal(checkpointed.active_goal.checkpoints[0].status, "checkpoint");
+
+    const completed = completeUltragoal(goalId, "All ultragoal helper tests passed");
+    assert.equal(completed.active, false);
+    assert.equal(completed.active_goal, null);
+    assert.equal(completed.goals[0].status, "completed");
+  });
+
+  it("fails closed for non-active goal checkpoint attempts", () => {
+    const created = createUltragoalGoal("Keep active goal safe");
+    const before = fs.readFileSync(getUltragoalLedgerPath(), "utf-8");
+
+    assert.throws(() => checkpointUltragoal("not-active", "should not write"), /not the active ultragoal/);
+
+    const after = fs.readFileSync(getUltragoalLedgerPath(), "utf-8");
+    assert.equal(after, before);
+    assert.equal(getUltragoalStatus().active_goal.id, created.active_goal.id);
+  });
+
+  it("fails closed for missing checkpoint evidence", () => {
+    const created = getUltragoalStatus();
+    const before = fs.readFileSync(getUltragoalLedgerPath(), "utf-8");
+
+    assert.throws(() => checkpointUltragoal(created.active_goal.id, "  "), /evidence is required/i);
+
+    const after = fs.readFileSync(getUltragoalLedgerPath(), "utf-8");
+    assert.equal(after, before);
+  });
+
+  it("fails closed when the ultragoal ledger is malformed", () => {
+    const ledgerPath = getUltragoalLedgerPath();
+    const before = "{not valid json";
+    fs.writeFileSync(ledgerPath, before);
+
+    assert.throws(() => createUltragoalGoal("should fail"), /Malformed ultragoal ledger/);
+    assert.equal(fs.readFileSync(ledgerPath, "utf-8"), before);
   });
 });

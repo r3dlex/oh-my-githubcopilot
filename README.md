@@ -16,7 +16,7 @@
   <a href="https://github.com/jmstar85/oh-my-githubcopilot/releases"><img src="https://img.shields.io/github/v/release/jmstar85/oh-my-githubcopilot?label=release&color=blue" alt="Latest Release"></a>
   <a href="https://github.com/jmstar85/oh-my-githubcopilot/stargazers"><img src="https://img.shields.io/github/stars/jmstar85/oh-my-githubcopilot?style=social" alt="GitHub Stars"></a>
   <img src="https://img.shields.io/badge/Agents-28-blueviolet" alt="28 Agents">
-  <img src="https://img.shields.io/badge/Skills-24-orange" alt="24 Skills">
+  <img src="https://img.shields.io/badge/Skills-37-orange" alt="37 Skills">
   <img src="https://img.shields.io/badge/MCP-Stateful%20Workflow-0A66C2" alt="MCP Stateful Workflow">
   <img src="https://img.shields.io/badge/Hooks-pre%20%2F%20post%20tool--use-6f42c1" alt="Pre/Post Hooks">
 </p>
@@ -67,7 +67,7 @@
 
 **oh-my-githubcopilot (OMG)** brings the multi-agent orchestration paradigm — pioneered by [oh-my-claudecode (OMC)](https://github.com/yeachan-heo/oh-my-claudecode) for Claude Code — to **GitHub Copilot**, now further supercharged with the best features of **[Everything Claude Code (ECC)](https://github.com/affaan-m/everything-claude-code)**.
 
-Where OMC supercharges Claude Code with specialized agents and workflow automation, OMG does the same for Copilot's agent mode in VS Code. And with the ECC integration (v1.1.0), OMG now includes ECC's battle-tested patterns: 8 language-specialist reviewer agents, TDD enforcement, rapid security scanning, canonical coding standards, and more. Instead of a single assistant doing everything, OMG coordinates **28 specialized agents** and **22 reusable skills** through an MCP server, giving you structured workflows for planning, execution, review, and verification — all within your existing Copilot setup.
+Where OMC supercharges Claude Code with specialized agents and workflow automation, OMG does the same for Copilot's agent mode in VS Code. And with the ECC integration (v1.1.0) plus the adapted OMC skill port, OMG now includes language-specialist reviewers, TDD enforcement, rapid security scanning, durable `ultragoal` checkpoints, research helpers, release guidance, visual QA, and more. Instead of a single assistant doing everything, OMG coordinates **28 specialized agents** and **37 reusable skills** through an MCP server, giving you structured workflows for planning, execution, review, and verification — all within your existing Copilot setup.
 
 > **This is not a fork or copy of OMC or ECC.** It is an independent implementation built from scratch to leverage GitHub Copilot's agent customization features (`.agent.md`, `.prompt.md`, `SKILL.md`, MCP tools), drawing architectural inspiration from OMC's multi-agent approach and selectively integrating ECC's proven patterns.
 
@@ -99,7 +99,7 @@ Where OMC supercharges Claude Code with specialized agents and workflow automati
 1. Install the extension (either method below):
   - **Method 1 — VSIX (CLI)**
     ```bash
-    code --install-extension ./vscode-omg/oh-my-githubcopilot-1.2.3.vsix
+    code --install-extension ./vscode-omg/oh-my-githubcopilot-1.4.4.vsix
     ```
     > If you downloaded the VSIX elsewhere, replace the path with your local file path.
   - **Method 2 — VS Code Extensions tab (UI)**
@@ -299,10 +299,12 @@ Skills are reusable workflow routines triggered by slash commands or natural lan
 | `/omg-autopilot` | Full autonomous execution from idea to working code | `omg-autopilot`, `build me`, `create me` |
 | `/ralph` | PRD-driven persistence loop — won't stop until verified complete | `ralph`, `don't stop`, `finish this` |
 | `/ultrawork` | Parallel execution engine for high-throughput tasks | `ulw`, `ultrawork`, `parallel` |
+| `/ultragoal` | Durable MCP-backed goal tracking with checkpoints | `ultragoal`, `goal loop`, `durable goal` |
 | `/team` | N coordinated agents on a shared task list with staged pipeline | `team`, `multi-agent`, `swarm` |
 | `/plan` | Structured planning with optional interview workflow | `plan this`, `let's plan` |
 | `/ralplan` | Consensus planning with Planner/Architect/Critic loop | `ralplan`, `consensus plan` |
 | `/ccg` | Triple-model analysis (Claude + Codex + Gemini perspectives) | `ccg`, `tri-model`, `cross-validate` |
+| `/autoresearch` | Stateful research loop with evaluator gates | `autoresearch`, `research loop` |
 
 ### Analysis & Quality Skills
 
@@ -311,17 +313,28 @@ Skills are reusable workflow routines triggered by slash commands or natural lan
 | `/deep-interview` | Socratic requirements clarification with ambiguity gating | `deep interview`, `ask me everything` |
 | `/deep-dive` | Two-stage pipeline: trace → deep-interview | `deep dive`, `investigate deeply` |
 | `/trace` | Evidence-driven causal tracing with competing hypotheses | `trace this`, `root cause analysis` |
+| `/external-context` | Focused external documentation research | `external context`, `docs research` |
+| `/sciomc` | Bounded scientist-style research analysis | `sciomc`, `scientist research` |
+| `/ask` | Route multi-perspective questions through `/ccg` | `ask`, `multi-model ask` |
 | `/verify` | Evidence-based completion verification | `verify this`, `prove it works` |
 | `/review` | Code review with severity ratings and spec compliance | `review this`, `code review` |
 | `/ultraqa` | QA cycling — test, verify, fix, repeat until green | `ultraqa`, `fix all tests` |
 | `/ai-slop-cleaner` | Detect and fix AI-generated code smells | `deslop`, `anti-slop`, `cleanup slop` |
 | `/self-improve` | Autonomous evolutionary code improvement with tournament selection | `self-improve`, `evolve code` |
+| `/visual-verdict` | Structured visual QA for screenshot comparisons | `visual verdict`, `screenshot compare` |
 
 ### Utility Skills
 
 | Skill | What It Does | Trigger Keywords |
 |-------|-------------|-----------------|
 | `/remember` | Save information to project memory | `remember this`, `store this` |
+| `/wiki` | Maintain lightweight project knowledge base entries | `wiki`, `knowledge base` |
+| `/writer-memory` | Track writing project memory and story canon | `writer memory`, `character memory` |
+| `/skillify` | Turn repeatable workflows into reusable OMG skills | `skillify`, `make a skill` |
+| `/deepinit` | Generate or refresh repository agent guidance | `deepinit`, `repo init docs` |
+| `/release` | Prepare safe release notes, checks, and approval gates | `release`, `publish version` |
+| `/configure-notifications` | Guide notification integration setup | `configure notifications`, `alert me` |
+| `/hud` | Explain OMG StatusBar and TreeView status surfaces | `hud`, `status display` |
 | `/cancel` | Cancel active execution modes | `cancel`, `stop`, `abort` |
 | `/status` | Show current workflow status and active agents | `status`, `what's running` |
 
@@ -338,12 +351,14 @@ OMG includes a TypeScript MCP (Model Context Protocol) server that provides pers
 | **Workflow** | `omg_check_completion`, `omg_next_phase`, `omg_get_phase_info` | Phase transitions, completion checks, phase inspection |
 | **Memory** | `omg_read_memory`, `omg_write_memory`, `omg_delete_memory` | Project-scoped knowledge persistence |
 | **Model Router** | `omg_select_model` | Model recommendation based on task complexity |
+| **Ultragoal** | `omg_ultragoal_create`, `omg_ultragoal_status`, `omg_ultragoal_checkpoint`, `omg_ultragoal_complete` | Durable goal tracking with fail-closed checkpoint evidence |
 
 State is stored under `.omg/` in the workspace:
 
 ```
 .omg/
 ├── state/              # Workflow state files per mode
+├── ultragoal/          # Durable ultragoal ledger and checkpoints
 ├── plans/              # Work plans for execution
 ├── prd.json            # Product Requirements Document
 └── project-memory.json # Project-scoped knowledge store
@@ -380,8 +395,8 @@ OMG includes pre/post tool-use hooks (`.github/hooks/`) that act as safety nets:
 | Development span | 12 days (Apr 6–17, 2026) |
 | Total commits | 33 |
 | Agents | 28 (20 core + 8 language reviewers) |
-| Skills | 24 |
-| MCP tools | 19 |
+| Skills | 37 |
+| MCP tools | 23 |
 
 ### Quality Metrics
 
@@ -442,7 +457,7 @@ oh-my-githubcopilot/
 ├── .github/
 │   ├── copilot-instructions.md    # Root orchestration instructions
 │   ├── agents/                    # 28 specialized agent definitions (20 core + 8 language reviewers)
-│   ├── skills/                    # 24 workflow skill routines
+│   ├── skills/                    # 37 workflow skill routines
 │   ├── hooks/                     # Pre/post tool-use safety guards
 │   └── prompts/                   # Quick-fix, quick-plan, quick-review templates
 ├── mcp-server/                    # TypeScript MCP server
@@ -494,7 +509,7 @@ Available trailers: `Constraint`, `Rejected`, `Directive`, `Confidence`, `Scope-
 | Target Platform | Claude Code CLI | GitHub Copilot (VS Code) |
 | Installation | npm package / plugin marketplace | Clone + build MCP server |
 | Agent Count | 19+ (with tier variants) | 28 agents (20 core + 8 language reviewers) |
-| Skills | 10+ workflow skills | 24 skills with keyword triggers |
+| Skills | 10+ workflow skills | 37 skills with keyword triggers |
 | State Management | `.omc/` directory | `.omg/` via MCP server |
 | Multi-model | Codex/Gemini via tmux CLI | ccg skill (advisory) |
 | Configuration | `~/.claude/settings.json` | `.github/` + `.vscode/mcp.json` |
@@ -512,6 +527,17 @@ Available trailers: `Constraint`, `Rejected`, `Directive`, `Confidence`, `Scope-
 ---
 
 ## What's New
+
+### v1.4.4 (2026-05-16) — Adapted OMC Skill Port + Ultragoal MCP
+
+**Ports high-value OMC workflows into OMG with VS Code/Copilot-native behavior.** This release expands OMG from 24 to 37 skills and adds MCP-backed durable goal tracking.
+
+- **New MCP-backed `ultragoal` workflow**: `omg_ultragoal_create`, `omg_ultragoal_status`, `omg_ultragoal_checkpoint`, and `omg_ultragoal_complete` store fail-closed durable goal artifacts under `.omg/ultragoal/`.
+- **13 adapted OMC-inspired skills**: `visual-verdict`, `release`, `deepinit`, `skillify`, `writer-memory`, `configure-notifications`, `ultragoal`, `wiki`, `autoresearch`, `hud`, `external-context`, `sciomc`, and `ask`.
+- **Updated routing and health checks**: Copilot instructions now include new slash commands, keyword triggers, ultragoal completion rules, hook gates, and skill thresholds (`CORE=24`, `EXTENDED=37`).
+- **Template sync**: Extension templates now include the new skills, `ultragoal` MCP server source, tests, and updated README content.
+- **Verification**: MCP build/test passed (23 tests), VS Code extension unit tests passed (29 tests), VSIX package verified under 20MB.
+- VSIX: `oh-my-githubcopilot-1.4.4.vsix`.
 
 ### v1.4.3 (2026-05-11) — Bidirectional Bridge: OMG → OMC Push
 

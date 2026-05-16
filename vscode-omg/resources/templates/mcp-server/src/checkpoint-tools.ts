@@ -5,6 +5,7 @@ import * as path from "node:path";
 import { getWorkspaceRoot, ensureDir, safeReadFile, safeWriteFile, safeJsonParse, errorResponse } from "./utils.js";
 import { getStateDir } from "./state-tools.js";
 import { readMemory } from "./memory-tools.js";
+import type { SourceOrigin } from "./bridge/conflict-utils.js";
 
 function getCheckpointPath(): string {
   return path.join(getStateDir(), "session-checkpoint.json");
@@ -77,6 +78,12 @@ export function registerCheckpointTools(server: McpServer): void {
         modified_files: modifiedFiles,
         context_bytes_estimate: contextBytes,
         estimated_tokens: Math.round(contextBytes / 4),
+        source_tool: "copilot" as const,
+        source_origin: "native" as SourceOrigin,
+        source_session_id: null as string | null,
+        imported_at: null as string | null,
+        imported_summary: null as string | null,
+        workspace_root: getWorkspaceRoot(),
       };
 
       safeWriteFile(getCheckpointPath(), JSON.stringify(checkpoint, null, 2));

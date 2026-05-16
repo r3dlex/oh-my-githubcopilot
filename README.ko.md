@@ -49,7 +49,7 @@
 
 **oh-my-githubcopilot (OMG)** 는 [oh-my-claudecode (OMC)](https://github.com/yeachan-heo/oh-my-claudecode)가 Claude Code에서 보여준 멀티 에이전트 오케스트레이션 패턴을 **GitHub Copilot** 환경으로 옮겨온 프로젝트로, 이제 **[Everything Claude Code (ECC)](https://github.com/affaan-m/everything-claude-code)** 의 최고 기능까지 통합하여 더욱 강력해졌습니다.
 
-OMC가 Claude Code를 특화된 에이전트와 워크플로 자동화로 확장했다면, OMG는 VS Code의 Copilot agent mode에서 같은 철학을 구현합니다. ECC 통합(v1.1.0)으로 OMG는 ECC의 검증된 패턴도 포함합니다: 8개 언어 전문 리뷰어 에이전트, TDD 적용, 빠른 보안 스캔, 표준 코딩 규범 등. 하나의 도우미가 모든 일을 처리하는 대신, OMG는 **28개의 전문 에이전트**와 **22개의 재사용 가능한 스킬**을 MCP 서버를 통해 조율하여 계획, 구현, 리뷰, 검증을 구조적으로 수행합니다.
+OMC가 Claude Code를 특화된 에이전트와 워크플로 자동화로 확장했다면, OMG는 VS Code의 Copilot agent mode에서 같은 철학을 구현합니다. ECC 통합(v1.1.0)과 OMC 스킬의 OMG-native 적응 포팅으로 OMG는 언어 전문 리뷰어, TDD 적용, 빠른 보안 스캔, `ultragoal` 체크포인트, 연구 보조, 릴리스 가이드, 시각 QA 등을 포함합니다. 하나의 도우미가 모든 일을 처리하는 대신, OMG는 **28개의 전문 에이전트**와 **37개의 재사용 가능한 스킬**을 MCP 서버를 통해 조율하여 계획, 구현, 리뷰, 검증을 구조적으로 수행합니다.
 
 > **이 프로젝트는 OMC나 ECC의 포크나 복제가 아닙니다.** GitHub Copilot의 에이전트 커스터마이징 기능(`.agent.md`, `.prompt.md`, `SKILL.md`, MCP 도구)에 맞춰 처음부터 독립적으로 구현되었으며, OMC의 멀티 에이전트 설계 방식에서 영감을 받고 ECC의 검증된 패턴을 선택적으로 통합했습니다.
 
@@ -81,7 +81,7 @@ OMC가 Claude Code를 특화된 에이전트와 워크플로 자동화로 확장
 1. 익스텐션 설치 (아래 방법 중 하나):
    - **방법 1 — VSIX (CLI)**
      ```bash
-     code --install-extension ./vscode-omg/oh-my-githubcopilot-1.2.3.vsix
+    code --install-extension ./vscode-omg/oh-my-githubcopilot-1.4.4.vsix
      ```
      > VSIX 파일을 다른 위치에 다운로드했다면, 해당 로컬 경로로 바꿔서 실행하세요.
    - **방법 2 — VS Code 확장 탭 (UI)**
@@ -283,6 +283,8 @@ OMG는 **20개의 전문 에이전트**를 포함하며, 각 에이전트는 역
 
 스킬은 슬래시 명령이나 자연어 키워드로 활성화되는 재사용 가능한 워크플로 루틴입니다. `.github/skills/` 아래에 정의됩니다.
 
+현재 OMG는 37개 스킬을 포함하며, `ultragoal`, `visual-verdict`, `release`, `deepinit`, `skillify`, `writer-memory`, `configure-notifications`, `wiki`, `autoresearch`, `hud`, `external-context`, `sciomc`, `ask` 등 OMC에서 영감을 받은 기능을 VS Code/Copilot 환경에 맞게 적응 포팅했습니다.
+
 ### 워크플로 스킬
 
 | 스킬 | 설명 | 트리거 키워드 |
@@ -437,7 +439,7 @@ oh-my-githubcopilot/
 ├── .github/
 │   ├── copilot-instructions.md    # 루트 오케스트레이션 지침
 │   ├── agents/                    # 28개 전문 에이전트 정의 (20개 코어 + 8개 언어 리뷰어)
-│   ├── skills/                    # 24개 스킬 루틴
+│   ├── skills/                    # 37개 스킬 루틴
 │   ├── hooks/                     # pre/post tool-use 가드
 │   └── prompts/                   # quick-fix, quick-plan, quick-review 템플릿
 ├── mcp-server/                    # TypeScript MCP 서버
@@ -507,6 +509,17 @@ Scope-risk: narrow
 ---
 
 ## What's New
+
+### v1.4.4 (2026-05-16) — OMC 스킬 적응 포팅 + Ultragoal MCP
+
+**고가치 OMC 워크플로를 VS Code/Copilot 환경에 맞게 OMG-native 방식으로 포팅했습니다.** 이번 릴리스는 OMG 스킬을 24개에서 37개로 확장하고 MCP 기반 durable goal 추적을 추가합니다.
+
+- **신규 MCP 기반 `ultragoal` 워크플로**: `omg_ultragoal_create`, `omg_ultragoal_status`, `omg_ultragoal_checkpoint`, `omg_ultragoal_complete`가 `.omg/ultragoal/` 아래에 fail-closed goal 아티팩트를 저장합니다.
+- **13개 OMC-inspired 적응 스킬**: `visual-verdict`, `release`, `deepinit`, `skillify`, `writer-memory`, `configure-notifications`, `ultragoal`, `wiki`, `autoresearch`, `hud`, `external-context`, `sciomc`, `ask`.
+- **라우팅/헬스체크 갱신**: 새 slash command, 키워드 트리거, ultragoal 완료 규칙, hook gate, 스킬 기준값(`CORE=24`, `EXTENDED=37`)을 반영했습니다.
+- **템플릿 동기화**: extension 템플릿에 신규 스킬, `ultragoal` MCP 서버 소스, 테스트, README 변경이 포함됩니다.
+- **검증**: MCP build/test 23개 통과, VS Code extension unit test 29개 통과, VSIX 20MB 미만 검증.
+- VSIX: `oh-my-githubcopilot-1.4.4.vsix`.
 
 ### v1.4.3 (2026-05-11) — 양방향 브리지: OMG → OMC 푸시
 

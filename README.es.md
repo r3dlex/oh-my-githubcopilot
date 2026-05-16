@@ -49,7 +49,7 @@
 
 **oh-my-githubcopilot (OMG)** lleva a **GitHub Copilot** el enfoque de orquestación multiagente que [oh-my-claudecode (OMC)](https://github.com/yeachan-heo/oh-my-claudecode) desarrolló para Claude Code, ahora potenciado con las mejores funcionalidades de **[Everything Claude Code (ECC)](https://github.com/affaan-m/everything-claude-code)**.
 
-Si OMC potencia Claude Code mediante agentes especializados y automatización de flujos, OMG hace lo mismo dentro del agent mode de Copilot en VS Code. Con la integración de ECC (v1.1.0), OMG ahora incorpora los patrones probados de ECC: 8 agentes revisores especializados por lenguaje, aplicación de TDD, escaneo de seguridad rápido, estándares de codificación canónicos y más. En lugar de depender de un único asistente para todo, OMG coordina **28 agentes especializados** y **22 habilidades reutilizables** a través de un servidor MCP para estructurar planificación, implementación, revisión y verificación.
+Si OMC potencia Claude Code mediante agentes especializados y automatización de flujos, OMG hace lo mismo dentro del agent mode de Copilot en VS Code. Con la integración de ECC (v1.1.0) y el port adaptado de skills de OMC, OMG ahora incorpora revisores especializados por lenguaje, TDD, escaneo de seguridad, checkpoints `ultragoal`, ayuda de investigación, guía de releases, QA visual y más. En lugar de depender de un único asistente para todo, OMG coordina **28 agentes especializados** y **37 habilidades reutilizables** a través de un servidor MCP para estructurar planificación, implementación, revisión y verificación.
 
 > **No es un fork ni una copia de OMC o ECC.** Es una implementación independiente construida desde cero para aprovechar las capacidades de personalización de agentes en GitHub Copilot (`.agent.md`, `.prompt.md`, `SKILL.md`, herramientas MCP), inspirada por la arquitectura multiagente de OMC e integrando selectivamente los patrones probados de ECC.
 
@@ -81,7 +81,7 @@ Si OMC potencia Claude Code mediante agentes especializados y automatización de
 1. Instalar la extensión (cualquiera de estos métodos):
    - **Método 1 — VSIX (CLI)**
      ```bash
-     code --install-extension ./vscode-omg/oh-my-githubcopilot-1.2.3.vsix
+    code --install-extension ./vscode-omg/oh-my-githubcopilot-1.4.4.vsix
      ```
      > Si descargaste el VSIX en otra ubicación, reemplaza la ruta por tu ruta local.
    - **Método 2 — Pestaña Extensions de VS Code (UI)**
@@ -241,6 +241,8 @@ Invoca con `@mention` para revisión de código por lenguaje:
 
 Las habilidades son rutinas reutilizables que se activan con slash commands o palabras clave en lenguaje natural. Se definen en `.github/skills/`.
 
+OMG ahora incluye 37 habilidades, incluidas adaptaciones para VS Code/Copilot inspiradas en OMC: `ultragoal`, `visual-verdict`, `release`, `deepinit`, `skillify`, `writer-memory`, `configure-notifications`, `wiki`, `autoresearch`, `hud`, `external-context`, `sciomc` y `ask`.
+
 ### Habilidades de workflow
 
 | Habilidad | Qué hace | Palabras clave |
@@ -329,7 +331,7 @@ OMG incorpora hooks en `.github/hooks/` para actuar como red de seguridad.
 | Período de desarrollo | 12 días (6–17 de abril de 2026) |
 | Total de commits | 33 |
 | Agentes | 28 (20 núcleo + 8 revisores de lenguaje) |
-| Skills | 24 |
+| Skills | 37 |
 | Herramientas MCP | 19 |
 
 ### Métricas de calidad
@@ -391,7 +393,7 @@ oh-my-githubcopilot/
 ├── .github/
 │   ├── copilot-instructions.md    # instrucciones raíz de orquestación
 │   ├── agents/                    # 20 definiciones de agentes especializados
-│   ├── skills/                    # 18 rutinas de habilidades
+│   ├── skills/                    # 37 rutinas de habilidades
 │   ├── hooks/                     # protecciones pre/post tool-use
 │   └── prompts/                   # plantillas quick-fix, quick-plan y quick-review
 ├── mcp-server/                    # servidor MCP en TypeScript
@@ -443,7 +445,7 @@ Trailers disponibles: `Constraint`, `Rejected`, `Directive`, `Confidence`, `Scop
 | Plataforma objetivo | Claude Code CLI | GitHub Copilot (VS Code) |
 | Instalación | paquete npm / marketplace de plugins | clonar repositorio + compilar MCP server |
 | Número de agentes | 19+ | 28 agentes (20 core + 8 revisores de lenguaje) |
-| Skills | 10+ skills de workflow | 24 skills con disparadores por palabra clave |
+| Skills | 10+ skills de workflow | 37 skills con disparadores por palabra clave |
 | Gestión de estado | directorio `.omc/` | `.omg/` gestionado por MCP |
 | Multi-modelo | Codex/Gemini vía tmux CLI | análisis consultivo mediante `ccg` |
 | Configuración | `~/.claude/settings.json` | `.github/` + `.vscode/mcp.json` |
@@ -461,6 +463,16 @@ Trailers disponibles: `Constraint`, `Rejected`, `Directive`, `Confidence`, `Scop
 ---
 
 ## What's New
+
+### v1.4.4 (2026-05-16) — Port adaptado de skills OMC + Ultragoal MCP
+
+**Porta workflows de alto valor de OMC a OMG con comportamiento nativo para VS Code/Copilot.** OMG pasa a 37 skills e incorpora durable goal tracking con MCP.
+
+- Herramientas MCP de `ultragoal`: `omg_ultragoal_create`, `omg_ultragoal_status`, `omg_ultragoal_checkpoint`, `omg_ultragoal_complete`.
+- 13 skills adaptadas: `visual-verdict`, `release`, `deepinit`, `skillify`, `writer-memory`, `configure-notifications`, `ultragoal`, `wiki`, `autoresearch`, `hud`, `external-context`, `sciomc`, `ask`.
+- Actualiza Copilot instructions, keyword triggers, hook gates y umbrales de skills (`CORE=24`, `EXTENDED=37`).
+- Verificación: MCP 23 tests, VS Code extension 29 tests, VSIX <20MB.
+- VSIX: `oh-my-githubcopilot-1.4.4.vsix`.
 
 ### v1.4.3 (2026-05-11) — Puente bidireccional: OMG → OMC Push
 

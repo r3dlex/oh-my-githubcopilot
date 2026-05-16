@@ -50,15 +50,20 @@ Invoke via `/skill-name`. These are available as slash commands:
 - `/omg-autopilot` - Full autonomous execution from idea to working code
 - `/ralph` - PRD-driven persistence loop with story tracking
 - `/ultrawork` - Parallel execution engine with tiered routing
+- `/ultragoal` - Durable MCP-backed goal tracking with checkpoints
 - `/plan` - Structured planning with interview workflow
 - `/ralplan` - Consensus-based planning with architect + critic review
 - `/team` - Multi-agent team coordination
 - `/ccg` - Triple-model analysis (Claude + GPT + Gemini)
+- `/autoresearch` - Stateful research loop with evaluator gates
 
 ### Analysis Skills
 - `/deep-interview` - Deep stakeholder interview for requirements
 - `/deep-dive` - Comprehensive codebase analysis
 - `/trace` - Evidence-driven causal tracing
+- `/external-context` - Focused external documentation research
+- `/sciomc` - Bounded scientist-style research analysis
+- `/ask` - Route multi-perspective questions through `/ccg`
 - `/verify` - Evidence-based completion verification
 - `/review` - Code review with severity ratings
 
@@ -70,9 +75,17 @@ Invoke via `/skill-name`. These are available as slash commands:
 - `/tdd` - Test-Driven Development enforcement (red-green-refactor)
 - `/coding-standards` - Canonical cross-language coding standards reference
 - `/skill-stocktake` - Audit skill inventory for quality and coverage
+- `/visual-verdict` - Structured visual QA for screenshot comparisons
 
 ### Utility Skills
 - `/remember` - Save information to project memory
+- `/wiki` - Maintain lightweight project knowledge base entries
+- `/writer-memory` - Track writing project memory and story canon
+- `/skillify` - Turn repeatable workflows into reusable OMG skills
+- `/deepinit` - Generate or refresh repository agent guidance
+- `/release` - Prepare safe release notes, checks, and approval gates
+- `/configure-notifications` - Guide notification integration setup
+- `/hud` - Explain OMG StatusBar and TreeView workflow status surfaces
 - `/resume-claude` - Resume interrupted Claude Code / OMC session
 - `/push-omc` - Push OMG session into OMC (omg → omc, counterpart of /resume-claude)
 - `/cancel` - Cancel active execution modes
@@ -83,8 +96,21 @@ These keywords automatically activate the corresponding skill:
 - "autopilot", "auto-pilot", "autonomous", "build me", "create me" → `/omg-autopilot`
 - "ralph", "prd loop", "story loop" → `/ralph`
 - "ulw", "parallel", "ultrawork" → `/ultrawork`
+- "ultragoal", "goal loop", "durable goal", "persistent goal" → `/ultragoal`
 - "ralplan", "consensus plan" → `/ralplan`
 - "deep interview", "stakeholder interview" → `/deep-interview`
+- "visual verdict", "screenshot compare", "visual QA" → `/visual-verdict`
+- "release", "publish version", "cut release", "changelog" → `/release`
+- "deepinit", "repo init docs", "agent docs" → `/deepinit`
+- "skillify", "make a skill", "create skill" → `/skillify`
+- "writer memory", "character memory", "story bible" → `/writer-memory`
+- "configure notifications", "notifications setup", "alert me" → `/configure-notifications`
+- "wiki", "knowledge base", "project wiki" → `/wiki`
+- "autoresearch", "research loop", "evaluate research" → `/autoresearch`
+- "hud", "status display", "workflow dashboard" → `/hud`
+- "external context", "docs research", "external docs" → `/external-context`
+- "sciomc", "scientist research", "research swarm" → `/sciomc`
+- "ask", "multi-model ask", "ask models" → `/ask`
 - "deslop", "anti-slop", "cleanup slop" → `/ai-slop-cleaner`
 - "tdd", "test driven" → TDD mode via @test-engineer + `/tdd`
 - "security scan", "check secrets", "audit deps" → `/security-scan`
@@ -98,6 +124,7 @@ These keywords automatically activate the corresponding skill:
 - NEVER stop working while tasks remain incomplete.
 - Before claiming completion, verify all acceptance criteria are met with evidence.
 - If MCP tool `omg_check_completion` is available, call it before stopping.
+- If `.omg/ultragoal/` exists or `omg_ultragoal_status` reports active goals, call `omg_ultragoal_status` before stopping and preserve the active goal in the task plan/TODO state.
 - If incomplete tasks remain, continue working.
 - Only stop when ALL acceptance criteria pass with evidence.
 
@@ -133,6 +160,10 @@ OMG uses `vscode_askQuestions` as its hook mechanism to pause workflows and coll
 | `/ralplan` | Options selection, architect concerns, critic rejection, final approval | Consensus gates |
 | `/self-improve` | Repo selection, trust confirmation, goal interview, harness rules | Setup phase gates (loop runs autonomously) |
 | `/omg-autopilot` | Vague input redirect, spec confirmation, QA stuck, validation rejection | Critical decision points |
+| `/ultragoal` | Goal creation, checkpoint evidence, completion confirmation | Durable goal gates |
+| `/autoresearch` | Mission definition, evaluator rejection, stop/continue decision | Research quality gates |
+| `/release` | Version selection, publish approval, rollback choice | Release safety gates |
+| `/skillify` | Skill spec approval, installation confirmation | Reusable workflow gates |
 
 ### Hook Firing Principle
 Fire hooks when:
@@ -177,6 +208,7 @@ State files are stored in `.omg/` directory:
 - `.omg/plans/` - Work plans
 - `.omg/prd.json` - PRD for Ralph workflows
 - `.omg/project-memory.json` - Project memory
+- `.omg/ultragoal/` - Durable ultragoal ledger and checkpoints
 
 ## MCP Tools
 When the OMG MCP server is available, use these tools:
@@ -188,6 +220,7 @@ When the OMG MCP server is available, use these tools:
 - `omg_read_memory` / `omg_write_memory` / `omg_search_memory` / `omg_delete_memory` - Project memory access (search supports keyword match across keys, values, tags)
 - `omg_checkpoint` / `omg_restore_checkpoint` / `omg_context_status` - Session checkpoint and context pressure management
 - `omg_detect_external_session` / `omg_import_external_session` / `omg_compare_checkpoints` - Cross-tool session bridge (Claude Code / OMC → OMG)
+- `omg_ultragoal_create` / `omg_ultragoal_status` / `omg_ultragoal_checkpoint` / `omg_ultragoal_complete` - Durable goal tracking with fail-closed checkpoint evidence
 
 ## Context Pressure & Checkpoint Protocol
 The post-tool-use hook tracks cumulative tool I/O bytes as a proxy for context window usage.
