@@ -40,6 +40,12 @@ export function registerMcpProvider(
 
   context.subscriptions.push(disposable);
   outputChannel.appendLine('OMG: MCP server provider registered');
+
+  // Always ensure a static mcp.json exists as a safety net.
+  // The dynamic provider and static config coexist fine; VS Code deduplicates them.
+  // This prevents tools from disappearing due to extension activation race conditions
+  // where Copilot Chat finishes MCP enumeration before the dynamic provider registers.
+  ensureStaticMcpConfig(ws, outputChannel);
 }
 
 async function autoBuildMcpServer(ws: vscode.WorkspaceFolder, outputChannel: vscode.OutputChannel) {
@@ -95,11 +101,8 @@ function ensureStaticMcpConfig(ws: vscode.WorkspaceFolder, outputChannel: vscode
     return; // Don't overwrite existing config
   }
 
-  const serverDist = path.join(ws.uri.fsPath, 'mcp-server', 'dist', 'index.js');
-  if (!fs.existsSync(serverDist)) {
-    return; // No MCP server to register
-  }
-
+  // Write mcp.json regardless of whether dist/index.js exists yet.
+  // VS Code will simply not start the server until the file appears after the build.
   const mcpConfig = {
     servers: {
       'omg-workflow': {
