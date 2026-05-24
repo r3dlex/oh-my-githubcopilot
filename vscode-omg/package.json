@@ -1,0 +1,123 @@
+{
+  "name": "oh-my-githubcopilot",
+  "displayName": "oh-my-githubcopilot (OMG)",
+  "description": "Multi-agent orchestration for GitHub Copilot — install, manage, and monitor OMG workflows",
+  "version": "1.4.4",
+  "publisher": "jmstar85",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jmstar85/oh-my-githubcopilot"
+  },
+  "engines": {
+    "vscode": "^1.96.0"
+  },
+  "categories": [
+    "AI",
+    "Other"
+  ],
+  "keywords": [
+    "copilot",
+    "multi-agent",
+    "orchestration",
+    "workflow",
+    "mcp"
+  ],
+  "icon": "resources/icons/omg-128.png",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "omg.initWorkspace",
+        "title": "OMG: Initialize Workspace"
+      },
+      {
+        "command": "omg.updateFiles",
+        "title": "OMG: Update Convention Files"
+      },
+      {
+        "command": "omg.clearState",
+        "title": "OMG: Clear Workflow State"
+      },
+      {
+        "command": "omg.healthCheck",
+        "title": "OMG: Run Health Check"
+      },
+      {
+        "command": "omg.resumeExternal",
+        "title": "OMG: Resume External Session (Claude Code / OMC)"
+      },
+      {
+        "command": "omg.pushExternal",
+        "title": "OMG: Push to External Session (OMC)"
+      },
+      {
+        "command": "omg.showStatus",
+        "title": "OMG: Show Workflow Status"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "omg-explorer",
+          "title": "OMG",
+          "icon": "resources/icons/omg-activity.svg"
+        }
+      ]
+    },
+    "views": {
+      "omg-explorer": [
+        {
+          "id": "omg.workflows",
+          "name": "Active Workflows"
+        },
+        {
+          "id": "omg.agents",
+          "name": "Agents"
+        },
+        {
+          "id": "omg.prd",
+          "name": "PRD Stories"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "OMG",
+      "properties": {
+        "omg.autoStartMcp": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically start MCP server when workspace contains OMG configuration"
+        },
+        "omg.showStatusBar": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show OMG workflow status in the status bar"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --platform=node --format=cjs --minify",
+    "watch": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --platform=node --format=cjs --watch",
+    "lint": "eslint src/",
+    "test:unit": "vitest run test/unit/",
+    "test": "npm run test:unit",
+    "package": "vsce package",
+    "publish": "vsce publish",
+    "sync-templates": "node scripts/sync-templates.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/vscode": "^1.96.0",
+    "@vscode/test-electron": "^2.4.0",
+    "@vscode/vsce": "^3.0.0",
+    "esbuild": "^0.28.0",
+    "typescript": "^5.7.0",
+    "vitest": "^4.1.4"
+  }
+}

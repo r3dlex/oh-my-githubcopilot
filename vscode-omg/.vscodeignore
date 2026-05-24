@@ -1,0 +1,14 @@
+.vscode-test/
+node_modules/
+dist/
+src/
+test/
+!dist/extension.js
+*.ts
+*.map
+.gitignore
+tsconfig.json
+esbuild.config.js
+vitest.config.ts
+resources/icons/omg-original.png
+resources/icons/omg.png

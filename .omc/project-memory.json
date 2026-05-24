@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1776274687962,
+  "lastScanned": 1776762406032,
   "projectRoot": "/Users/andreburgstahler/Ws/Personal/AiTool/oh-my-githubcopilot",
   "techStack": {
     "languages": [
@@ -51,7 +51,7 @@
       "lint": "eslint src/",
       "format": "prettier --write src/",
       "typecheck": "tsc --noEmit",
-      "sync-claude-plugin": "cp plugin.json .claude-plugin/plugin.json && cp .github/plugin/marketplace.json .claude-plugin/marketplace.json",
+      "sync-claude-plugin": "cp plugin.json .claude-plugin/plugin.json",
       "prepublishOnly": "npm run build && npm run sync-claude-plugin",
       "postinstall": "[ -d dist ] || npm run build",
       "archgate:init": "npx archgate init --editor claude",
@@ -86,7 +86,7 @@
       "path": "agents",
       "purpose": null,
       "fileCount": 23,
-      "lastAccessed": 1776274687952,
+      "lastAccessed": 1776762406024,
       "keyFiles": [
         "analyst.agent.md",
         "architect.agent.md",
@@ -99,7 +99,7 @@
       "path": "assets",
       "purpose": "Static assets",
       "fileCount": 6,
-      "lastAccessed": 1776274687953,
+      "lastAccessed": 1776762406025,
       "keyFiles": [
         "buddy-bang.png",
         "buddy-playful.png",
@@ -112,7 +112,7 @@
       "path": "bin",
       "purpose": "Executable scripts",
       "fileCount": 5,
-      "lastAccessed": 1776274687954,
+      "lastAccessed": 1776762406026,
       "keyFiles": [
         "omp-statusline.mjs",
         "omp-statusline.mjs.map",
@@ -125,14 +125,14 @@
       "path": "dist",
       "purpose": "Distribution/build output",
       "fileCount": 0,
-      "lastAccessed": 1776274687954,
+      "lastAccessed": 1776762406026,
       "keyFiles": []
     },
     "hooks": {
       "path": "hooks",
       "purpose": null,
       "fileCount": 1,
-      "lastAccessed": 1776274687954,
+      "lastAccessed": 1776762406026,
       "keyFiles": [
         "hooks.json"
       ]
@@ -141,7 +141,7 @@
       "path": "scripts",
       "purpose": "Build/utility scripts",
       "fileCount": 1,
-      "lastAccessed": 1776274687954,
+      "lastAccessed": 1776762406026,
       "keyFiles": [
         "omp-adopt.sh"
       ]
@@ -150,14 +150,14 @@
       "path": "skills",
       "purpose": null,
       "fileCount": 0,
-      "lastAccessed": 1776274687954,
+      "lastAccessed": 1776762406026,
       "keyFiles": []
     },
     "spec": {
       "path": "spec",
       "purpose": "Test specifications",
       "fileCount": 9,
-      "lastAccessed": 1776274687954,
+      "lastAccessed": 1776762406026,
       "keyFiles": [
         "AGENTS_SPEC.md",
         "BUILD.md",
@@ -170,7 +170,7 @@
       "path": "src",
       "purpose": "Source code",
       "fileCount": 1,
-      "lastAccessed": 1776274687954,
+      "lastAccessed": 1776762406026,
       "keyFiles": [
         "index.mts"
       ]
@@ -179,141 +179,66 @@
       "path": "tests",
       "purpose": "Test files",
       "fileCount": 0,
-      "lastAccessed": 1776274687955,
+      "lastAccessed": 1776762406026,
       "keyFiles": []
+    },
+    "vscode-omp": {
+      "path": "vscode-omp",
+      "purpose": null,
+      "fileCount": 8,
+      "lastAccessed": 1776762406027,
+      "keyFiles": [
+        "LICENSE",
+        "README.md",
+        "package-lock.json",
+        "package.json",
+        "tsconfig.json"
+      ]
+    },
+    "vscode-omp/dist": {
+      "path": "vscode-omp/dist",
+      "purpose": "Distribution/build output",
+      "fileCount": 2,
+      "lastAccessed": 1776762406027,
+      "keyFiles": [
+        "extension.js",
+        "extension.js.map"
+      ]
+    },
+    "vscode-omp/node_modules": {
+      "path": "vscode-omp/node_modules",
+      "purpose": "Dependencies",
+      "fileCount": 1,
+      "lastAccessed": 1776762406028,
+      "keyFiles": []
+    },
+    "vscode-omp/scripts": {
+      "path": "vscode-omp/scripts",
+      "purpose": "Build/utility scripts",
+      "fileCount": 1,
+      "lastAccessed": 1776762406028,
+      "keyFiles": [
+        "sync-templates.mjs"
+      ]
     }
   },
   "hotPaths": [
     {
       "path": "CHANGELOG.md",
-      "accessCount": 7,
-      "lastAccessed": 1776124359152,
+      "accessCount": 3,
+      "lastAccessed": 1776767778950,
+      "type": "file"
+    },
+    {
+      "path": "CLAUDE.md",
+      "accessCount": 1,
+      "lastAccessed": 1776767396828,
       "type": "file"
     },
     {
       "path": "package.json",
-      "accessCount": 6,
-      "lastAccessed": 1776124320633,
-      "type": "file"
-    },
-    {
-      "path": "src/mcp/server.mts",
-      "accessCount": 5,
-      "lastAccessed": 1776100370369,
-      "type": "directory"
-    },
-    {
-      "path": "hooks/hooks.json",
-      "accessCount": 4,
-      "lastAccessed": 1776100000329,
-      "type": "file"
-    },
-    {
-      "path": "src/mcp/state-manager.mts",
-      "accessCount": 4,
-      "lastAccessed": 1776100377198,
-      "type": "file"
-    },
-    {
-      "path": "src/mcp/memory-store.mts",
-      "accessCount": 4,
-      "lastAccessed": 1776100378228,
-      "type": "file"
-    },
-    {
-      "path": "README.md",
-      "accessCount": 4,
-      "lastAccessed": 1776124314234,
-      "type": "file"
-    },
-    {
-      "path": "plugin.json",
-      "accessCount": 4,
-      "lastAccessed": 1776124331671,
-      "type": "file"
-    },
-    {
-      "path": "src",
-      "accessCount": 3,
-      "lastAccessed": 1776100165127,
-      "type": "directory"
-    },
-    {
-      "path": "tests/mcp/server.test.mts",
-      "accessCount": 2,
-      "lastAccessed": 1776100385331,
-      "type": "file"
-    },
-    {
-      "path": "RELEASING.md",
-      "accessCount": 2,
-      "lastAccessed": 1776124307297,
-      "type": "file"
-    },
-    {
-      "path": "vitest.config.ts",
-      "accessCount": 2,
-      "lastAccessed": 1776124383052,
-      "type": "file"
-    },
-    {
-      "path": "tests/hud/renderer.test.mts",
-      "accessCount": 2,
-      "lastAccessed": 1776124514172,
-      "type": "file"
-    },
-    {
-      "path": "skills",
       "accessCount": 1,
-      "lastAccessed": 1776097983051,
-      "type": "directory"
-    },
-    {
-      "path": "skills/autopilot/SKILL.md",
-      "accessCount": 1,
-      "lastAccessed": 1776098918431,
-      "type": "file"
-    },
-    {
-      "path": "skills/spending/SKILL.md",
-      "accessCount": 1,
-      "lastAccessed": 1776098919363,
-      "type": "file"
-    },
-    {
-      "path": "tests/mcp/state-manager.test.mts",
-      "accessCount": 1,
-      "lastAccessed": 1776100355157,
-      "type": "file"
-    },
-    {
-      "path": "src/mcp/db-loader.mts",
-      "accessCount": 1,
-      "lastAccessed": 1776100363060,
-      "type": "file"
-    },
-    {
-      "path": "src/hud/watch.mts",
-      "accessCount": 1,
-      "lastAccessed": 1776124499870,
-      "type": "file"
-    },
-    {
-      "path": "tests/hud/statusline.test.mts",
-      "accessCount": 1,
-      "lastAccessed": 1776124503229,
-      "type": "file"
-    },
-    {
-      "path": "src/hud/statusline.mts",
-      "accessCount": 1,
-      "lastAccessed": 1776124503761,
-      "type": "file"
-    },
-    {
-      "path": "tests/hud/watch.test.mts",
-      "accessCount": 1,
-      "lastAccessed": 1776124543262,
+      "lastAccessed": 1776773425344,
       "type": "file"
     }
   ],
