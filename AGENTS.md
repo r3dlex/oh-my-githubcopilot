@@ -14,7 +14,7 @@ The orchestrator is the top-level coordinator. It:
 
 The orchestrator **never writes code, docs, or configs directly**. It always delegates to a specialized agent.
 
-## Agent Registry (23 Agents)
+## Agent Registry (22 Agents)
 
 | # | ID | Tier | Tools | Role |
 |---|-----|------|-------|------|
@@ -31,7 +31,7 @@ The orchestrator **never writes code, docs, or configs directly**. It always del
 | 11 | `debugger` | high | Bash, Read, LSP, Grep | Error diagnosis, crash analysis |
 | 12 | `architect` | high | Read, Write, Glob | System design, cross-cutting concerns |
 | 13 | `security-reviewer` | high | Grep, Glob, Read | Vulnerability scanning, dependency audit |
-| 14 | `simplifier` | high | Read, Edit, Grep | Code reuse, quality, efficiency improvements |
+| 14 | `code-simplifier` | high | Read, Edit, Grep | Code simplification, clarity, maintainability |
 | 15 | `test-engineer` | standard | Bash, Read, Write | Test authoring, coverage analysis |
 | 16 | `critic` | high | Read, Grep, Write | Plan review, gap analysis, improvement suggestions |
 | 17 | `tracer` | high | Bash, Read, Grep | Causal investigation, root cause analysis |
@@ -40,7 +40,6 @@ The orchestrator **never writes code, docs, or configs directly**. It always del
 | 20 | `document-specialist` | standard | Read, Write, Grep | Technical docs, API docs, guides |
 | 21 | `qa-tester` | standard | Bash, Read, Write | QA testing, regression verification |
 | 22 | `git-master` | standard | Bash, Read, Grep | Atomic commits, history management |
-| 23 | `analyst` | high | Read, Grep | Requirements analysis, gap identification |
 
 ## Delegation Rules
 
@@ -55,11 +54,11 @@ Never skip verification. Never claim completion without evidence.
 
 ## Model Selection Guidelines
 
-| Tier | Model | When to use |
-|------|-------|-------------|
-| High | `opus` | Security, architecture, complex multi-file refactors, PR reviews |
-| Standard | `sonnet` | Feature implementation, testing, documentation |
-| Fast | `haiku` | Quick lookups, simple edits, documentation updates, glob/grep passes |
+| Tier | Models | When to use |
+|------|--------|-------------|
+| High | `gemini-3.5-flash`, `claude-opus-4.7`, `claude-sonnet-4.6`, `gemini-3.1-pro`, `gpt-5.5`, `gpt-5.4` | Security, architecture, complex multi-file refactors, PR reviews, agentic coding |
+| Standard | `claude-sonnet-4.5`, `claude-haiku-4.5`, `gpt-5.4-mini`, `deepseek-v3` | Feature implementation, testing, documentation |
+| Fast | `gpt-5.4-nano`, `gpt-5-mini`, `raptor-mini` | Quick lookups, simple edits, documentation updates, glob/grep passes |
 
 ## Execution Mode Handling
 

@@ -3,7 +3,7 @@ name: writer
 description: >
   Technical documentation author.
   Use when: writing README, API docs, changelogs, code comments, guides.
-model: claude-sonnet-4-6
+model: claude-sonnet-4.5
 tools: [readFile, editFiles, search]
 agents: [explore]
 user-invocable: true

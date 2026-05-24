@@ -3,7 +3,7 @@ name: tracer
 description: >
   Evidence-driven causal tracing with competing hypotheses and uncertainty tracking.
   Use when: explaining unexpected behavior, tracing causation chains, competing hypothesis analysis.
-model: claude-sonnet-4-6
+model: claude-sonnet-4.5
 tools: [readFile, runInTerminal, search]
 agents: [explore, architect]
 user-invocable: true

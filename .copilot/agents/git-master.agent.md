@@ -3,7 +3,7 @@ name: git-master
 description: >
   Git expert for atomic commits, rebasing, and history management.
   Use when: creating commits, rebasing branches, managing git history, atomic commit splitting.
-model: claude-sonnet-4-6
+model: claude-sonnet-4.5
 tools: [readFile, runInTerminal, search]
 agents: []
 user-invocable: true

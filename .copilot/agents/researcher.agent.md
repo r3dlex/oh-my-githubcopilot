@@ -3,7 +3,7 @@ name: researcher
 description: >
   External knowledge researcher for SDK docs, library references, and technology comparisons.
   Use when: looking up external docs, comparing libraries, researching APIs.
-model: claude-sonnet-4-6
+model: claude-sonnet-4.5
 tools: [readFile, search, fetch]
 agents: []
 user-invocable: true

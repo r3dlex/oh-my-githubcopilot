@@ -4,7 +4,7 @@ description: >
   Focused task executor for implementation work.
   Use when: implementing code changes, writing features, fixing bugs,
   executing plan steps, making code modifications, building functionality.
-model: claude-sonnet-4-6
+model: claude-sonnet-4.5
 tools: [readFile, editFiles, search, codebase, runInTerminal, findTestFiles, testFailures, usages]
 agents: [explore, architect]
 user-invocable: true

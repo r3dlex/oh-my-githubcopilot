@@ -3,7 +3,7 @@ name: test-engineer
 description: >
   Test strategy, integration/e2e coverage, and TDD workflows.
   Use when: "add tests", "improve test coverage", "design testing strategy", TDD implementation.
-model: claude-sonnet-4-6
+model: claude-sonnet-4.5
 tools: [readFile, editFiles, runInTerminal, findTestFiles, testFailures]
 agents: [explore, architect]
 user-invocable: true

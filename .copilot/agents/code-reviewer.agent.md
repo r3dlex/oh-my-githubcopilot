@@ -3,7 +3,7 @@ name: code-reviewer
 description: >
   Severity-rated code review with SOLID checks and quality strategy.
   Use when: "review this code", "assess quality", "find issues" in implementation.
-model: claude-opus-4-6
+model: claude-sonnet-4.6
 tools: [readFile, search, codebase, usages]
 agents: [explore]
 user-invocable: true
