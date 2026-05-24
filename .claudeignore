@@ -1,0 +1,7 @@
+node_modules/
+.next/
+dist/
+*.log
+*.lock
+__pycache__/
+coverage/

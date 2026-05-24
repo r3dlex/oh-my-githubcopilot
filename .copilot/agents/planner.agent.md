@@ -3,7 +3,7 @@ name: planner
 description: >
   Architecture designer and task sequencer.
   Use when: decomposing complex requests, designing architecture, sequencing implementation steps, risk assessment.
-model: claude-opus-4-6
+model: claude-sonnet-4.6
 tools: [readFile, editFiles, search]
 agents: [explore, analyst, architect]
 user-invocable: true

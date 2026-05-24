@@ -3,7 +3,7 @@ name: scientist
 description: >
   Data analysis and research execution specialist.
   Use when: "analyze this data", "find patterns", "statistical analysis", experimental design.
-model: claude-sonnet-4-6
+model: claude-sonnet-4.5
 tools: [readFile, editFiles, runInTerminal]
 agents: [explore]
 user-invocable: true

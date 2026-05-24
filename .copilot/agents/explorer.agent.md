@@ -3,7 +3,7 @@ name: explorer
 description: >
   Fast codebase surveyor for targeted search and mapping.
   Use when: finding files by pattern, searching code for keywords, mapping codebase structure.
-model: claude-sonnet-4-6
+model: claude-sonnet-4.5
 tools: [readFile, search, codebase]
 agents: []
 user-invocable: true

@@ -36,3 +36,9 @@ Thumbs.db
 *.log
 npm-debug.log*
 .omx/
+
+# <!-- ai-sdlc-init:start -->
+# AI SDLC artifacts
+upstream-pocock/
+.prek-cache/
+# <!-- ai-sdlc-init:end -->

@@ -4,7 +4,7 @@ description: >
   Pre-planning consultant for requirements analysis.
   Use when: converting scope to acceptance criteria, identifying gaps before planning,
   catching unvalidated assumptions and missing edge cases.
-model: claude-opus-4-6
+model: claude-sonnet-4.6
 tools: [readFile, search]
 agents: [explore]
 user-invocable: true

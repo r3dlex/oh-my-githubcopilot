@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "mkdir": true,
+        "git add": true,
+        "npx vitest": true,
+        "gh": true
+    }
+}

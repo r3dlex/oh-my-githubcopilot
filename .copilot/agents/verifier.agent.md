@@ -3,7 +3,7 @@ name: verifier
 description: >
   Verification and evidence collection specialist.
   Use when: confirming task completion, running tests, collecting diagnostics, validating command outputs.
-model: claude-sonnet-4-6
+model: claude-sonnet-4.5
 tools: [readFile, runInTerminal, search, findTestFiles, testFailures]
 agents: [explore]
 user-invocable: true

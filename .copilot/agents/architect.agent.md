@@ -3,7 +3,7 @@ name: architect
 description: >
   System design, architecture analysis, and implementation verification.
   Use when: "design X", "analyze architecture", "debug root cause", "verify implementation".
-model: claude-opus-4-6
+model: claude-sonnet-4.6
 tools: [readFile, search, codebase, usages]
 agents: [explore]
 user-invocable: true

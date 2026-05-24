@@ -3,7 +3,7 @@ name: designer
 description: >
   UI/UX designer and design system integrator.
   Use when: implementing UI components, translating Figma designs, design system work.
-model: claude-opus-4-6
+model: claude-sonnet-4.6
 tools: [readFile, editFiles, fetch]
 agents: [explore, executor]
 user-invocable: true

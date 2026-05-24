@@ -3,9 +3,9 @@ name: orchestrator
 description: >
   Top-level coordinator for OMP sessions.
   Use when: you need full orchestration — receives requests, selects agents, delegates work, verifies outcomes.
-model: claude-opus-4-6
+model: claude-sonnet-4.6
 tools: [readFile, search, codebase]
-agents: [executor, architect, planner, verifier, writer, reviewer, designer, researcher, tester, debugger, security-reviewer, simplifier, test-engineer, critic, tracer, scientist, code-reviewer, document-specialist, qa-tester, git-master, analyst, explorer]
+agents: [executor, architect, planner, verifier, writer, reviewer, designer, researcher, tester, debugger, security-reviewer, code-simplifier, test-engineer, critic, tracer, scientist, code-reviewer, document-specialist, qa-tester, git-master, analyst, explorer]
 user-invocable: true
 ---
 

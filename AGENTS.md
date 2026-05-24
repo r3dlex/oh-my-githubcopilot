@@ -14,7 +14,7 @@ The orchestrator is the top-level coordinator. It:
 
 The orchestrator **never writes code, docs, or configs directly**. It always delegates to a specialized agent.
 
-## Agent Registry (23 Agents)
+## Agent Registry (22 Agents)
 
 | # | ID | Tier | Tools | Role |
 |---|-----|------|-------|------|
@@ -31,7 +31,7 @@ The orchestrator **never writes code, docs, or configs directly**. It always del
 | 11 | `debugger` | high | Bash, Read, LSP, Grep | Error diagnosis, crash analysis |
 | 12 | `architect` | high | Read, Write, Glob | System design, cross-cutting concerns |
 | 13 | `security-reviewer` | high | Grep, Glob, Read | Vulnerability scanning, dependency audit |
-| 14 | `simplifier` | high | Read, Edit, Grep | Code reuse, quality, efficiency improvements |
+| 14 | `code-simplifier` | high | Read, Edit, Grep | Code simplification, clarity, maintainability |
 | 15 | `test-engineer` | standard | Bash, Read, Write | Test authoring, coverage analysis |
 | 16 | `critic` | high | Read, Grep, Write | Plan review, gap analysis, improvement suggestions |
 | 17 | `tracer` | high | Bash, Read, Grep | Causal investigation, root cause analysis |
@@ -40,7 +40,6 @@ The orchestrator **never writes code, docs, or configs directly**. It always del
 | 20 | `document-specialist` | standard | Read, Write, Grep | Technical docs, API docs, guides |
 | 21 | `qa-tester` | standard | Bash, Read, Write | QA testing, regression verification |
 | 22 | `git-master` | standard | Bash, Read, Grep | Atomic commits, history management |
-| 23 | `analyst` | high | Read, Grep | Requirements analysis, gap identification |
 
 ## Delegation Rules
 
@@ -55,11 +54,11 @@ Never skip verification. Never claim completion without evidence.
 
 ## Model Selection Guidelines
 
-| Tier | Model | When to use |
-|------|-------|-------------|
-| High | `opus` | Security, architecture, complex multi-file refactors, PR reviews |
-| Standard | `sonnet` | Feature implementation, testing, documentation |
-| Fast | `haiku` | Quick lookups, simple edits, documentation updates, glob/grep passes |
+| Tier | Models | When to use |
+|------|--------|-------------|
+| High | `gemini-3.5-flash`, `claude-opus-4.7`, `claude-sonnet-4.6`, `gemini-3.1-pro`, `gpt-5.5`, `gpt-5.4` | Security, architecture, complex multi-file refactors, PR reviews, agentic coding |
+| Standard | `claude-sonnet-4.5`, `claude-haiku-4.5`, `gpt-5.4-mini`, `deepseek-v3` | Feature implementation, testing, documentation |
+| Fast | `gpt-5.4-nano`, `gpt-5-mini`, `raptor-mini` | Quick lookups, simple edits, documentation updates, glob/grep passes |
 
 ## Execution Mode Handling
 
@@ -123,3 +122,55 @@ Skills extend agent capabilities. See `spec/SKILLS.md` for the full registry and
 ## Plugin Integration
 
 OMP is a GitHub Copilot CLI plugin. Plugin manifest, discovery paths, and cross-compatibility are defined in `spec/PLUGIN.md`.
+<!-- ai-sdlc-init:start -->
+
+## AI SDLC Methodology
+
+This repository uses the AI SDLC methodology scaffolded by `ai-sdlc-init`.
+
+### Architecture Decision Records
+
+Significant architectural decisions are recorded in [`docs/adr/`](docs/adr/).
+Before making a change that affects module boundaries, API contracts, data
+schemas, or dependency direction, check whether a relevant ADR exists.
+If your change contradicts an existing ADR, either update the ADR or open a
+discussion before proceeding.
+
+### Archgate Rules
+
+Code quality rules are defined in [`.rules.ts`](.rules.ts) across five domains:
+`backend`, `frontend`, `data`, `architecture`, `general`. Rules carry a severity
+(`error`, `warn`, `info`). Structural validation of `.rules.ts` runs in CI via
+the `validate-rules` prek hook. Semantic enforcement (did the PR violate a rule?)
+is an agent behavior at PR review time.
+
+### Karpathy Baseline
+
+All agents operating in this repository load
+[`.agents/skills/karpathy-guidelines/SKILL.md`](.agents/skills/karpathy-guidelines/SKILL.md)
+as a baseline. Four rules apply to every task: Think Before Coding, Simplicity
+First, Surgical Changes, Goal-Driven Execution. See the SKILL.md for violation
+and correction examples.
+
+### Drift Verification Protocol
+
+At PR review time, the reviewing agent:
+1. Loads the PR diff alongside the BRD, PRD, acceptance criteria, and any ADRs
+   whose scope overlaps with the changed files.
+2. Produces a drift report identifying whether changes match ACs, conflict with
+   ADRs, or violate architectural constraints from `.rules.ts`.
+3. Leaves the drift report as a PR comment or review summary.
+
+This is a documented agent behavior. It is not enforced as a CI gate in this
+iteration.
+
+### Circuit Breaker Protocol
+
+Before starting work on an issue:
+1. Check whether ≥ 3 prior attempts exist without resolution (look for
+   `attempts:N` labels or a comment history showing repeated failures).
+2. If the circuit is tripped (≥ 3 attempts, no resolution), escalate to a
+   human with a written summary of what was tried and what blocked each attempt.
+3. Do not make a fourth attempt without human acknowledgement.
+
+<!-- ai-sdlc-init:end -->

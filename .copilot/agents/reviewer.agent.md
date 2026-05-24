@@ -3,7 +3,7 @@ name: reviewer
 description: >
   Code quality reviewer and style enforcer.
   Use when: code review, style enforcement, catching bugs before merge.
-model: claude-opus-4-6
+model: claude-sonnet-4.6
 tools: [readFile, search, codebase, usages, problems]
 agents: [explore]
 user-invocable: true
