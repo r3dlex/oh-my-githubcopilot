@@ -26,7 +26,7 @@ Hooks are lightweight middleware functions that intercept and augment each agent
 
 ## 3. Hook Registration
 
-Hooks are registered at **build time** in `esbuild.config.mts` via the `hookEntries` array. Running `npm run build` compiles each hook source to `dist/hooks/<name>.mjs` and regenerates `hooks/hooks.json` as the runtime manifest. The Copilot CLI reads `hooks/hooks.json` at runtime via the `"hooks": "./hooks/hooks.json"` string in plugin.json.
+Hooks are registered at **build time** in `esbuild.config.mts` via the `hookEntries` array. Running `npm run build` compiles each hook source to `dist/hooks/<name>.mjs` and regenerates `hooks/hooks.json` as the runtime manifest. The Copilot CLI reads `hooks/hooks.json` at runtime via the `"hooks": "./hooks/hooks.json"` string in plugin.json. The `UserPromptSubmitted` registration invokes `node ./bin/omp.mjs hook keyword-detector`, so prompt rewriting goes through the shipped `omp` CLI bridge while preserving the same `processHook` implementation used by tests and built hook bundles.
 
 At runtime, the Copilot CLI invokes hooks in priority order at each trigger point. If a hook throws, execution continues to the next hook but the failure is logged.
 
@@ -210,7 +210,7 @@ The following table maps OMP hook triggers to Copilot CLI native events:
 
 | OMP Hook | Copilot CLI Event | Description |
 |----------|-----------------|-------------|
-| `keyword-detector` | `UserPromptSubmitted` | Fires when user submits a prompt; scans for magic keywords |
+| `keyword-detector` | `UserPromptSubmitted` | Fires when user submits a prompt; scans for magic keywords through `omp hook keyword-detector` |
 | `delegation-enforcer` | `PreToolUse` | Fires before each tool invocation; enforces delegation rules |
 | `model-router` | `PreToolUse` | Fires before each tool invocation; routes model based on task |
 | `token-tracker` | `PostToolUse` | Fires after each tool completion; tracks cumulative token usage |

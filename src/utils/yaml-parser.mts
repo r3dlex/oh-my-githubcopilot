@@ -8,8 +8,11 @@ import { parse as parseYaml } from "yaml";
 export interface AgentFrontmatter {
   name: string;
   description: string;
-  model_tier: "high" | "standard" | "fast";
+  model?: string;
+  model_tier?: "high" | "standard" | "fast";
   tools: string[];
+  agents?: string[];
+  "user-invocable"?: boolean;
 }
 
 export interface SkillFrontmatter {

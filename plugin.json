@@ -61,5 +61,11 @@
     "./skills/session"
   ],
   "hooks": "./hooks/hooks.json",
-  "mcp": "./.mcp.json"
+  "mcp": "./.mcp.json",
+  "entryPoints": {
+    "cli": "./bin/omp.mjs",
+    "mcp": "./dist/mcp/server.mjs"
+  },
+  "agentFormat": ".agent.md",
+  "agentFilePattern": "*.agent.md"
 }

@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { readFileSync, existsSync } from "fs";
+import { readFileSync, existsSync, readdirSync } from "fs";
 import { join } from "path";
 
 const root = process.cwd();
@@ -34,6 +34,11 @@ function marketplaceJson(): Record<string, unknown> {
 
 function packageJson(): Record<string, unknown> {
   const path = join(root, "package.json");
+  return JSON.parse(readFileSync(path, "utf-8"));
+}
+
+function hooksJson(): Record<string, unknown> {
+  const path = join(root, "hooks", "hooks.json");
   return JSON.parse(readFileSync(path, "utf-8"));
 }
 
@@ -79,6 +84,22 @@ describe("plugin installation", () => {
       expect(skills).toBeDefined();
       expect(skills.length).toBeGreaterThan(0);
     });
+
+    it("should declare the omp CLI entrypoint and .agent.md format", () => {
+      const json = pluginJson();
+      expect(json.entryPoints).toMatchObject({
+        cli: "./bin/omp.mjs",
+        mcp: "./dist/mcp/server.mjs",
+      });
+      expect(json.agentFormat).toBe(".agent.md");
+      expect(json.agentFilePattern).toBe("*.agent.md");
+    });
+
+    it("should publish only .agent.md files in the runtime agents directory", () => {
+      const agentFiles = readdirSync(join(root, "agents")).filter((file) => file.endsWith(".md"));
+      expect(agentFiles.length).toBeGreaterThan(0);
+      expect(agentFiles.every((file) => file.endsWith(".agent.md"))).toBe(true);
+    });
   });
 
   describe("marketplace.json", () => {
@@ -114,6 +135,17 @@ describe("plugin installation", () => {
       const plugin = (json.plugins as Array<Record<string, unknown>>)[0];
       expect(plugin.description as string).toContain("23 agents");
       expect(plugin.description as string).toContain("39 skills");
+    });
+  });
+
+  describe("hooks.json", () => {
+    it("should route UserPromptSubmitted through the omp CLI hook bridge", () => {
+      const json = hooksJson();
+      const hooks = json.hooks as Record<string, Array<Record<string, unknown>>>;
+      const promptHook = hooks.UserPromptSubmitted?.[0];
+
+      expect(promptHook?.type).toBe("command");
+      expect(promptHook?.bash).toBe("node ./bin/omp.mjs hook keyword-detector");
     });
   });
 
@@ -172,6 +204,9 @@ describe("plugin installation", () => {
       expect(claudePluginJson().agents).toEqual(rootPluginJson().agents);
       expect(claudePluginJson().hooks).toBe(rootPluginJson().hooks);
       expect(claudePluginJson().mcp).toBe(rootPluginJson().mcp);
+      expect(claudePluginJson().entryPoints).toEqual(rootPluginJson().entryPoints);
+      expect(claudePluginJson().agentFormat).toBe(rootPluginJson().agentFormat);
+      expect(claudePluginJson().agentFilePattern).toBe(rootPluginJson().agentFilePattern);
     });
   });
 

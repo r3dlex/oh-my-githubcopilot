@@ -245,10 +245,9 @@ export function processHook(input: HookInput): HookOutput {
   }
 }
 
-// Main entry point — only runs when executed directly (not imported)
-import { fileURLToPath } from "url";
-
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+// Main entry point — only runs when executed directly (not imported).
+// The omp CLI imports processHook directly to avoid double-dispatch when bundled.
+if (process.argv[1]?.endsWith("keyword-detector.mjs") || process.argv[1]?.endsWith("keyword-detector.mts")) {
   const input: HookInput = JSON.parse(await readStdin());
   const output = processHook(input);
   console.log(JSON.stringify(output));

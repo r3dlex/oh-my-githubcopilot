@@ -56,6 +56,18 @@ describe("agent-loader", () => {
         expect(Array.isArray(agent.tools)).toBe(true);
       }
     });
+
+    it("should load published .agent.md definitions from the runtime agents directory", () => {
+      const agents = loadAllAgents();
+      const executor = agents.get("executor");
+
+      expect(executor).toBeDefined();
+      expect(executor?.id).toBe("executor");
+      expect(executor?.name).toBe("executor");
+      expect(executor?.modelTier).toBe("high");
+      expect(executor?.tools).toContain("editFiles");
+      expect(executor?.content).toContain("# Executor");
+    });
   });
 
   describe("getAgent", () => {

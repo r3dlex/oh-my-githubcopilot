@@ -49,6 +49,25 @@ describe("YAML parser", () => {
       expect(result?.frontmatter.model_tier).toBe("high");
     });
 
+    it("should parse Copilot .agent.md frontmatter", () => {
+      const content = `---
+name: executor
+description: Executes tasks
+model: claude-sonnet-4-6
+tools: [readFile, editFiles]
+agents: [explore, architect]
+user-invocable: true
+---
+Executes code tasks.`;
+      const result = parseAgentFile(content);
+      expect(result).not.toBeNull();
+      expect(result?.frontmatter.name).toBe("executor");
+      expect(result?.frontmatter.model).toBe("claude-sonnet-4-6");
+      expect(result?.frontmatter.tools).toEqual(["readFile", "editFiles"]);
+      expect(result?.frontmatter.agents).toEqual(["explore", "architect"]);
+      expect(result?.frontmatter["user-invocable"]).toBe(true);
+    });
+
     it("should return null for content without frontmatter", () => {
       const result = parseAgentFile("Just plain content");
       expect(result).toBeNull();

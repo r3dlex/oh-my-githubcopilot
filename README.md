@@ -90,6 +90,9 @@ omp setup
 omp version
 omp hud
 omp hud --watch
+# hook bridge used by hooks/hooks.json:
+printf '{"hook_type":"UserPromptSubmitted","prompt":"/omp:plan map it"}' \
+  | omp hook keyword-detector
 ```
 
 The `omp` CLI is a companion tool for local runtime features; the Copilot plugin works without it.
@@ -159,7 +162,7 @@ git clone https://github.com/r3dlex/oh-my-githubcopilot.git /tmp/omp
 
 ### Agents
 
-OMP provides 23 specialized agents, each with Copilot-compatible frontmatter for native discovery:
+OMP provides 23 specialized agents as `.agent.md` files, each with Copilot-compatible frontmatter for native discovery:
 
 | Agent             | Model tier | Use case                                                              |
 | ----------------- | ---------- | --------------------------------------------------------------------- |
@@ -200,7 +203,7 @@ OMP provides 23 specialized agents, each with Copilot-compatible frontmatter for
 ├── AGENTS.md        # orchestration brain
 ├── agents/          # 23 Copilot-facing agent files
 ├── skills/          # 39 skills
-├── hooks/           # hook config + shell entrypoints
+├── hooks/           # hook config; UserPromptSubmitted enters via omp hook keyword-detector
 ├── src/             # TypeScript implementation
 ├── dist/            # built runtime artifacts committed for plugin consumers
 ├── vscode-omp/      # optional VS Code companion extension / VSIX package
