@@ -21,6 +21,7 @@
     "omp": "./bin/omp.mjs"
   },
   "files": [
+    "README.md",
     "dist/",
     "bin/",
     "agents/",
