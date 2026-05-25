@@ -104,7 +104,7 @@ describe("src/index.mts CLI", () => {
     await runIndex(["unknown"]);
 
     expect(consoleError).toHaveBeenCalledWith("Unknown subcommand: unknown");
-    expect(consoleError).toHaveBeenCalledWith("Usage: omp [hud|version|psm|bench] [--watch]");
+    expect(consoleError).toHaveBeenCalledWith("Usage: omp [hud|version|psm|bench|hook] [--watch]");
     expect(processExit).toHaveBeenCalledWith(1);
   });
 });

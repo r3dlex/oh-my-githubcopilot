@@ -14138,11 +14138,20 @@ __export(agent_loader_exports, {
   getAgent: () => getAgent,
   loadAllAgents: () => loadAllAgents
 });
-import { readFileSync, readdirSync } from "fs";
+import { existsSync, readFileSync, readdirSync } from "fs";
 import { join } from "path";
-function loadAgentFile(filename) {
+function normalizeModelTier(modelTier, model) {
+  if (modelTier === "high" || modelTier === "standard" || modelTier === "fast") {
+    return modelTier;
+  }
+  if (!model) return "standard";
+  if (/haiku|mini|nano|fast/i.test(model)) return "fast";
+  if (/opus|pro|gpt-5\.5|sonnet-4-6/i.test(model)) return "high";
+  return "standard";
+}
+function loadAgentFile(dir, filename) {
   try {
-    const filePath = join(AGENTS_DIR, filename);
+    const filePath = join(dir, filename);
     const content = readFileSync(filePath, "utf-8");
     const parsed = parseAgentFile(content);
     if (!parsed) return null;
@@ -14150,7 +14159,7 @@ function loadAgentFile(filename) {
       id: parsed.frontmatter.name,
       name: parsed.frontmatter.name,
       description: parsed.frontmatter.description || "",
-      modelTier: parsed.frontmatter.model_tier || "standard",
+      modelTier: normalizeModelTier(parsed.frontmatter.model_tier, parsed.frontmatter.model),
       tools: parsed.frontmatter.tools || [],
       content: parsed.content
     };
@@ -14161,13 +14170,17 @@ function loadAgentFile(filename) {
 function loadAllAgents() {
   if (cache) return cache;
   cache = /* @__PURE__ */ new Map();
-  try {
-    const files = readdirSync(AGENTS_DIR).filter((f) => f.endsWith(".md"));
-    for (const file2 of files) {
-      const agent = loadAgentFile(file2);
-      if (agent) cache.set(agent.id, agent);
+  for (const dir of AGENTS_DIRS) {
+    if (!existsSync(dir)) continue;
+    try {
+      const files = readdirSync(dir).filter((f) => f.endsWith(".agent.md"));
+      for (const file2 of files) {
+        const agent = loadAgentFile(dir, file2);
+        if (agent) cache.set(agent.id, agent);
+      }
+      if (cache.size > 0) break;
+    } catch {
     }
-  } catch {
   }
   return cache;
 }
@@ -14178,12 +14191,15 @@ function getAgent(id) {
 function clearCache() {
   cache = null;
 }
-var AGENTS_DIR, cache;
+var AGENTS_DIRS, cache;
 var init_agent_loader = __esm({
   "src/utils/agent-loader.mts"() {
     "use strict";
     init_yaml_parser();
-    AGENTS_DIR = join(process.cwd(), "src", "agents");
+    AGENTS_DIRS = [
+      join(process.cwd(), "agents"),
+      join(process.cwd(), "src", "agents")
+    ];
     cache = null;
   }
 });

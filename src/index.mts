@@ -7,6 +7,7 @@
  *   omp version    — show OMP version
  *   omp psm        — shorthand for PSM commands
  *   omp bench      — run SWE-bench suite
+ *   omp hook       — execute a packaged hook from stdin
  */
 
 import { parseArgs } from "util";
@@ -63,6 +64,9 @@ async function main() {
     case "bench":
       await runBench(positionals.slice(1));
       break;
+    case "hook":
+      await runHook(positionals.slice(1));
+      break;
     default:
       console.error(`Unknown subcommand: ${resolvedSubcommand}`);
       printUsage(true);
@@ -72,7 +76,7 @@ async function main() {
 
 function printUsage(stderr = false) {
   const output = stderr ? console.error : console.log;
-  output("Usage: omp [hud|version|psm|bench] [--watch]");
+  output("Usage: omp [hud|version|psm|bench|hook] [--watch]");
 }
 
 async function printHud() {
@@ -95,6 +99,28 @@ async function runPsm(_args: string[]) {
   console.log("  /omp:psm list           List active sessions");
   console.log("  /omp:psm switch <name>  Switch to session");
   console.log("  /omp:psm destroy <name> Destroy session");
+}
+
+async function runHook(args: string[]) {
+  const hookId = args[0];
+  if (hookId !== "keyword-detector") {
+    console.error("Usage: omp hook keyword-detector");
+    process.exit(1);
+  }
+
+  const { processHook } = await import("./hooks/keyword-detector.mts");
+  const inputText = await readStdin();
+  const input = JSON.parse(inputText || "{}");
+  const output = processHook(input);
+  console.log(JSON.stringify(output));
+}
+
+async function readStdin(): Promise<string> {
+  const chunks: string[] = [];
+  for await (const chunk of process.stdin) {
+    chunks.push(String(chunk));
+  }
+  return chunks.join("");
 }
 
 async function runBench(_args: string[]) {

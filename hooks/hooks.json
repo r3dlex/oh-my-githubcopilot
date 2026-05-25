@@ -4,7 +4,7 @@
     "UserPromptSubmitted": [
       {
         "type": "command",
-        "bash": "node ./dist/hooks/keyword-detector.mjs",
+        "bash": "node ./bin/omp.mjs hook keyword-detector",
         "timeoutSec": 0.2
       }
     ],

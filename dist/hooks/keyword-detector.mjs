@@ -1,5 +1,4 @@
 // src/hooks/keyword-detector.mts
-import { fileURLToPath } from "url";
 var KEYWORD_MAP = {
   "autopilot:": "autopilot",
   "/autopilot": "autopilot",
@@ -194,7 +193,7 @@ function processHook(input) {
     };
   }
 }
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+if (process.argv[1]?.endsWith("keyword-detector.mjs") || process.argv[1]?.endsWith("keyword-detector.mts")) {
   const input = JSON.parse(await readStdin());
   const output = processHook(input);
   console.log(JSON.stringify(output));

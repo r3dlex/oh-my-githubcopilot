@@ -6,7 +6,7 @@ The Oh My Copilot (OMP) plugin extends GitHub Copilot CLI with a multi-agent orc
 
 ## 2. Plugin Manifest
 
-Every OMP plugin must have a `plugin.json` at the project root:
+Every OMP plugin must have a `plugin.json` at the project root. The runtime manifest explicitly exposes the `omp` CLI companion and declares `.agent.md` as the native agent file contract:
 
 ```json
 {
@@ -18,6 +18,8 @@ Every OMP plugin must have a `plugin.json` at the project root:
     "cli": "./bin/omp.mjs",
     "mcp": "./dist/mcp/server.mjs"
   },
+  "agentFormat": ".agent.md",
+  "agentFilePattern": "*.agent.md",
   "agents": [
     { "id": "orchestrator" },
     { "id": "explorer" },
@@ -157,7 +159,7 @@ Hooks are registered via `hooks.json` at the project root:
 
 ### Agent Registration
 
-Each agent is registered in `plugin.json` under `agents[]`. An agent entry point exports a `run(params: AgentParams): Promise<AgentResult>` function.
+Each agent directory listed in `plugin.json` is scanned for `*.agent.md` files. OMP treats `.agent.md` as the stable Copilot-native format: YAML frontmatter describes the agent metadata and the Markdown body defines the prompt contract. The root `agents/` directory is the package runtime surface; `.github/agents/` and `.copilot/agents/` mirror Copilot-facing variants for repository/editor workflows.
 
 ### Skill Registration
 

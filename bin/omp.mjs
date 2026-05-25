@@ -283,6 +283,224 @@ var init_watch = __esm({
   }
 });
 
+// src/hooks/keyword-detector.mts
+var keyword_detector_exports = {};
+__export(keyword_detector_exports, {
+  processHook: () => processHook
+});
+function detectKeyword(prompt) {
+  const trimmed = prompt.trimStart();
+  for (const [keyword, skillId] of KEYWORD_ENTRIES) {
+    if (trimmed.startsWith(keyword)) {
+      return {
+        keyword,
+        skillId,
+        position: 0
+      };
+    }
+  }
+  const slashPattern = /^\/((?:omp:)?[a-zA-Z][a-zA-Z0-9-]*)\b/;
+  const slashMatch = trimmed.match(slashPattern);
+  if (slashMatch) {
+    const cmd = slashMatch[1].toLowerCase();
+    const skillId = KEYWORD_MAP[`/${cmd}`] ?? KEYWORD_MAP[`${cmd}:`];
+    if (skillId) {
+      return {
+        keyword: slashMatch[0],
+        skillId,
+        position: 0
+      };
+    }
+  }
+  const longNamespacePattern = /^\/?oh-my-githubcopilot:([a-zA-Z][a-zA-Z0-9-]*)\b/i;
+  const longNamespaceMatch = trimmed.match(longNamespacePattern);
+  if (longNamespaceMatch) {
+    const cmd = longNamespaceMatch[1].toLowerCase();
+    const skillId = KEYWORD_MAP[`/omp:${cmd}`] ?? KEYWORD_MAP[`/${cmd}`] ?? KEYWORD_MAP[`${cmd}:`];
+    if (skillId) {
+      return {
+        keyword: longNamespaceMatch[0],
+        skillId,
+        position: 0
+      };
+    }
+  }
+  return null;
+}
+function getCanonicalCommand(skillId) {
+  return CANONICAL_COMMAND_MAP[skillId] ?? `/omp:${skillId}`;
+}
+function processHook(input) {
+  const start = Date.now();
+  const log = [];
+  try {
+    if (input.hook_type !== "UserPromptSubmitted") {
+      return {
+        status: "skip",
+        latencyMs: Date.now() - start,
+        mutations: [],
+        log: ["Not a UserPromptSubmitted hook"]
+      };
+    }
+    const match = detectKeyword(input.prompt);
+    if (!match) {
+      return {
+        status: "ok",
+        latencyMs: Date.now() - start,
+        mutations: [],
+        log: []
+      };
+    }
+    const taskPart = input.prompt.slice(match.position + match.keyword.length).trim();
+    const rewritten = `${getCanonicalCommand(match.skillId)}${taskPart ? ` ${taskPart}` : ""}`;
+    log.push(`Keyword detected: "${match.keyword}" \u2192 skill: ${match.skillId}`);
+    log.push(`Rewritten: "${rewritten}"`);
+    return {
+      status: "ok",
+      latencyMs: Date.now() - start,
+      modifiedPrompt: rewritten,
+      mutations: [
+        { type: "set_mode", mode: match.skillId },
+        { type: "log", level: "info", message: `Skill activated: ${match.skillId}` }
+      ],
+      log
+    };
+  } catch (err) {
+    return {
+      status: "error",
+      latencyMs: Date.now() - start,
+      mutations: [],
+      log: [`Error: ${err}`]
+    };
+  }
+}
+async function readStdin() {
+  const chunks = [];
+  for await (const chunk of process.stdin) {
+    chunks.push(chunk);
+  }
+  return chunks.join("");
+}
+var KEYWORD_MAP, KEYWORD_ENTRIES, CANONICAL_COMMAND_MAP;
+var init_keyword_detector = __esm({
+  async "src/hooks/keyword-detector.mts"() {
+    "use strict";
+    KEYWORD_MAP = {
+      "autopilot:": "autopilot",
+      "/autopilot": "autopilot",
+      "/omp:autopilot": "autopilot",
+      "ralph:": "ralph",
+      "/ralph": "ralph",
+      "/omp:ralph": "ralph",
+      "ulw:": "ultrawork",
+      "ultrawork:": "ultrawork",
+      "/ulw": "ultrawork",
+      "/ultrawork": "ultrawork",
+      "/omp:ulw": "ultrawork",
+      "/omp:ultrawork": "ultrawork",
+      "team:": "team",
+      "/team": "team",
+      "/omp:team": "team",
+      "eco:": "ecomode",
+      "ecomode:": "ecomode",
+      "/eco": "ecomode",
+      "/ecomode": "ecomode",
+      "/omp:eco": "ecomode",
+      "/omp:ecomode": "ecomode",
+      "swarm:": "swarm",
+      "/swarm": "swarm",
+      "/omp:swarm": "swarm",
+      "pipeline:": "pipeline",
+      "/pipeline": "pipeline",
+      "/omp:pipeline": "pipeline",
+      "deep interview:": "deep-interview",
+      "/deep-interview": "deep-interview",
+      "/omp:deep-interview": "deep-interview",
+      "plan:": "omp-plan",
+      "/plan": "omp-plan",
+      "/omp-plan": "omp-plan",
+      "/omp:plan": "omp-plan",
+      "setup:": "omp-setup",
+      "/setup": "omp-setup",
+      "/omp-setup": "omp-setup",
+      "/omp:setup": "omp-setup",
+      "mcp:": "mcp-setup",
+      "mcp-setup:": "mcp-setup",
+      "/mcp": "mcp-setup",
+      "/mcp-setup": "mcp-setup",
+      "/omp:mcp-setup": "mcp-setup",
+      "/hud": "hud",
+      "hud:": "hud",
+      "/omp:hud": "hud",
+      "/wiki": "wiki",
+      "wiki:": "wiki",
+      "/omp:wiki": "wiki",
+      "/learner": "learner",
+      "learner:": "learner",
+      "/omp:learner": "learner",
+      "/note": "note",
+      "note:": "note",
+      "/omp:note": "note",
+      "/trace": "trace",
+      "trace:": "trace",
+      "/omp:trace": "trace",
+      "/release": "release",
+      "release:": "release",
+      "/omp:release": "release",
+      "/configure-notifications": "configure-notifications",
+      "configure-notifications:": "configure-notifications",
+      "/omp:configure-notifications": "configure-notifications",
+      "/psm": "psm",
+      "psm:": "psm",
+      "/omp:psm": "psm",
+      "/swe-bench": "swe-bench",
+      "swe-bench:": "swe-bench",
+      "/omp:swe-bench": "swe-bench",
+      "graphify:": "graphify",
+      "graph build": "graphify",
+      "build graph": "graphify",
+      "graphwiki:": "graphwiki",
+      "graph:": "graph-provider",
+      "spending:": "spending",
+      "/graphify": "graphify",
+      "/omp:graphify": "graphify",
+      "/graphwiki": "graphwiki",
+      "/omp:graphwiki": "graphwiki",
+      "/graph-provider": "graph-provider",
+      "/omp:graph-provider": "graph-provider",
+      "/spending": "spending",
+      "/omp:spending": "spending",
+      "--consensus": "omp-plan",
+      "/omp:omp-doctor": "omp-doctor",
+      "/omp:ralplan": "ralplan",
+      "/omp:research": "research",
+      "doctor:": "doctor",
+      "/doctor": "doctor",
+      "/omp:doctor": "doctor",
+      "interview:": "interview",
+      "/interview": "interview",
+      "/omp:interview": "interview",
+      "notifications:": "notifications",
+      "/notifications": "notifications",
+      "/omp:notifications": "notifications",
+      "session:": "session",
+      "/session": "session",
+      "/omp:session": "session"
+    };
+    KEYWORD_ENTRIES = Object.entries(KEYWORD_MAP).sort(([a], [b]) => b.length - a.length);
+    CANONICAL_COMMAND_MAP = {
+      "omp-plan": "/omp:plan",
+      "omp-setup": "/setup",
+      "mcp-setup": "/mcp"
+    };
+    if (process.argv[1]?.endsWith("keyword-detector.mjs") || process.argv[1]?.endsWith("keyword-detector.mts")) {
+      const input = JSON.parse(await readStdin());
+      const output = processHook(input);
+      console.log(JSON.stringify(output));
+    }
+  }
+});
+
 // src/index.mts
 import { parseArgs } from "util";
 import { createRequire } from "module";
@@ -477,6 +695,9 @@ async function main() {
     case "bench":
       await runBench(positionals.slice(1));
       break;
+    case "hook":
+      await runHook(positionals.slice(1));
+      break;
     default:
       console.error(`Unknown subcommand: ${resolvedSubcommand}`);
       printUsage(true);
@@ -485,7 +706,7 @@ async function main() {
 }
 function printUsage(stderr = false) {
   const output = stderr ? console.error : console.log;
-  output("Usage: omp [hud|version|psm|bench] [--watch]");
+  output("Usage: omp [hud|version|psm|bench|hook] [--watch]");
 }
 async function printHud() {
   try {
@@ -505,6 +726,25 @@ async function runPsm(_args) {
   console.log("  /omp:psm list           List active sessions");
   console.log("  /omp:psm switch <name>  Switch to session");
   console.log("  /omp:psm destroy <name> Destroy session");
+}
+async function runHook(args) {
+  const hookId = args[0];
+  if (hookId !== "keyword-detector") {
+    console.error("Usage: omp hook keyword-detector");
+    process.exit(1);
+  }
+  const { processHook: processHook2 } = await init_keyword_detector().then(() => keyword_detector_exports);
+  const inputText = await readStdin2();
+  const input = JSON.parse(inputText || "{}");
+  const output = processHook2(input);
+  console.log(JSON.stringify(output));
+}
+async function readStdin2() {
+  const chunks = [];
+  for await (const chunk of process.stdin) {
+    chunks.push(String(chunk));
+  }
+  return chunks.join("");
 }
 async function runBench(_args) {
   console.log("SWE-bench requires Node.js subprocess with Python evaluation harness.");

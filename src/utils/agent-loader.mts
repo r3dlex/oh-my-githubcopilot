@@ -3,7 +3,7 @@
  * Loads and registers agent definitions from the agents directory.
  */
 
-import { readFileSync, readdirSync } from "fs";
+import { existsSync, readFileSync, readdirSync } from "fs";
 import { join } from "path";
 import { parseAgentFile } from "./yaml-parser.mjs";
 
@@ -16,13 +16,26 @@ export interface AgentDefinition {
   content: string;
 }
 
-const AGENTS_DIR = join(process.cwd(), "src", "agents");
+const AGENTS_DIRS = [
+  join(process.cwd(), "agents"),
+  join(process.cwd(), "src", "agents"),
+];
 
 let cache: Map<string, AgentDefinition> | null = null;
 
-function loadAgentFile(filename: string): AgentDefinition | null {
+function normalizeModelTier(modelTier: string | undefined, model: string | undefined): "high" | "standard" | "fast" {
+  if (modelTier === "high" || modelTier === "standard" || modelTier === "fast") {
+    return modelTier;
+  }
+  if (!model) return "standard";
+  if (/haiku|mini|nano|fast/i.test(model)) return "fast";
+  if (/opus|pro|gpt-5\.5|sonnet-4-6/i.test(model)) return "high";
+  return "standard";
+}
+
+function loadAgentFile(dir: string, filename: string): AgentDefinition | null {
   try {
-    const filePath = join(AGENTS_DIR, filename);
+    const filePath = join(dir, filename);
     const content = readFileSync(filePath, "utf-8");
     const parsed = parseAgentFile(content);
     if (!parsed) return null;
@@ -30,7 +43,7 @@ function loadAgentFile(filename: string): AgentDefinition | null {
       id: parsed.frontmatter.name,
       name: parsed.frontmatter.name,
       description: parsed.frontmatter.description || "",
-      modelTier: parsed.frontmatter.model_tier || "standard",
+      modelTier: normalizeModelTier(parsed.frontmatter.model_tier, parsed.frontmatter.model),
       tools: parsed.frontmatter.tools || [],
       content: parsed.content,
     };
@@ -45,14 +58,18 @@ function loadAgentFile(filename: string): AgentDefinition | null {
 export function loadAllAgents(): Map<string, AgentDefinition> {
   if (cache) return cache;
   cache = new Map();
-  try {
-    const files = readdirSync(AGENTS_DIR).filter((f) => f.endsWith(".md"));
-    for (const file of files) {
-      const agent = loadAgentFile(file);
-      if (agent) cache.set(agent.id, agent);
+  for (const dir of AGENTS_DIRS) {
+    if (!existsSync(dir)) continue;
+    try {
+      const files = readdirSync(dir).filter((f) => f.endsWith(".agent.md"));
+      for (const file of files) {
+        const agent = loadAgentFile(dir, file);
+        if (agent) cache.set(agent.id, agent);
+      }
+      if (cache.size > 0) break;
+    } catch {
+      // Directory may not exist or may be unreadable
     }
-  } catch {
-    // Directory may not exist
   }
   return cache;
 }
