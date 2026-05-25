@@ -131,6 +131,10 @@ omp is open source under the [Apache-2.0 License](LICENSE).
 
 ---
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/chart?repos=r3dlex/oh-my-githubcopilot&type=date&legend=top-left)](https://www.star-history.com/?repos=r3dlex%2Foh-my-githubcopilot&type=date&legend=top-left)
+
 ## Sponsors
 
 If omp saves you time, consider [sponsoring the project](https://github.com/sponsors/r3dlex) ❤️
