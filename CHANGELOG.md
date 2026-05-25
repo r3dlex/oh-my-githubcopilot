@@ -4,6 +4,23 @@ All notable changes to **oh-my-githubcopilot** are documented here, ordered newe
 
 ---
 
+## oh-my-githubcopilot v1.8.0 — 2026-05-25
+
+### Features
+
+- **Cross-repo sync**: Aligned README template, Star History chart, sponsor links, and badge shields with OMX/OMC/OMA/OMG
+- **Dual publish**: GitHub Actions release workflow now publishes to both npmjs.com (oh-my-githubcopilot) and GitHub Packages (@r3dlex/oh-my-githubcopilot) with version verification
+- **README updates**: 12 localized README files regenerated from unified template
+- **AI SDLC methodology**: Scaffolded across the repo with Archgate rules, ADR governance, Karpathy guidelines
+
+### Documentation
+
+- Updated READMEs across 13 languages (en, de, es, fr, it, ja, ko, pt, ru, tr, vi, zh)
+- Star History chart added for r3dlex/oh-my-githubcopilot
+- Sponsor link updated to github.com/sponsors/r3dlex
+
+---
+
 ## oh-my-githubcopilot v1.7.0 — 2026-04-21
 
 ### Features
