@@ -228,8 +228,8 @@ jobs:
           node-version: "22"
           registry-url: "https://registry.npmjs.org"
 
-      - name: Check if version already published on npmjs.com (stable idempotency)
-        if: needs.build.outputs.release_type == 'stable' && !inputs.dry-run
+      - name: Check if version already published on npmjs.com
+        if: ${{ !inputs.dry-run }}
         id: npm_check
         run: |
           PUBLISH_VERSION="${{ needs.build.outputs.publish_version }}"
@@ -242,7 +242,9 @@ jobs:
 
       - name: Publish to npmjs.com
         if: ${{ !inputs.dry-run && steps.npm_check.outputs.already_published != 'true' }}
-        run: npm publish --provenance --access public --ignore-scripts --tag ${{ needs.build.outputs.npm_tag }} || echo "::warning::Publish skipped — version already exists or provenance conflict (idempotent)"
+        run: npm publish --provenance --access public --ignore-scripts --tag ${{ needs.build.outputs.npm_tag }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish to npmjs.com (dry run)
         if: ${{ inputs.dry-run == true }}
