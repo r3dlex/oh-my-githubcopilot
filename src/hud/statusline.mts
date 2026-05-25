@@ -171,17 +171,19 @@ export function writeHudArtifacts(snapshot: HudSnapshot, paths = getStatuslinePa
 }
 
 export function readStatusline(paths = getStatuslinePaths()): string {
-  try {
-    const line = readFileSync(paths.displayPath, "utf-8").trim();
-    if (line) return line;
-  } catch {
-    // Fall through to other sources.
-  }
-
+  // Try live render from status.json — formatAge runs at call time, not hook-fire time
   try {
     const parsed = JSON.parse(readFileSync(paths.statusJsonPath, "utf-8"));
     const state = deserializeHudState(parsed);
     if (state) return renderPlain(state);
+  } catch {
+    // Fall through to cached display string.
+  }
+
+  // Fallback: pre-rendered cached string (written by hud-emitter; used by tmux consumers)
+  try {
+    const line = readFileSync(paths.displayPath, "utf-8").trim();
+    if (line) return line;
   } catch {
     // Fall through to legacy file.
   }
@@ -189,9 +191,7 @@ export function readStatusline(paths = getStatuslinePaths()): string {
   try {
     const line = readFileSync(paths.legacyLinePath, "utf-8").trim();
     if (line) return line;
-  } catch {
-    // No HUD artifacts yet.
-  }
+  } catch {}
 
   return DEFAULT_STATUSLINE;
 }

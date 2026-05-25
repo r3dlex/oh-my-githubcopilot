@@ -67,6 +67,11 @@ async function main() {
     case "hook":
       await runHook(positionals.slice(1));
       break;
+    case "install": {
+      const { runInstall } = await import("./cli/install.mts");
+      await runInstall();
+      break;
+    }
     default:
       console.error(`Unknown subcommand: ${resolvedSubcommand}`);
       printUsage(true);
@@ -76,7 +81,7 @@ async function main() {
 
 function printUsage(stderr = false) {
   const output = stderr ? console.error : console.log;
-  output("Usage: omp [hud|version|psm|bench|hook] [--watch]");
+  output("Usage: omp [hud|install|version|psm|bench|hook] [--watch]");
 }
 
 async function printHud() {
