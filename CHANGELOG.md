@@ -1,3 +1,17 @@
+## oh-my-githubcopilot v1.8.1 — 2026-05-25
+
+### Fixes
+
+- **Node.js v26 native addon compatibility** — upgraded `better-sqlite3` from `^11.0.0` to `^12.10.0` to resolve
+  V8 API removals (`GetPrototype`, `GetIsolate`, `PropertyCallbackInfo::This`) that broke `npm install -g oh-my-githubcopilot`
+  on Node.js v26 (all macOS, Linux, and Windows with V8 >= 12.0)
+
+### Changed
+
+- **Dependencies**: `better-sqlite3` ^11.0.0 → ^12.10.0, `@types/better-sqlite3` ^7.0.0 → ^7.6.13
+
+---
+
 # Changelog
 
 All notable changes to **oh-my-githubcopilot** are documented here, ordered newest first.
