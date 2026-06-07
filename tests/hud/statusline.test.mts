@@ -66,7 +66,7 @@ describe("hud statusline", () => {
     }
   });
 
-  it("should fall back from display.txt to status.json to legacy line", () => {
+  it("should fall back from status.json to display.txt to legacy line", () => {
     const homeDir = mkdtempSync(join(tmpdir(), "omp-statusline-read-"));
     try {
       const paths = getStatuslinePaths(homeDir);
@@ -83,6 +83,7 @@ describe("hud statusline", () => {
         status: "idle",
       }, paths);
 
+      // fromDisplay now actually reads from status.json (primary path) — display.txt is the fallback
       const fromDisplay = readStatusline(paths);
       expect(fromDisplay).toContain("gpt-5.4-mini");
 

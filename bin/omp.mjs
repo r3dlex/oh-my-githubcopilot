@@ -190,14 +190,14 @@ function writeHudArtifacts(snapshot, paths = getStatuslinePaths()) {
 }
 function readStatusline(paths = getStatuslinePaths()) {
   try {
-    const line = readFileSync(paths.displayPath, "utf-8").trim();
-    if (line) return line;
-  } catch {
-  }
-  try {
     const parsed = JSON.parse(readFileSync(paths.statusJsonPath, "utf-8"));
     const state = deserializeHudState(parsed);
     if (state) return renderPlain(state);
+  } catch {
+  }
+  try {
+    const line = readFileSync(paths.displayPath, "utf-8").trim();
+    if (line) return line;
   } catch {
   }
   try {
@@ -280,6 +280,62 @@ var init_watch = __esm({
     init_renderer();
     DEFAULT_INTERVAL_MS = 2e3;
     STATE_PATH = join3(homedir3(), ".omp", "state", "session.json");
+  }
+});
+
+// src/cli/install.mts
+var install_exports = {};
+__export(install_exports, {
+  runInstall: () => runInstall
+});
+import { mkdir as mkdir2, readFile as readFile2, rename, writeFile as writeFile2 } from "fs/promises";
+import { homedir as homedir4 } from "os";
+import { dirname as dirname3, join as join4 } from "path";
+import { fileURLToPath as fileURLToPath2 } from "url";
+async function runInstall(settingsPath = join4(homedir4(), ".copilot", "settings.json")) {
+  const pkgRoot = join4(dirname3(fileURLToPath2(import.meta.url)), "..");
+  const statusLineCommand = join4(pkgRoot, "bin", "omp-statusline.sh");
+  const marketplacePath = pkgRoot;
+  let existing = {};
+  try {
+    const raw = await readFile2(settingsPath, "utf-8");
+    const parsed = JSON.parse(raw);
+    if (parsed !== null && typeof parsed === "object" && !Array.isArray(parsed)) {
+      existing = parsed;
+    }
+  } catch {
+  }
+  const existingPlugins = typeof existing.enabledPlugins === "object" && existing.enabledPlugins !== null && !Array.isArray(existing.enabledPlugins) ? existing.enabledPlugins : {};
+  const existingMarketplaces = typeof existing.extraKnownMarketplaces === "object" && existing.extraKnownMarketplaces !== null && !Array.isArray(existing.extraKnownMarketplaces) ? existing.extraKnownMarketplaces : {};
+  const merged = {
+    ...existing,
+    enabledPlugins: {
+      ...existingPlugins,
+      "oh-my-githubcopilot@oh-my-githubcopilot": true
+    },
+    experimental: true,
+    statusLine: { type: "command", command: statusLineCommand },
+    extraKnownMarketplaces: {
+      ...existingMarketplaces,
+      "oh-my-githubcopilot": {
+        source: { source: "directory", path: marketplacePath }
+      }
+    }
+  };
+  const tmp = `${settingsPath}.tmp`;
+  await mkdir2(dirname3(settingsPath), { recursive: true });
+  await writeFile2(tmp, JSON.stringify(merged, null, 2) + "\n", "utf-8");
+  await rename(tmp, settingsPath);
+  console.log(`omp install: wrote ${settingsPath}`);
+  console.log(`  statusLine.command: ${statusLineCommand}`);
+  console.log(`  marketplace path:   ${marketplacePath}`);
+  console.log(`  plugin:             oh-my-githubcopilot@oh-my-githubcopilot`);
+  console.log(`
+Restart Copilot CLI to activate OMP.`);
+}
+var init_install = __esm({
+  "src/cli/install.mts"() {
+    "use strict";
   }
 });
 
@@ -698,6 +754,11 @@ async function main() {
     case "hook":
       await runHook(positionals.slice(1));
       break;
+    case "install": {
+      const { runInstall: runInstall2 } = await Promise.resolve().then(() => (init_install(), install_exports));
+      await runInstall2();
+      break;
+    }
     default:
       console.error(`Unknown subcommand: ${resolvedSubcommand}`);
       printUsage(true);
@@ -706,14 +767,14 @@ async function main() {
 }
 function printUsage(stderr = false) {
   const output = stderr ? console.error : console.log;
-  output("Usage: omp [hud|version|psm|bench|hook] [--watch]");
+  output("Usage: omp [hud|install|version|psm|bench|hook] [--watch]");
 }
 async function printHud() {
   try {
     const { readFileSync: readFileSync3 } = await import("fs");
-    const { join: join4 } = await import("path");
-    const { homedir: homedir4 } = await import("os");
-    const hudPath = join4(homedir4(), ".omp", "hud.line");
+    const { join: join5 } = await import("path");
+    const { homedir: homedir5 } = await import("os");
+    const hudPath = join5(homedir5(), ".omp", "hud.line");
     const line = readFileSync3(hudPath, "utf-8").trim();
     console.log(line);
   } catch {

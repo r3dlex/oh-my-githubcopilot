@@ -154,14 +154,14 @@ function writeHudArtifacts(snapshot, paths = getStatuslinePaths()) {
 }
 function readStatusline(paths = getStatuslinePaths()) {
   try {
-    const line = readFileSync(paths.displayPath, "utf-8").trim();
-    if (line) return line;
-  } catch {
-  }
-  try {
     const parsed = JSON.parse(readFileSync(paths.statusJsonPath, "utf-8"));
     const state = deserializeHudState(parsed);
     if (state) return renderPlain(state);
+  } catch {
+  }
+  try {
+    const line = readFileSync(paths.displayPath, "utf-8").trim();
+    if (line) return line;
   } catch {
   }
   try {
