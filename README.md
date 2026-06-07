@@ -138,3 +138,8 @@ omp is open source under the [Apache-2.0 License](LICENSE).
 ## Sponsors
 
 If omp saves you time, consider [sponsoring the project](https://github.com/sponsors/r3dlex) ❤️
+
+<!-- v3-ai-sdlc-init:start -->
+## AI SDLC v3
+This repo follows the v3 AI-SDLC layout. See `.ai/matrix.json`, `.memory/human-override/`, and `docs/architecture/adr/`. Modules at `r3dlex/skills/ai-sdlc-init/modules/`.
+<!-- v3-ai-sdlc-init:end -->
