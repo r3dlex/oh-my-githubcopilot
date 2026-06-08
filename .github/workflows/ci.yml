@@ -2,8 +2,17 @@ name: CI
 on: [push, pull_request]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  # ==========================================================================
+  # build — compile once on the self-hosted runner, publish an artifact the
+  # downstream self-hosted legs reuse. Canonical fallback rebuilds on
+  # GitHub-hosted (x64) so native deps match that runner's architecture.
+  # ==========================================================================
+  _build-self-hosted:
+    name: "build (self-hosted)"
+    runs-on: [self-hosted, ubuntu-latest]
+    continue-on-error: true
+    outputs:
+      passed: ${{ steps.mark.outputs.passed }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -17,19 +26,61 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
+          name: ci-artifact-self-hosted
+          path: ci-artifact.tar.gz
+          retention-days: 1
+      - id: mark
+        if: success()
+        run: echo "passed=true" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: _build-self-hosted
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Route
+        run: echo "self-hosted passed=${{ needs._build-self-hosted.outputs.passed }}"
+      - uses: actions/checkout@v4
+        if: needs._build-self-hosted.outputs.passed != 'true'
+      - uses: actions/setup-node@v4
+        if: needs._build-self-hosted.outputs.passed != 'true'
+        with:
+          node-version: "22"
+          cache: "npm"
+      - run: npm ci
+        if: needs._build-self-hosted.outputs.passed != 'true'
+      - run: npm run build
+        if: needs._build-self-hosted.outputs.passed != 'true'
+      - name: Tar artifact
+        if: needs._build-self-hosted.outputs.passed != 'true'
+        run: tar czf ci-artifact.tar.gz --exclude='.git' --exclude='node_modules/.cache' . || true
+      - name: Upload artifact
+        if: needs._build-self-hosted.outputs.passed != 'true'
+        uses: actions/upload-artifact@v4
+        with:
           name: ci-artifact
           path: ci-artifact.tar.gz
           retention-days: 1
 
-  test:
-    runs-on: ubuntu-latest
-    needs: build
+  # ==========================================================================
+  # test — typecheck + unit tests + archgate
+  # ==========================================================================
+  _test-self-hosted:
+    name: "test (self-hosted)"
+    needs: _build-self-hosted
+    if: always() && needs._build-self-hosted.outputs.passed == 'true'
+    runs-on: [self-hosted, ubuntu-latest]
+    continue-on-error: true
+    outputs:
+      passed: ${{ steps.mark.outputs.passed }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: ci-artifact
+          name: ci-artifact-self-hosted
           path: .
       - name: Extract artifact
         run: tar xzf ci-artifact.tar.gz && rm ci-artifact.tar.gz
@@ -39,31 +90,104 @@ jobs:
         run: |
           npx archgate --version
           npx archgate check
+      - id: mark
+        if: success()
+        run: echo "passed=true" >> "$GITHUB_OUTPUT"
 
-  coverage:
+  test:
+    needs: [build, _test-self-hosted]
+    if: always() && needs.build.result == 'success'
     runs-on: ubuntu-latest
-    needs: build
-    timeout-minutes: 15
     steps:
+      - name: Route
+        run: echo "self-hosted passed=${{ needs._test-self-hosted.outputs.passed }}"
       - uses: actions/checkout@v4
+        if: needs._test-self-hosted.outputs.passed != 'true'
+      - uses: actions/setup-node@v4
+        if: needs._test-self-hosted.outputs.passed != 'true'
+        with:
+          node-version: "22"
+          cache: "npm"
+      - run: npm ci
+        if: needs._test-self-hosted.outputs.passed != 'true'
+      - run: npm run build
+        if: needs._test-self-hosted.outputs.passed != 'true'
+      - run: npm run typecheck
+        if: needs._test-self-hosted.outputs.passed != 'true'
+      - run: timeout 120 npm test < /dev/null
+        if: needs._test-self-hosted.outputs.passed != 'true'
+      - name: Run archgate check
+        if: needs._test-self-hosted.outputs.passed != 'true'
+        run: |
+          npx archgate --version
+          npx archgate check
+
+  # ==========================================================================
+  # coverage
+  # ==========================================================================
+  _coverage-self-hosted:
+    name: "coverage (self-hosted)"
+    needs: _build-self-hosted
+    if: always() && needs._build-self-hosted.outputs.passed == 'true'
+    runs-on: [self-hosted, ubuntu-latest]
+    timeout-minutes: 15
+    continue-on-error: true
+    outputs:
+      passed: ${{ steps.mark.outputs.passed }}
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: ci-artifact
+          name: ci-artifact-self-hosted
           path: .
       - name: Extract artifact
         run: tar xzf ci-artifact.tar.gz && rm ci-artifact.tar.gz
       - run: timeout 600 npm run test:coverage < /dev/null
+      - id: mark
+        if: success()
+        run: echo "passed=true" >> "$GITHUB_OUTPUT"
 
-  vscode-omp:
+  coverage:
+    needs: [build, _coverage-self-hosted]
+    if: always() && needs.build.result == 'success'
     runs-on: ubuntu-latest
-    needs: build
+    timeout-minutes: 15
     steps:
+      - name: Route
+        run: echo "self-hosted passed=${{ needs._coverage-self-hosted.outputs.passed }}"
       - uses: actions/checkout@v4
+        if: needs._coverage-self-hosted.outputs.passed != 'true'
+      - uses: actions/setup-node@v4
+        if: needs._coverage-self-hosted.outputs.passed != 'true'
+        with:
+          node-version: "22"
+          cache: "npm"
+      - run: npm ci
+        if: needs._coverage-self-hosted.outputs.passed != 'true'
+      - run: npm run build
+        if: needs._coverage-self-hosted.outputs.passed != 'true'
+      - run: timeout 600 npm run test:coverage < /dev/null
+        if: needs._coverage-self-hosted.outputs.passed != 'true'
+
+  # ==========================================================================
+  # vscode-omp — build + package the VS Code companion extension
+  # ==========================================================================
+  _vscode-omp-self-hosted:
+    name: "vscode-omp (self-hosted)"
+    needs: _build-self-hosted
+    if: always() && needs._build-self-hosted.outputs.passed == 'true'
+    runs-on: [self-hosted, ubuntu-latest]
+    continue-on-error: true
+    outputs:
+      passed: ${{ steps.mark.outputs.passed }}
+    steps:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: ci-artifact
+          name: ci-artifact-self-hosted
           path: .
       - name: Extract artifact
         run: tar xzf ci-artifact.tar.gz && rm ci-artifact.tar.gz
@@ -82,6 +206,52 @@ jobs:
         run: cd vscode-omp && npm run package --if-present
       - name: Upload VSIX artifacts
         if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vscode-omp-artifacts-self-hosted
+          path: |
+            vscode-omp/*.vsix
+            vscode-omp/dist/**
+            vscode-omp/out/**
+          if-no-files-found: ignore
+      - id: mark
+        if: success()
+        run: echo "passed=true" >> "$GITHUB_OUTPUT"
+
+  vscode-omp:
+    needs: [build, _vscode-omp-self-hosted]
+    if: always() && needs.build.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Route
+        run: echo "self-hosted passed=${{ needs._vscode-omp-self-hosted.outputs.passed }}"
+      - uses: actions/checkout@v4
+        if: needs._vscode-omp-self-hosted.outputs.passed != 'true'
+      - uses: actions/setup-node@v4
+        if: needs._vscode-omp-self-hosted.outputs.passed != 'true'
+        with:
+          node-version: "22"
+          cache: "npm"
+      - name: Install root dependencies
+        if: needs._vscode-omp-self-hosted.outputs.passed != 'true'
+        run: npm ci
+      - name: Build root project
+        if: needs._vscode-omp-self-hosted.outputs.passed != 'true'
+        run: npm run build
+      - name: Install extension dependencies
+        if: needs._vscode-omp-self-hosted.outputs.passed != 'true'
+        run: cd vscode-omp && npm ci
+      - name: Build extension
+        if: needs._vscode-omp-self-hosted.outputs.passed != 'true'
+        run: cd vscode-omp && npm run build --if-present
+      - name: Test extension
+        if: needs._vscode-omp-self-hosted.outputs.passed != 'true'
+        run: cd vscode-omp && npm test --if-present
+      - name: Package VSIX
+        if: needs._vscode-omp-self-hosted.outputs.passed != 'true'
+        run: cd vscode-omp && npm run package --if-present
+      - name: Upload VSIX artifacts
+        if: always() && needs._vscode-omp-self-hosted.outputs.passed != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: vscode-omp-artifacts
