@@ -3,7 +3,9 @@ on: [push, pull_request]
 
 jobs:
   # ==========================================================================
-  # build — compile once, publish an artifact reused by downstream jobs
+  # build — compile once on the self-hosted runner, publish an artifact the
+  # downstream self-hosted legs reuse. Canonical fallback rebuilds on
+  # GitHub-hosted (x64) so native deps match that runner's architecture.
   # ==========================================================================
   _build-self-hosted:
     name: "build (self-hosted)"
@@ -38,24 +40,6 @@ jobs:
     steps:
       - name: Route
         run: echo "self-hosted passed=${{ needs._build-self-hosted.outputs.passed }}"
-
-      # Happy path: re-publish the self-hosted artifact under the canonical name
-      # so downstream canonical jobs can always resolve `ci-artifact`.
-      - name: Download self-hosted artifact
-        if: needs._build-self-hosted.outputs.passed == 'true'
-        uses: actions/download-artifact@v4
-        with:
-          name: ci-artifact-self-hosted
-          path: _sh
-      - name: Re-publish as canonical artifact
-        if: needs._build-self-hosted.outputs.passed == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: ci-artifact
-          path: _sh/ci-artifact.tar.gz
-          retention-days: 1
-
-      # Fallback: build on GitHub-hosted when the self-hosted leg did not pass.
       - uses: actions/checkout@v4
         if: needs._build-self-hosted.outputs.passed != 'true'
       - uses: actions/setup-node@v4
@@ -117,15 +101,17 @@ jobs:
     steps:
       - name: Route
         run: echo "self-hosted passed=${{ needs._test-self-hosted.outputs.passed }}"
-      - name: Download artifact
+      - uses: actions/checkout@v4
         if: needs._test-self-hosted.outputs.passed != 'true'
-        uses: actions/download-artifact@v4
+      - uses: actions/setup-node@v4
+        if: needs._test-self-hosted.outputs.passed != 'true'
         with:
-          name: ci-artifact
-          path: .
-      - name: Extract artifact
+          node-version: "22"
+          cache: "npm"
+      - run: npm ci
         if: needs._test-self-hosted.outputs.passed != 'true'
-        run: tar xzf ci-artifact.tar.gz && rm ci-artifact.tar.gz
+      - run: npm run build
+        if: needs._test-self-hosted.outputs.passed != 'true'
       - run: npm run typecheck
         if: needs._test-self-hosted.outputs.passed != 'true'
       - run: timeout 120 npm test < /dev/null
@@ -172,15 +158,17 @@ jobs:
     steps:
       - name: Route
         run: echo "self-hosted passed=${{ needs._coverage-self-hosted.outputs.passed }}"
-      - name: Download artifact
+      - uses: actions/checkout@v4
         if: needs._coverage-self-hosted.outputs.passed != 'true'
-        uses: actions/download-artifact@v4
+      - uses: actions/setup-node@v4
+        if: needs._coverage-self-hosted.outputs.passed != 'true'
         with:
-          name: ci-artifact
-          path: .
-      - name: Extract artifact
+          node-version: "22"
+          cache: "npm"
+      - run: npm ci
         if: needs._coverage-self-hosted.outputs.passed != 'true'
-        run: tar xzf ci-artifact.tar.gz && rm ci-artifact.tar.gz
+      - run: npm run build
+        if: needs._coverage-self-hosted.outputs.passed != 'true'
       - run: timeout 600 npm run test:coverage < /dev/null
         if: needs._coverage-self-hosted.outputs.passed != 'true'
 
@@ -237,21 +225,19 @@ jobs:
     steps:
       - name: Route
         run: echo "self-hosted passed=${{ needs._vscode-omp-self-hosted.outputs.passed }}"
-      - name: Download artifact
+      - uses: actions/checkout@v4
         if: needs._vscode-omp-self-hosted.outputs.passed != 'true'
-        uses: actions/download-artifact@v4
-        with:
-          name: ci-artifact
-          path: .
-      - name: Extract artifact
-        if: needs._vscode-omp-self-hosted.outputs.passed != 'true'
-        run: tar xzf ci-artifact.tar.gz && rm ci-artifact.tar.gz
       - uses: actions/setup-node@v4
         if: needs._vscode-omp-self-hosted.outputs.passed != 'true'
         with:
           node-version: "22"
           cache: "npm"
-          cache-dependency-path: vscode-omp/package-lock.json
+      - name: Install root dependencies
+        if: needs._vscode-omp-self-hosted.outputs.passed != 'true'
+        run: npm ci
+      - name: Build root project
+        if: needs._vscode-omp-self-hosted.outputs.passed != 'true'
+        run: npm run build
       - name: Install extension dependencies
         if: needs._vscode-omp-self-hosted.outputs.passed != 'true'
         run: cd vscode-omp && npm ci
