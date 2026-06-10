@@ -34,7 +34,7 @@ This is a checklist artifact per the AI SDLC ci-policy module. It documents the 
 
 - `Pre-commit Hooks (self-hosted)`: self-hosted wrapper leg introduced in commit 62610ef; informational only, never mark as required.
 - `build (self-hosted)`: self-hosted wrapper leg; informational only.
-- `test (self-hosted)`: self-hosted wrapper leg; currently failing on main (known issue as of 2026-06-10); informational only and must never be marked required.
+- `test (self-hosted)`: self-hosted wrapper leg; currently failing on main (verified 2026-06-10 on commit 62610ef, run <https://github.com/r3dlex/oh-my-githubcopilot/actions/runs/27151885667/job/80145470882>); informational only and must never be marked required.
 - `coverage (self-hosted)`: self-hosted wrapper leg; informational only.
 - `vscode-omp (self-hosted)`: self-hosted wrapper leg; informational only.
 - `publish`: release workflow check; gates releases not merges; not a merge requirement.

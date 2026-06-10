@@ -16,7 +16,7 @@ Per the AI SDLC release-versioning module. Strategy is **semver**. The repositor
 
 ## Tag format
 
-`v<major>.<minor>.<patch>` for example `v1.8.1` (stable) or `v1.8.1-alpha.<short-sha>` (alpha). The manifest (`release.json`) is the audit anchor; it becomes authoritative once guardrails are wired into the release workflow.
+`v<major>.<minor>.<patch>` for example `v1.8.1` (stable) or `v1.8.1-alpha.<short-sha>` (alpha). The manifest (`release.json`) is the audit anchor; it becomes authoritative once guardrails are wired into the release workflow. Convention for the initialized manifest: `tag` and `trace_id` are empty strings until the first guardrail-passed release run populates them.
 
 ## How a release happens (existing flow)
 
