@@ -25,6 +25,7 @@
     "dist/",
     "bin/",
     "agents/",
+    "extension/",
     "skills/",
     "hooks/",
     "plugin.json",
