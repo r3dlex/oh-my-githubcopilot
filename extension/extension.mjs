@@ -12,6 +12,7 @@
  */
 
 import { pathToFileURL } from "url";
+import { realpathSync } from "fs";
 
 /**
  * Self-contained mirror of buildCommands(SKILL_REGISTRY)
@@ -296,10 +297,18 @@ async function main() {
 
 // Only join the session when executed directly by the Copilot CLI —
 // importing this module (e.g. from the parity tests) must not connect.
-if (
-  process.argv[1] &&
-  import.meta.url === pathToFileURL(process.argv[1]).href
-) {
+// argv[1] is realpath-normalized because Node resolves the ESM main entry
+// to its realpath, so symlinked install paths would otherwise never match.
+function isDirectExecution() {
+  if (!process.argv[1]) return false;
+  try {
+    return import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href;
+  } catch {
+    return import.meta.url === pathToFileURL(process.argv[1]).href;
+  }
+}
+
+if (isDirectExecution()) {
   main().catch((err) => {
     const message = err instanceof Error ? err.message : String(err);
     console.error(`[omp-extension] unexpected failure: ${message}`);
