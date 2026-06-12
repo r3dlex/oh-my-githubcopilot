@@ -191,7 +191,9 @@ export function readStatusline(paths = getStatuslinePaths()): string {
   try {
     const line = readFileSync(paths.legacyLinePath, "utf-8").trim();
     if (line) return line;
-  } catch {}
+  } catch {
+    // Fall through to default statusline.
+  }
 
   return DEFAULT_STATUSLINE;
 }
