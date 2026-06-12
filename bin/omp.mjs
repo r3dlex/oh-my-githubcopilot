@@ -250,7 +250,7 @@ function tick(paths = getStatuslinePaths()) {
 function runHudWatch() {
   const intervalMs = Math.max(
     500,
-    parseInt(process.env["OMP_HUD_INTERVAL"] ?? "", 10) || DEFAULT_INTERVAL_MS
+    parseInt(process.env["OMP_HUD_POLL_MS"] ?? "", 10) || parseInt(process.env["OMP_HUD_INTERVAL"] ?? "", 10) || DEFAULT_INTERVAL_MS
   );
   const paths = getStatuslinePaths();
   process.stdout.write("\x1B[?25l");
@@ -278,7 +278,7 @@ var init_watch = __esm({
     "use strict";
     init_statusline();
     init_renderer();
-    DEFAULT_INTERVAL_MS = 2e3;
+    DEFAULT_INTERVAL_MS = 1e3;
     STATE_PATH = join3(homedir3(), ".omp", "state", "session.json");
   }
 });

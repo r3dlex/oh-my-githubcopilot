@@ -92,8 +92,9 @@ describe("runHudWatch", () => {
     mockGetStatuslinePaths.mockReturnValue({ hudDir: "/tmp/hud" });
     mockRenderAnsi.mockReturnValue("ANSI_OUTPUT");
 
-    // Reset OMP_HUD_INTERVAL so tests start from a clean env.
+    // Reset interval env vars so tests start from a clean env.
     delete process.env["OMP_HUD_INTERVAL"];
+    delete process.env["OMP_HUD_POLL_MS"];
   });
 
   afterEach(() => {
@@ -101,10 +102,32 @@ describe("runHudWatch", () => {
     vi.restoreAllMocks();
   });
 
-  it("starts an interval with the default 2000ms", () => {
+  it("starts an interval with the default 1000ms", () => {
     const setIntervalSpy = vi.spyOn(globalThis, "setInterval");
     runHudWatch();
-    expect(setIntervalSpy).toHaveBeenCalledWith(expect.any(Function), 2_000);
+    expect(setIntervalSpy).toHaveBeenCalledWith(expect.any(Function), 1_000);
+  });
+
+  it("uses OMP_HUD_POLL_MS env var when set", () => {
+    process.env["OMP_HUD_POLL_MS"] = "3000";
+    const setIntervalSpy = vi.spyOn(globalThis, "setInterval");
+    runHudWatch();
+    expect(setIntervalSpy).toHaveBeenCalledWith(expect.any(Function), 3_000);
+  });
+
+  it("OMP_HUD_POLL_MS takes precedence over legacy OMP_HUD_INTERVAL", () => {
+    process.env["OMP_HUD_POLL_MS"] = "3000";
+    process.env["OMP_HUD_INTERVAL"] = "5000";
+    const setIntervalSpy = vi.spyOn(globalThis, "setInterval");
+    runHudWatch();
+    expect(setIntervalSpy).toHaveBeenCalledWith(expect.any(Function), 3_000);
+  });
+
+  it("clamps OMP_HUD_POLL_MS to minimum 500ms", () => {
+    process.env["OMP_HUD_POLL_MS"] = "100";
+    const setIntervalSpy = vi.spyOn(globalThis, "setInterval");
+    runHudWatch();
+    expect(setIntervalSpy).toHaveBeenCalledWith(expect.any(Function), 500);
   });
 
   it("uses OMP_HUD_INTERVAL env var when set", () => {
@@ -125,7 +148,7 @@ describe("runHudWatch", () => {
     process.env["OMP_HUD_INTERVAL"] = "notanumber";
     const setIntervalSpy = vi.spyOn(globalThis, "setInterval");
     runHudWatch();
-    expect(setIntervalSpy).toHaveBeenCalledWith(expect.any(Function), 2_000);
+    expect(setIntervalSpy).toHaveBeenCalledWith(expect.any(Function), 1_000);
   });
 
   it("SIGINT handler calls clearInterval and process.exit(0)", () => {
