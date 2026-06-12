@@ -88,6 +88,12 @@ jobs:
       - run: timeout 120 npm test < /dev/null
       - name: Run archgate check
         run: |
+          # archgate ships no linux/arm64 binary; skip gracefully on arm64
+          # self-hosted runners instead of failing the advisory leg.
+          if [ "$(uname -m)" = "aarch64" ] || [ "$(uname -m)" = "arm64" ]; then
+            echo "archgate: unsupported platform $(uname -m), skipping"
+            exit 0
+          fi
           npx archgate --version
           npx archgate check
       - id: mark

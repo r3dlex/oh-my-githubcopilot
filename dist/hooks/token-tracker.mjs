@@ -1,7 +1,7 @@
 // src/hooks/token-tracker.mts
-import { readFileSync as readFileSync2, writeFileSync as writeFileSync2, mkdirSync as mkdirSync2 } from "fs";
-import { homedir as homedir2 } from "os";
-import { join as join2 } from "path";
+import { readFileSync as readFileSync2, writeFileSync as writeFileSync2, mkdirSync as mkdirSync3 } from "fs";
+import { homedir as homedir3 } from "os";
+import { join as join3 } from "path";
 
 // src/spending/tracker.mts
 import { readFileSync, writeFileSync, mkdirSync } from "fs";
@@ -64,6 +64,58 @@ function incrementSpending(sessionId) {
 
 // src/hooks/token-tracker.mts
 import { fileURLToPath } from "url";
+
+// src/hooks/runner.mts
+import { appendFileSync, mkdirSync as mkdirSync2 } from "fs";
+import { homedir as homedir2 } from "os";
+import { join as join2 } from "path";
+async function readStdin() {
+  const chunks = [];
+  for await (const chunk of process.stdin) {
+    chunks.push(String(chunk));
+  }
+  return chunks.join("");
+}
+function logHookFailure(hook, reason) {
+  try {
+    process.stderr.write(`[omp hook fail-open] ${hook}: ${reason}
+`);
+  } catch {
+  }
+  try {
+    const logsDir = join2(homedir2(), ".omp", "logs");
+    mkdirSync2(logsDir, { recursive: true });
+    const record = JSON.stringify({ ts: (/* @__PURE__ */ new Date()).toISOString(), hook, reason });
+    appendFileSync(join2(logsDir, "hook-failures.jsonl"), record + "\n", "utf-8");
+  } catch {
+  }
+}
+async function runHookMain(processHook2, options = {}) {
+  let outputJson;
+  try {
+    const input = JSON.parse(await readStdin());
+    const serialized = JSON.stringify(processHook2(input));
+    if (typeof serialized !== "string") {
+      throw new Error("hook produced no serializable output");
+    }
+    outputJson = serialized;
+  } catch (err) {
+    const reason = err instanceof Error ? err.message : String(err);
+    logHookFailure(options.hookName ?? "unknown", reason);
+    const failOpen = {
+      ...options.failOpenDecision ? { decision: "allow" } : {},
+      status: "error",
+      latencyMs: 0,
+      mutations: [],
+      log: [`fail-open: ${reason}`]
+    };
+    outputJson = JSON.stringify(failOpen);
+  }
+  console.log(outputJson);
+  process.exitCode = 0;
+}
+
+// src/hooks/token-tracker.mts
 var MODEL_CONTEXTS = {
   "claude-sonnet-4.5": 2e5,
   "claude-sonnet-4": 2e5,
@@ -85,14 +137,14 @@ function estimateTokens(input) {
   }
 }
 function getStatePath(sessionId) {
-  const base = join2(homedir2(), ".omp", "state");
+  const base = join3(homedir3(), ".omp", "state");
   if (sessionId) {
-    return join2(base, "sessions", sessionId, "session.json");
+    return join3(base, "sessions", sessionId, "session.json");
   }
-  return join2(base, "session.json");
+  return join3(base, "session.json");
 }
 function ensureDir(path) {
-  mkdirSync2(path.substring(0, path.lastIndexOf("/")), { recursive: true });
+  mkdirSync3(path.substring(0, path.lastIndexOf("/")), { recursive: true });
 }
 function processHook(input) {
   const start = Date.now();
@@ -109,7 +161,13 @@ function processHook(input) {
     const statePath = getStatePath(input.session_id);
     let state;
     try {
-      state = JSON.parse(readFileSync2(statePath, "utf-8"));
+      const raw = JSON.parse(readFileSync2(statePath, "utf-8"));
+      state = {
+        ...raw,
+        warnings_issued: new Set(
+          Array.isArray(raw.warnings_issued) ? raw.warnings_issued : []
+        )
+      };
     } catch {
       const fallbackModel = input.model ?? "default";
       state = {
@@ -138,7 +196,11 @@ function processHook(input) {
     }
     try {
       ensureDir(statePath);
-      writeFileSync2(statePath, JSON.stringify(state), "utf-8");
+      writeFileSync2(
+        statePath,
+        JSON.stringify({ ...state, warnings_issued: Array.from(state.warnings_issued) }),
+        "utf-8"
+      );
     } catch (e) {
       log.push(`Failed to write state: ${e}`);
     }
@@ -163,16 +225,7 @@ function processHook(input) {
   }
 }
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const input = JSON.parse(await readStdin());
-  const output = processHook(input);
-  console.log(JSON.stringify(output));
-}
-async function readStdin() {
-  const chunks = [];
-  for await (const chunk of process.stdin) {
-    chunks.push(chunk);
-  }
-  return chunks.join("");
+  await runHookMain(processHook, { hookName: "token-tracker" });
 }
 export {
   MODEL_CONTEXTS,

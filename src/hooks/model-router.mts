@@ -101,19 +101,11 @@ function agentTierToModel(tier: string): "opus" | "sonnet" | "haiku" {
   return "sonnet";
 }
 
-// Main entry point — only runs when executed directly (not imported)
+// Main entry point — only runs when executed directly (not imported).
+// Fail-open: any stdin/parse/processing failure still emits valid JSON and exits 0.
 import { fileURLToPath } from "url";
+import { runHookMain } from "./runner.mts";
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const input: HookInput = JSON.parse(await readStdin());
-  const output = processHook(input);
-  console.log(JSON.stringify(output));
-}
-
-async function readStdin(): Promise<string> {
-  const chunks: string[] = [];
-  for await (const chunk of process.stdin) {
-    chunks.push(chunk);
-  }
-  return chunks.join("");
+  await runHookMain(processHook, { failOpenDecision: true, hookName: "model-router" });
 }

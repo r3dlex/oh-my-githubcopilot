@@ -113,19 +113,10 @@ async function runHook(args: string[]) {
     process.exit(1);
   }
 
+  // Fail-open: any stdin/parse/processing failure still emits valid JSON and exits 0.
   const { processHook } = await import("./hooks/keyword-detector.mts");
-  const inputText = await readStdin();
-  const input = JSON.parse(inputText || "{}");
-  const output = processHook(input);
-  console.log(JSON.stringify(output));
-}
-
-async function readStdin(): Promise<string> {
-  const chunks: string[] = [];
-  for await (const chunk of process.stdin) {
-    chunks.push(String(chunk));
-  }
-  return chunks.join("");
+  const { runHookMain } = await import("./hooks/runner.mts");
+  await runHookMain(processHook, { failOpenDecision: true, hookName: "keyword-detector" });
 }
 
 async function runBench(_args: string[]) {

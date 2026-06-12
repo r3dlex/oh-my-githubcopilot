@@ -2,7 +2,7 @@
 
 ## 1. Overview
 
-Hooks are lightweight middleware functions that intercept and augment each agent cycle. OMP ships with six hooks that run at specific trigger points. All hooks must complete within a 200ms performance budget.
+Hooks are lightweight middleware functions that intercept and augment each agent cycle. OMP ships with six hooks that run at specific trigger points. Hooks should complete well within the 5-second runtime timeout (`timeoutSec: 5` in `hooks/hooks.json`) and target sub-200ms internal processing; the generous timeout absorbs Node cold-start latency under CPU load. Hooks are **fail-open**: any entry-point failure (empty stdin, malformed JSON, processing error) still emits a valid `HookOutput` JSON on stdout and exits 0, so a broken hook never denies a real tool call.
 
 ## 2. hooks.json Schema
 
@@ -14,7 +14,7 @@ Hooks are lightweight middleware functions that intercept and augment each agent
       "id": "<hook-id>",
       "entry": "./src/hooks/<hook-id>.ts",
       "trigger": "<trigger-point>",
-      "timeoutMs": 200,
+      "timeoutMs": 5000,
       "priority": <number>
     }
   ]
@@ -185,9 +185,9 @@ interface ToolCall {
 }
 ```
 
-## 6. Performance Budget
+## 6. Performance Budget & Fail-Open Behavior
 
-All hooks must complete within **200ms** (hard limit). Hooks that may exceed this budget (e.g. network calls in `researcher`) must be implemented as async with explicit timeout:
+The runtime timeout is **5 seconds** per hook (`timeoutSec: 5` in `hooks/hooks.json`). This is deliberately generous: Node cold-start under CPU load (parallel builds/tests) can exceed several hundred milliseconds, and a timed-out PreToolUse hook would otherwise deny the tool call. Hook *processing* should still target sub-200ms; hooks that may exceed this internal budget (e.g. network calls in `researcher`) must be implemented as async with explicit timeout:
 
 ```typescript
 async function keywordDetector(input: HookInput): Promise<HookOutput> {
@@ -203,6 +203,14 @@ async function keywordDetector(input: HookInput): Promise<HookOutput> {
 ```
 
 If a hook times out, the cycle continues without the hook's effects and an error is logged. Persistent timeouts (3 consecutive) trigger a warning to the user.
+
+### Fail-Open Entry Points
+
+Every hook entry point uses the shared `runHookMain` helper (`src/hooks/runner.mts`), which guarantees:
+
+- Empty or malformed stdin never crashes the hook: a fail-open `HookOutput` with `status: "error"` (and `decision: "allow"` for hooks whose output supports decisions) is printed instead.
+- The hook process always exits 0.
+- stdout always contains exactly one valid JSON object.
 
 ## 6.1 Copilot CLI Event Mapping
 

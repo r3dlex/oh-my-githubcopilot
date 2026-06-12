@@ -5,36 +5,36 @@
       {
         "type": "command",
         "bash": "node ./bin/omp.mjs hook keyword-detector",
-        "timeoutSec": 0.2
+        "timeoutSec": 5
       }
     ],
     "PreToolUse": [
       {
         "type": "command",
         "bash": "node ./dist/hooks/delegation-enforcer.mjs",
-        "timeoutSec": 0.2
+        "timeoutSec": 5
       },
       {
         "type": "command",
         "bash": "node ./dist/hooks/model-router.mjs",
-        "timeoutSec": 0.2
+        "timeoutSec": 5
       }
     ],
     "PostToolUse": [
       {
         "type": "command",
         "bash": "node ./dist/hooks/token-tracker.mjs",
-        "timeoutSec": 0.2
+        "timeoutSec": 5
       },
       {
         "type": "command",
         "bash": "node ./dist/hooks/hud-emitter.mjs",
-        "timeoutSec": 0.2
+        "timeoutSec": 5
       },
       {
         "type": "command",
         "bash": "node ./dist/hooks/stop-continuation.mjs",
-        "timeoutSec": 0.2
+        "timeoutSec": 5
       }
     ]
   }

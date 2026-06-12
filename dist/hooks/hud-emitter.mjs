@@ -1,8 +1,8 @@
 // src/hooks/hud-emitter.mts
-import { mkdirSync as mkdirSync2, readFileSync as readFileSync2, writeFileSync as writeFileSync2 } from "fs";
+import { mkdirSync as mkdirSync3, readFileSync as readFileSync2, writeFileSync as writeFileSync2 } from "fs";
 import { createRequire } from "module";
-import { homedir as homedir2 } from "os";
-import { join as join2 } from "path";
+import { homedir as homedir3 } from "os";
+import { join as join3 } from "path";
 
 // src/hud/statusline.mts
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from "fs";
@@ -171,23 +171,75 @@ function readStatusline(paths = getStatuslinePaths()) {
   }
   return DEFAULT_STATUSLINE;
 }
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+if (process.argv[1] === fileURLToPath(import.meta.url) && (process.argv[1].endsWith("omp-statusline.mjs") || process.argv[1].endsWith("statusline.mts"))) {
   console.log(readStatusline());
 }
 
 // src/hooks/hud-emitter.mts
 import { fileURLToPath as fileURLToPath2 } from "url";
+
+// src/hooks/runner.mts
+import { appendFileSync, mkdirSync as mkdirSync2 } from "fs";
+import { homedir as homedir2 } from "os";
+import { join as join2 } from "path";
+async function readStdin() {
+  const chunks = [];
+  for await (const chunk of process.stdin) {
+    chunks.push(String(chunk));
+  }
+  return chunks.join("");
+}
+function logHookFailure(hook, reason) {
+  try {
+    process.stderr.write(`[omp hook fail-open] ${hook}: ${reason}
+`);
+  } catch {
+  }
+  try {
+    const logsDir = join2(homedir2(), ".omp", "logs");
+    mkdirSync2(logsDir, { recursive: true });
+    const record = JSON.stringify({ ts: (/* @__PURE__ */ new Date()).toISOString(), hook, reason });
+    appendFileSync(join2(logsDir, "hook-failures.jsonl"), record + "\n", "utf-8");
+  } catch {
+  }
+}
+async function runHookMain(processHook2, options = {}) {
+  let outputJson;
+  try {
+    const input = JSON.parse(await readStdin());
+    const serialized = JSON.stringify(processHook2(input));
+    if (typeof serialized !== "string") {
+      throw new Error("hook produced no serializable output");
+    }
+    outputJson = serialized;
+  } catch (err) {
+    const reason = err instanceof Error ? err.message : String(err);
+    logHookFailure(options.hookName ?? "unknown", reason);
+    const failOpen = {
+      ...options.failOpenDecision ? { decision: "allow" } : {},
+      status: "error",
+      latencyMs: 0,
+      mutations: [],
+      log: [`fail-open: ${reason}`]
+    };
+    outputJson = JSON.stringify(failOpen);
+  }
+  console.log(outputJson);
+  process.exitCode = 0;
+}
+
+// src/hooks/hud-emitter.mts
 var _require = createRequire(import.meta.url);
 var { version: PKG_VERSION } = _require("../../package.json");
 function getStatePath(sessionId) {
-  const base = join2(process.env["HOME"] || homedir2(), ".omp", "state");
+  const base = join3(process.env["HOME"] || homedir3(), ".omp", "state");
   if (sessionId) {
-    return join2(base, "sessions", sessionId, "session.json");
+    return join3(base, "sessions", sessionId, "session.json");
   }
-  return join2(base, "session.json");
+  return join3(base, "session.json");
 }
 function ensureDir(path) {
-  mkdirSync2(path.substring(0, path.lastIndexOf("/")), { recursive: true });
+  mkdirSync3(path.substring(0, path.lastIndexOf("/")), { recursive: true });
 }
 function stringifyOutput(value) {
   if (typeof value === "string") {
@@ -336,16 +388,7 @@ function processHook(input) {
   };
 }
 if (process.argv[1] === fileURLToPath2(import.meta.url)) {
-  const input = JSON.parse(await readStdin());
-  const output = processHook(input);
-  console.log(JSON.stringify(output));
-}
-async function readStdin() {
-  const chunks = [];
-  for await (const chunk of process.stdin) {
-    chunks.push(chunk);
-  }
-  return chunks.join("");
+  await runHookMain(processHook, { hookName: "hud-emitter" });
 }
 export {
   processHook

@@ -199,6 +199,12 @@ export function readStatusline(paths = getStatuslinePaths()): string {
   return DEFAULT_STATUSLINE;
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+// Only emit when executed as the statusline entry itself. The bundle-name
+// check prevents this from firing inside other bundles (e.g. hud-emitter.mjs)
+// that inline this module — hooks must emit exactly one JSON object on stdout.
+if (
+  process.argv[1] === fileURLToPath(import.meta.url) &&
+  (process.argv[1].endsWith("omp-statusline.mjs") || process.argv[1].endsWith("statusline.mts"))
+) {
   console.log(readStatusline());
 }
