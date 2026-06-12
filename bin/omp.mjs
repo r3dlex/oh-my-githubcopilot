@@ -216,7 +216,7 @@ var init_statusline = __esm({
     DEFAULT_STATUSLINE = "OMP | hud: no active session";
     DEFAULT_TOKEN_BUDGET = 2e5;
     DEFAULT_PREMIUM_REQUESTS_TOTAL = 1500;
-    if (process.argv[1] === fileURLToPath(import.meta.url)) {
+    if (process.argv[1] === fileURLToPath(import.meta.url) && (process.argv[1].endsWith("omp-statusline.mjs") || process.argv[1].endsWith("statusline.mts"))) {
       console.log(readStatusline());
     }
   }
@@ -455,6 +455,66 @@ var init_doctor = __esm({
   }
 });
 
+// src/hooks/runner.mts
+var runner_exports = {};
+__export(runner_exports, {
+  readStdin: () => readStdin,
+  runHookMain: () => runHookMain
+});
+import { appendFileSync, mkdirSync as mkdirSync2 } from "fs";
+import { homedir as homedir5 } from "os";
+import { join as join6 } from "path";
+async function readStdin() {
+  const chunks = [];
+  for await (const chunk of process.stdin) {
+    chunks.push(String(chunk));
+  }
+  return chunks.join("");
+}
+function logHookFailure(hook, reason) {
+  try {
+    process.stderr.write(`[omp hook fail-open] ${hook}: ${reason}
+`);
+  } catch {
+  }
+  try {
+    const logsDir = join6(homedir5(), ".omp", "logs");
+    mkdirSync2(logsDir, { recursive: true });
+    const record = JSON.stringify({ ts: (/* @__PURE__ */ new Date()).toISOString(), hook, reason });
+    appendFileSync(join6(logsDir, "hook-failures.jsonl"), record + "\n", "utf-8");
+  } catch {
+  }
+}
+async function runHookMain(processHook2, options = {}) {
+  let outputJson;
+  try {
+    const input = JSON.parse(await readStdin());
+    const serialized = JSON.stringify(processHook2(input));
+    if (typeof serialized !== "string") {
+      throw new Error("hook produced no serializable output");
+    }
+    outputJson = serialized;
+  } catch (err) {
+    const reason = err instanceof Error ? err.message : String(err);
+    logHookFailure(options.hookName ?? "unknown", reason);
+    const failOpen = {
+      ...options.failOpenDecision ? { decision: "allow" } : {},
+      status: "error",
+      latencyMs: 0,
+      mutations: [],
+      log: [`fail-open: ${reason}`]
+    };
+    outputJson = JSON.stringify(failOpen);
+  }
+  console.log(outputJson);
+  process.exitCode = 0;
+}
+var init_runner = __esm({
+  "src/hooks/runner.mts"() {
+    "use strict";
+  }
+});
+
 // src/hooks/keyword-detector.mts
 var keyword_detector_exports = {};
 __export(keyword_detector_exports, {
@@ -546,17 +606,11 @@ function processHook(input) {
     };
   }
 }
-async function readStdin() {
-  const chunks = [];
-  for await (const chunk of process.stdin) {
-    chunks.push(chunk);
-  }
-  return chunks.join("");
-}
 var KEYWORD_MAP, KEYWORD_ENTRIES, CANONICAL_COMMAND_MAP;
 var init_keyword_detector = __esm({
   async "src/hooks/keyword-detector.mts"() {
     "use strict";
+    init_runner();
     KEYWORD_MAP = {
       "autopilot:": "autopilot",
       "/autopilot": "autopilot",
@@ -666,9 +720,7 @@ var init_keyword_detector = __esm({
       "mcp-setup": "/mcp"
     };
     if (process.argv[1]?.endsWith("keyword-detector.mjs") || process.argv[1]?.endsWith("keyword-detector.mts")) {
-      const input = JSON.parse(await readStdin());
-      const output = processHook(input);
-      console.log(JSON.stringify(output));
+      await runHookMain(processHook, { failOpenDecision: true, hookName: "keyword-detector" });
     }
   }
 });
@@ -893,9 +945,9 @@ function printUsage(stderr = false) {
 async function printHud() {
   try {
     const { readFileSync: readFileSync4 } = await import("fs");
-    const { join: join6 } = await import("path");
-    const { homedir: homedir5 } = await import("os");
-    const hudPath = join6(homedir5(), ".omp", "hud.line");
+    const { join: join7 } = await import("path");
+    const { homedir: homedir6 } = await import("os");
+    const hudPath = join7(homedir6(), ".omp", "hud.line");
     const line = readFileSync4(hudPath, "utf-8").trim();
     console.log(line);
   } catch {
@@ -916,17 +968,8 @@ async function runHook(args) {
     process.exit(1);
   }
   const { processHook: processHook2 } = await init_keyword_detector().then(() => keyword_detector_exports);
-  const inputText = await readStdin2();
-  const input = JSON.parse(inputText || "{}");
-  const output = processHook2(input);
-  console.log(JSON.stringify(output));
-}
-async function readStdin2() {
-  const chunks = [];
-  for await (const chunk of process.stdin) {
-    chunks.push(String(chunk));
-  }
-  return chunks.join("");
+  const { runHookMain: runHookMain2 } = await Promise.resolve().then(() => (init_runner(), runner_exports));
+  await runHookMain2(processHook2, { failOpenDecision: true, hookName: "keyword-detector" });
 }
 async function runBench(_args) {
   console.log("SWE-bench requires Node.js subprocess with Python evaluation harness.");
