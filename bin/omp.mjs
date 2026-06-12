@@ -345,12 +345,29 @@ __export(runner_exports, {
   readStdin: () => readStdin,
   runHookMain: () => runHookMain
 });
+import { appendFileSync, mkdirSync as mkdirSync2 } from "fs";
+import { homedir as homedir5 } from "os";
+import { join as join5 } from "path";
 async function readStdin() {
   const chunks = [];
   for await (const chunk of process.stdin) {
     chunks.push(String(chunk));
   }
   return chunks.join("");
+}
+function logHookFailure(hook, reason) {
+  try {
+    process.stderr.write(`[omp hook fail-open] ${hook}: ${reason}
+`);
+  } catch {
+  }
+  try {
+    const logsDir = join5(homedir5(), ".omp", "logs");
+    mkdirSync2(logsDir, { recursive: true });
+    const record = JSON.stringify({ ts: (/* @__PURE__ */ new Date()).toISOString(), hook, reason });
+    appendFileSync(join5(logsDir, "hook-failures.jsonl"), record + "\n", "utf-8");
+  } catch {
+  }
 }
 async function runHookMain(processHook2, options = {}) {
   let outputJson;
@@ -363,6 +380,7 @@ async function runHookMain(processHook2, options = {}) {
     outputJson = serialized;
   } catch (err) {
     const reason = err instanceof Error ? err.message : String(err);
+    logHookFailure(options.hookName ?? "unknown", reason);
     const failOpen = {
       ...options.failOpenDecision ? { decision: "allow" } : {},
       status: "error",
@@ -586,7 +604,7 @@ var init_keyword_detector = __esm({
       "mcp-setup": "/mcp"
     };
     if (process.argv[1]?.endsWith("keyword-detector.mjs") || process.argv[1]?.endsWith("keyword-detector.mts")) {
-      await runHookMain(processHook, { failOpenDecision: true });
+      await runHookMain(processHook, { failOpenDecision: true, hookName: "keyword-detector" });
     }
   }
 });
@@ -806,9 +824,9 @@ function printUsage(stderr = false) {
 async function printHud() {
   try {
     const { readFileSync: readFileSync3 } = await import("fs");
-    const { join: join5 } = await import("path");
-    const { homedir: homedir5 } = await import("os");
-    const hudPath = join5(homedir5(), ".omp", "hud.line");
+    const { join: join6 } = await import("path");
+    const { homedir: homedir6 } = await import("os");
+    const hudPath = join6(homedir6(), ".omp", "hud.line");
     const line = readFileSync3(hudPath, "utf-8").trim();
     console.log(line);
   } catch {
@@ -830,7 +848,7 @@ async function runHook(args) {
   }
   const { processHook: processHook2 } = await init_keyword_detector().then(() => keyword_detector_exports);
   const { runHookMain: runHookMain2 } = await Promise.resolve().then(() => (init_runner(), runner_exports));
-  await runHookMain2(processHook2, { failOpenDecision: true });
+  await runHookMain2(processHook2, { failOpenDecision: true, hookName: "keyword-detector" });
 }
 async function runBench(_args) {
   console.log("SWE-bench requires Node.js subprocess with Python evaluation harness.");

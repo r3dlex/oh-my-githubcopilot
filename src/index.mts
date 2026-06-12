@@ -116,7 +116,7 @@ async function runHook(args: string[]) {
   // Fail-open: any stdin/parse/processing failure still emits valid JSON and exits 0.
   const { processHook } = await import("./hooks/keyword-detector.mts");
   const { runHookMain } = await import("./hooks/runner.mts");
-  await runHookMain(processHook, { failOpenDecision: true });
+  await runHookMain(processHook, { failOpenDecision: true, hookName: "keyword-detector" });
 }
 
 async function runBench(_args: string[]) {

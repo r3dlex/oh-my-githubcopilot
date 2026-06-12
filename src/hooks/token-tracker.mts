@@ -90,7 +90,15 @@ export function processHook(input: HookInput): HookOutput {
     let state: SessionState;
 
     try {
-      state = JSON.parse(readFileSync(statePath, "utf-8"));
+      const raw = JSON.parse(readFileSync(statePath, "utf-8")) as Record<string, unknown>;
+      // warnings_issued is persisted as an array (a Set JSON-serializes to {}).
+      // Rehydrate to a Set; tolerate legacy state files where it is {} or missing.
+      state = {
+        ...raw,
+        warnings_issued: new Set(
+          Array.isArray(raw.warnings_issued) ? (raw.warnings_issued as string[]) : []
+        ),
+      } as unknown as SessionState;
     } catch {
       // Initialize state if not found — budget derived from model when available
       const fallbackModel = (input as { model?: string }).model ?? "default";
@@ -129,10 +137,15 @@ export function processHook(input: HookInput): HookOutput {
       }
     }
 
-    // Write state back
+    // Write state back — persist warnings_issued as an array since a Set
+    // JSON-serializes to {} and would break .has() on the next invocation.
     try {
       ensureDir(statePath);
-      writeFileSync(statePath, JSON.stringify(state), "utf-8");
+      writeFileSync(
+        statePath,
+        JSON.stringify({ ...state, warnings_issued: Array.from(state.warnings_issued) }),
+        "utf-8"
+      );
     } catch (e) {
       log.push(`Failed to write state: ${e}`);
     }
@@ -163,5 +176,5 @@ import { fileURLToPath } from "url";
 import { runHookMain } from "./runner.mts";
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  await runHookMain(processHook);
+  await runHookMain(processHook, { hookName: "token-tracker" });
 }

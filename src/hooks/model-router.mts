@@ -107,5 +107,5 @@ import { fileURLToPath } from "url";
 import { runHookMain } from "./runner.mts";
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  await runHookMain(processHook, { failOpenDecision: true });
+  await runHookMain(processHook, { failOpenDecision: true, hookName: "model-router" });
 }

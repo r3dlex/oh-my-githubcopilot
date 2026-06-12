@@ -251,5 +251,5 @@ export function processHook(input: HookInput): HookOutput {
 import { runHookMain } from "./runner.mts";
 
 if (process.argv[1]?.endsWith("keyword-detector.mjs") || process.argv[1]?.endsWith("keyword-detector.mts")) {
-  await runHookMain(processHook, { failOpenDecision: true });
+  await runHookMain(processHook, { failOpenDecision: true, hookName: "keyword-detector" });
 }

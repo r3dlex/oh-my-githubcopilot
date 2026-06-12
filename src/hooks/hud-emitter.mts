@@ -245,5 +245,5 @@ import { fileURLToPath } from "url";
 import { runHookMain } from "./runner.mts";
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  await runHookMain(processHook);
+  await runHookMain(processHook, { hookName: "hud-emitter" });
 }

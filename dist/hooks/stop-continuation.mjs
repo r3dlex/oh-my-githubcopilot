@@ -1,16 +1,33 @@
 // src/hooks/stop-continuation.mts
 import { readFileSync } from "fs";
-import { homedir } from "os";
-import { join } from "path";
+import { homedir as homedir2 } from "os";
+import { join as join2 } from "path";
 import { fileURLToPath } from "url";
 
 // src/hooks/runner.mts
+import { appendFileSync, mkdirSync } from "fs";
+import { homedir } from "os";
+import { join } from "path";
 async function readStdin() {
   const chunks = [];
   for await (const chunk of process.stdin) {
     chunks.push(String(chunk));
   }
   return chunks.join("");
+}
+function logHookFailure(hook, reason) {
+  try {
+    process.stderr.write(`[omp hook fail-open] ${hook}: ${reason}
+`);
+  } catch {
+  }
+  try {
+    const logsDir = join(homedir(), ".omp", "logs");
+    mkdirSync(logsDir, { recursive: true });
+    const record = JSON.stringify({ ts: (/* @__PURE__ */ new Date()).toISOString(), hook, reason });
+    appendFileSync(join(logsDir, "hook-failures.jsonl"), record + "\n", "utf-8");
+  } catch {
+  }
 }
 async function runHookMain(processHook2, options = {}) {
   let outputJson;
@@ -23,6 +40,7 @@ async function runHookMain(processHook2, options = {}) {
     outputJson = serialized;
   } catch (err) {
     const reason = err instanceof Error ? err.message : String(err);
+    logHookFailure(options.hookName ?? "unknown", reason);
     const failOpen = {
       ...options.failOpenDecision ? { decision: "allow" } : {},
       status: "error",
@@ -38,11 +56,11 @@ async function runHookMain(processHook2, options = {}) {
 
 // src/hooks/stop-continuation.mts
 function getModeStatePath(mode, sessionId) {
-  const base = join(homedir(), ".omp", "state");
+  const base = join2(homedir2(), ".omp", "state");
   if (sessionId) {
-    return join(base, "sessions", sessionId, `${mode}-state.json`);
+    return join2(base, "sessions", sessionId, `${mode}-state.json`);
   }
-  return join(base, `${mode}-state.json`);
+  return join2(base, `${mode}-state.json`);
 }
 function readModeState(mode, sessionId) {
   try {
@@ -100,7 +118,7 @@ function processHook(input) {
   }
 }
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  await runHookMain(processHook);
+  await runHookMain(processHook, { hookName: "stop-continuation" });
 }
 export {
   processHook

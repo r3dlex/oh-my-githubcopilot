@@ -21,15 +21,27 @@ vi.mock("../../src/spending/tracker.mjs", () => ({
 import { readFileSync, writeFileSync, mkdirSync } from "fs";
 import { processHook } from "../../src/hooks/token-tracker.mts";
 
+// Builds persisted state JSON as written to disk (warnings_issued as array —
+// a Set JSON-serializes to {} which is exactly the bug the regression tests cover).
+function makeState(tokensEstimated: number, tokenBudget: number, warningsIssued: unknown = []): string {
+  return JSON.stringify({
+    tokens_estimated: tokensEstimated,
+    token_budget: tokenBudget,
+    context_pct: Math.min(100, Math.round((tokensEstimated / tokenBudget) * 100)),
+    warnings_issued: warningsIssued,
+  });
+}
+
 describe("token-tracker hook (mocked fs)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  // Note: warnings_issued is a Set at runtime but serializes as array in JSON.
-  // Reading back from JSON breaks .has()/.add(). We always initialize from scratch
-  // (throw on readFileSync) so the code creates a proper Set, then supply a large
-  // tool_input to push accumulated tokens past the desired threshold.
+  // Note: warnings_issued is a Set at runtime and is persisted as an array
+  // (rehydrated to a Set on load). The threshold tests initialize from scratch
+  // (throw on readFileSync) and supply a large tool_input to push accumulated
+  // tokens past the desired threshold; round-trip behavior is covered by the
+  // "warnings_issued round-trip" regression tests below.
 
   describe("warning thresholds", () => {
     it("emits info log at 60% threshold", () => {
@@ -192,6 +204,71 @@ describe("token-tracker hook (mocked fs)", () => {
 
       expect(result.status).toBe("ok");
       expect(result.log.some((l) => l.includes("Failed to write state"))).toBe(true);
+    });
+  });
+
+  describe("warnings_issued round-trip (regression)", () => {
+    it("re-invocation after a state write does not error and dedups threshold warnings", () => {
+      // First invocation: fresh state, cross 60% → warning fires, state written.
+      let persisted = "";
+      vi.mocked(readFileSync).mockImplementation(() => { throw new Error("ENOENT"); });
+      vi.mocked(writeFileSync).mockImplementation(((_path: unknown, data: unknown) => {
+        persisted = String(data);
+      }) as typeof writeFileSync);
+      vi.mocked(mkdirSync).mockImplementation(() => undefined);
+
+      const bigInput = "a".repeat(480_004); // 120001 tokens → 60% of 200000
+      const first = processHook({
+        hook_type: "PostToolUse",
+        tool_name: "Read",
+        tool_input: bigInput,
+        session_id: "roundtrip",
+      });
+      expect(first.status).toBe("ok");
+      expect(first.log.some((l) => l.includes("INFO"))).toBe(true);
+
+      // Persisted state must serialize warnings_issued as an array (a Set
+      // would JSON-stringify to {} and break .has() on the next invocation).
+      const onDisk = JSON.parse(persisted);
+      expect(Array.isArray(onDisk.warnings_issued)).toBe(true);
+      expect(onDisk.warnings_issued).toContain("warn_60");
+
+      // Second invocation: reads the persisted state back. Context still >= 60%.
+      // Previously this threw `state.warnings_issued.has is not a function`
+      // → status "error" on EVERY invocation once past a threshold.
+      vi.mocked(readFileSync).mockImplementation(() => persisted);
+      const second = processHook({
+        hook_type: "PostToolUse",
+        tool_name: "Read",
+        tool_input: "tiny",
+        session_id: "roundtrip",
+      });
+      expect(second.status).toBe("ok");
+      // warn_60 already issued → deduped, no warning re-fires
+      const logMutations = second.mutations.filter((m) => m.type === "log");
+      expect(logMutations).toHaveLength(0);
+    });
+
+    it("tolerates legacy state files where warnings_issued is {}", () => {
+      vi.mocked(readFileSync).mockImplementation(() => makeState(130_000, 200_000, {}));
+      let persisted = "";
+      vi.mocked(writeFileSync).mockImplementation(((_path: unknown, data: unknown) => {
+        persisted = String(data);
+      }) as typeof writeFileSync);
+      vi.mocked(mkdirSync).mockImplementation(() => undefined);
+
+      const result = processHook({
+        hook_type: "PostToolUse",
+        tool_name: "Read",
+        tool_input: "x",
+        session_id: "legacy",
+      });
+
+      // Previously: TypeError → status "error". Now: legacy {} rehydrates to an
+      // empty Set, the 60% warning fires once, and state persists as an array.
+      expect(result.status).toBe("ok");
+      expect(result.log.some((l) => l.includes("INFO"))).toBe(true);
+      expect(JSON.parse(persisted).warnings_issued).toContain("warn_60");
     });
   });
 
