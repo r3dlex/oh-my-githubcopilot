@@ -2,8 +2,12 @@
  * HUD watch daemon — polls session state and rewrites HUD artifacts on each tick.
  *
  * Usage:
- *   omp hud --watch           Poll every 2s (default)
- *   OMP_HUD_INTERVAL=5000 omp hud --watch   Override interval (ms)
+ *   omp hud --watch           Poll every 1s (default)
+ *   OMP_HUD_POLL_MS=500 omp hud --watch      Override interval (ms)
+ *   OMP_HUD_INTERVAL=5000 omp hud --watch    Legacy alias, lower precedence
+ *
+ * Fallback renderer #3 (SPEC-omp-2.0 §5): the canvas HUD (renderer #1) is
+ * event-pushed; this daemon and the tmux statusline (#2) poll.
  *
  * Each cycle:
  *   readState() → buildHudState() → renderAnsi() → writeHudArtifacts()
@@ -23,7 +27,7 @@ import {
 } from "./statusline.mts";
 import { renderAnsi } from "./renderer.mts";
 
-const DEFAULT_INTERVAL_MS = 2_000;
+const DEFAULT_INTERVAL_MS = 1_000;
 const STATE_PATH = join(homedir(), ".omp", "state", "session.json");
 
 function readSnapshot(): HudSnapshot | null {
@@ -55,12 +59,15 @@ function tick(paths = getStatuslinePaths()): void {
  * Start the HUD watch daemon.
  *
  * Runs until SIGINT or SIGTERM. The interval is configurable via the
- * OMP_HUD_INTERVAL env var (milliseconds).
+ * OMP_HUD_POLL_MS env var (milliseconds, default 1000); the legacy
+ * OMP_HUD_INTERVAL alias is honored at lower precedence.
  */
 export function runHudWatch(): void {
   const intervalMs = Math.max(
     500,
-    parseInt(process.env["OMP_HUD_INTERVAL"] ?? "", 10) || DEFAULT_INTERVAL_MS,
+    parseInt(process.env["OMP_HUD_POLL_MS"] ?? "", 10) ||
+      parseInt(process.env["OMP_HUD_INTERVAL"] ?? "", 10) ||
+      DEFAULT_INTERVAL_MS,
   );
 
   const paths = getStatuslinePaths();

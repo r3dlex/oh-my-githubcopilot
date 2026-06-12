@@ -118,6 +118,26 @@ Agent Cycle Completes
 
 ## 6. Display Strategies
 
+### Renderer Priority (OMP 2.0 — SPEC-omp-2.0 §5)
+
+Renderers are tried in this fallback chain; lower entries stay first-class
+when an upper one is unavailable:
+
+1. **Canvas HUD** (renderer #1, event push): the companion SDK extension
+   (`extension/extension.mjs`, mirrored from `src/extension/hud-canvas.mts` +
+   `src/extension/hud-push.mts`) declares an `omp-hud` canvas via
+   `joinSession({ canvases })`. An `fs.watch` on `~/.omp/hud/` (debounced
+   250ms) re-opens every open canvas instance whenever the `hud-emitter`
+   hook rewrites `status.json`/`display.txt`, so the panel re-renders
+   without polling. Requires Copilot CLI ≥ 1.0.60 with canvas support;
+   fail-open — registration failure never affects slash commands.
+2. **tmux statusline** (renderer #2, polling): tmux `status-right` reads
+   `~/.omp/hud/tmux-segment.sh` at the tmux refresh interval.
+3. **File polling / `omp hud --watch`** (renderer #3, polling): the watch
+   daemon (`src/hud/watch.mts`) polls every 1s by default, configurable via
+   `OMP_HUD_POLL_MS` (ms, min 500; legacy alias `OMP_HUD_INTERVAL` honored
+   at lower precedence).
+
 ### Strategy A: Copilot CLI Status
 
 OMP writes to a temporary file `~/.omp/hud/status.json`. The Copilot CLI reads this file and renders the status in its own UI. Updates occur on every `hud-emitter` cycle.

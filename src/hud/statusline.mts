@@ -12,7 +12,8 @@ import { fileURLToPath } from "url";
 import { renderPlain, type HudState, type HudStatus } from "./renderer.mts";
 
 const DEFAULT_VERSION = "0.0.0";
-const DEFAULT_STATUSLINE = "OMP | hud: no active session";
+/** Fallback line when no HUD artifacts exist. Mirrored in extension/extension.mjs. */
+export const DEFAULT_STATUSLINE = "OMP | hud: no active session";
 const DEFAULT_TOKEN_BUDGET = 200_000;
 const DEFAULT_PREMIUM_REQUESTS_TOTAL = 1500;
 
