@@ -104,7 +104,7 @@ describe("hook fail-open behavior", () => {
     const result = runHook(SRC_HOOKS[1].args, JSON.stringify({
       hook_type: "PreToolUse",
       tool_name: "Read",
-      agent_id: "explorer",
+      agent_id: "explore",
     }));
     expect(result.status).toBe(0);
     const parsed = JSON.parse(result.stdout.trim());
