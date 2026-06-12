@@ -1,5 +1,39 @@
 // src/hooks/model-router.mts
 import { fileURLToPath } from "url";
+
+// src/hooks/runner.mts
+async function readStdin() {
+  const chunks = [];
+  for await (const chunk of process.stdin) {
+    chunks.push(String(chunk));
+  }
+  return chunks.join("");
+}
+async function runHookMain(processHook2, options = {}) {
+  let outputJson;
+  try {
+    const input = JSON.parse(await readStdin());
+    const serialized = JSON.stringify(processHook2(input));
+    if (typeof serialized !== "string") {
+      throw new Error("hook produced no serializable output");
+    }
+    outputJson = serialized;
+  } catch (err) {
+    const reason = err instanceof Error ? err.message : String(err);
+    const failOpen = {
+      ...options.failOpenDecision ? { decision: "allow" } : {},
+      status: "error",
+      latencyMs: 0,
+      mutations: [],
+      log: [`fail-open: ${reason}`]
+    };
+    outputJson = JSON.stringify(failOpen);
+  }
+  console.log(outputJson);
+  process.exitCode = 0;
+}
+
+// src/hooks/model-router.mts
 var TIER_RECOMMENDATIONS = {
   high: "model: claude-opus-4.6 or gpt-5 recommended for this task (architecture, security, critical decisions)",
   standard: "model: claude-sonnet-4.6 recommended for this task (standard implementation and review)",
@@ -62,16 +96,7 @@ function agentTierToModel(tier) {
   return "sonnet";
 }
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const input = JSON.parse(await readStdin());
-  const output = processHook(input);
-  console.log(JSON.stringify(output));
-}
-async function readStdin() {
-  const chunks = [];
-  for await (const chunk of process.stdin) {
-    chunks.push(chunk);
-  }
-  return chunks.join("");
+  await runHookMain(processHook, { failOpenDecision: true });
 }
 export {
   processHook

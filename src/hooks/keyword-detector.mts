@@ -247,16 +247,9 @@ export function processHook(input: HookInput): HookOutput {
 
 // Main entry point — only runs when executed directly (not imported).
 // The omp CLI imports processHook directly to avoid double-dispatch when bundled.
-if (process.argv[1]?.endsWith("keyword-detector.mjs") || process.argv[1]?.endsWith("keyword-detector.mts")) {
-  const input: HookInput = JSON.parse(await readStdin());
-  const output = processHook(input);
-  console.log(JSON.stringify(output));
-}
+// Fail-open: any stdin/parse/processing failure still emits valid JSON and exits 0.
+import { runHookMain } from "./runner.mts";
 
-async function readStdin(): Promise<string> {
-  const chunks: string[] = [];
-  for await (const chunk of process.stdin) {
-    chunks.push(chunk);
-  }
-  return chunks.join("");
+if (process.argv[1]?.endsWith("keyword-detector.mjs") || process.argv[1]?.endsWith("keyword-detector.mts")) {
+  await runHookMain(processHook, { failOpenDecision: true });
 }
