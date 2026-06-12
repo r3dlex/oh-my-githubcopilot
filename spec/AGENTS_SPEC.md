@@ -2,7 +2,9 @@
 
 ## 1. Overview
 
-OMP exposes 23 agents registered in `plugin.json`. Every agent is a TypeScript module that exports a `run(params: AgentParams): Promise<AgentResult>` function. This document defines the model tiers, agent template, full agent registry, and delegation enforcement.
+OMP exposes 19 agents registered in `plugin.json`. Every agent is a TypeScript module that exports a `run(params: AgentParams): Promise<AgentResult>` function. This document defines the model tiers, agent template, full agent registry, and delegation enforcement.
+
+> **Breaking change in 2.0**: `explorer` was renamed to `explore` and `simplifier` to `code-simplifier`. The `orchestrator`, `researcher`, `reviewer`, and `tester` agents were dropped — orchestration is now the top-level instruction role, and their responsibilities merged into `document-specialist`, `code-reviewer`, and `test-engineer` respectively. `omp doctor` detects stale references.
 
 ## 2. Model Tiers
 
@@ -64,35 +66,31 @@ entry: ./src/agents/executor.ts
 
 | # | ID | Tier | Tools | Role |
 |---|-----|------|-------|------|
-| 1 | `orchestrator` | high | TaskList, SendMessage, Glob, Grep | Top-level coordinator. Analyzes requests, delegates to agents, verifies output. Never writes. |
-| 2 | `explorer` | standard | Glob, Grep, Read | Fast codebase surveys. Finds file patterns, identifies structure. Returns file paths and summaries. |
-| 3 | `planner` | high | Read, Write, TaskCreate | Architecture design, task sequencing, risk assessment, implementation roadmaps. |
-| 4 | `executor` | standard | Read, Write, Edit, Bash | Implementation and complex multi-file changes. Verifies output before returning. |
-| 5 | `verifier` | standard | Bash, Read, Glob | Runs tests, collects diagnostics evidence, validates command outputs, marks tasks complete. |
-| 6 | `writer` | standard | Read, Write, Glob | Technical documentation: README, API docs, guides, code comments. Matches existing style. |
-| 7 | `reviewer` | high | Read, Glob, Grep, LSP | Code review, quality gates, style enforcement. Uses LSP for precision. |
-| 8 | `designer` | high | WebFetch, Figma tools | UI/UX designs, design system integration, Figma-to-code workflow. |
-| 9 | `researcher` | standard | WebSearch, WebFetch | External documentation lookup, dependency research, options benchmarking. |
-| 10 | `tester` | standard | Bash, Read, Write | Test authoring, test execution, coverage analysis, CI integration. |
-| 11 | `debugger` | high | Bash, Read, LSP, Grep | Error diagnosis, crash analysis, stack trace interpretation, fix targeting. |
-| 12 | `architect` | high | Read, Write, Glob | System design, cross-cutting concerns, technology selection, scalability assessment. |
-| 13 | `security-reviewer` | high | Grep, Glob, Read | Vulnerability scanning, dependency audit, secrets detection, security policy review. |
-| 14 | `simplifier` | high | Read, Edit, Grep | Code reuse analysis, quality improvements, efficiency refactoring. |
-| 15 | `test-engineer` | standard | Bash, Read, Write | Test authoring, coverage analysis, test infrastructure setup. |
-| 16 | `critic` | high | Read, Grep, Write | Plan review, gap analysis, improvement suggestions, quality gates. |
-| 17 | `tracer` | high | Bash, Read, Grep | Causal investigation, root cause analysis, trace-driven debugging. |
-| 18 | `scientist` | high | Read, Write, Bash | Experimental design, hypothesis testing, data analysis. |
-| 19 | `code-reviewer` | standard | Read, Glob, LSP | PR reviews, style enforcement, pull request analysis. |
-| 20 | `document-specialist` | standard | Read, Write, Grep | Technical documentation, API docs, guides, instructional content. |
-| 21 | `qa-tester` | standard | Bash, Read, Write | QA testing, regression verification, test plan execution. |
-| 22 | `git-master` | standard | Bash, Read, Grep | Atomic commits, history management, branch strategy, commit archaeology. |
-| 23 | `analyst` | high | Read, Grep | Requirements analysis, gap identification, acceptance criteria definition. |
+| 1 | `explore` | fast | Glob, Grep, Read | Fast codebase surveys. Finds file patterns, identifies structure. Returns file paths and summaries. |
+| 2 | `planner` | high | Read, Write, TaskCreate | Architecture design, task sequencing, risk assessment, implementation roadmaps. |
+| 3 | `executor` | standard | Read, Write, Edit, Bash | Implementation and complex multi-file changes. Verifies output before returning. |
+| 4 | `verifier` | standard | Bash, Read, Glob | Runs tests, collects diagnostics evidence, validates command outputs, marks tasks complete. |
+| 5 | `writer` | standard | Read, Write, Glob | Technical documentation: README, API docs, guides, code comments. Matches existing style. |
+| 6 | `designer` | high | WebFetch, Figma tools | UI/UX designs, design system integration, Figma-to-code workflow. |
+| 7 | `debugger` | high | Bash, Read, LSP, Grep | Error diagnosis, crash analysis, stack trace interpretation, fix targeting. |
+| 8 | `architect` | high | Read, Write, Glob | System design, cross-cutting concerns, technology selection, scalability assessment. |
+| 9 | `security-reviewer` | high | Grep, Glob, Read | Vulnerability scanning, dependency audit, secrets detection, security policy review. |
+| 10 | `code-simplifier` | high | Read, Edit, Grep | Code simplification, reuse analysis, quality improvements, efficiency refactoring. |
+| 11 | `test-engineer` | standard | Bash, Read, Write | Test strategy, test authoring, suite execution, coverage analysis, CI integration. |
+| 12 | `critic` | high | Read, Grep, Write | Plan review, gap analysis, improvement suggestions, quality gates. |
+| 13 | `tracer` | high | Bash, Read, Grep | Causal investigation, root cause analysis, trace-driven debugging. |
+| 14 | `scientist` | high | Read, Write, Bash | Experimental design, hypothesis testing, data analysis. |
+| 15 | `code-reviewer` | high | Read, Glob, LSP | PR reviews, severity-rated findings, style enforcement, merge gate verdicts. |
+| 16 | `document-specialist` | standard | Read, Write, Grep, WebSearch, WebFetch | External documentation lookup, API research, options benchmarking, guides. |
+| 17 | `qa-tester` | standard | Bash, Read, Write | QA testing, regression verification, test plan execution. |
+| 18 | `git-master` | standard | Bash, Read, Grep | Atomic commits, history management, branch strategy, commit archaeology. |
+| 19 | `analyst` | high | Read, Grep | Requirements analysis, gap identification, acceptance criteria definition. |
 
 ## 5. Delegation Enforcement
 
 The `delegation-enforcer` hook runs before every agent cycle. Its rules:
 
-1. **Orchestrator boundary**: The orchestrator (`id: orchestrator`) may call all other agents but may not directly use Read, Write, Edit, or Bash tools for implementation work.
+1. **Orchestrator boundary**: The top-level coordinator (orchestrator role — not a delegatable agent) may call all agents but may not directly use Read, Write, Edit, or Bash tools for implementation work.
 2. **Tool whitelist enforcement**: Each agent may only use the tools listed in its YAML frontmatter. Any use of an out-of-scope tool is intercepted and rerouted to the appropriate agent.
 3. **Verification gate**: After every agent completes, the orchestrator must run at least one verification step (test, lint, read output) before marking the task done.
 4. **Delegation loop detection**: If the same task is delegated more than 3 times without resolution, the orchestrator escalates to `architect` for a fresh approach.

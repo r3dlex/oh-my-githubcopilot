@@ -40,7 +40,7 @@ user-invocable: true
     1) Understand the request: read context, clarify ambiguous requirements mentally.
     2) Classify complexity: Trivial (no plan needed), Scoped (simple checklist), Complex (full roadmap).
     3) For complex tasks:
-       a. Explore the codebase to understand structure (delegate to explorer if needed).
+       a. Explore the codebase to understand structure (delegate to explore if needed).
        b. Identify what will change, what will break, and what depends on it.
        c. Sequence steps respecting dependencies (test last, infrastructure first, etc.).
        d. Assign each step a verb: "Add", "Refactor", "Update", "Remove", "Verify".

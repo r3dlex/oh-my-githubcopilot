@@ -47,8 +47,8 @@ describe("recommendForAgent", () => {
     expect(rec.tier).toBe("standard");
   });
 
-  it("should recommend fast tier for explorer", () => {
-    const rec = recommendForAgent("explorer");
+  it("should recommend fast tier for explore", () => {
+    const rec = recommendForAgent("explore");
     expect(rec.tier).toBe("fast");
     expect(rec.model).toBe("gpt-5.4-mini");
   });

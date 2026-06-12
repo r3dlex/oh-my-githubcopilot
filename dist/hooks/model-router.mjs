@@ -103,7 +103,7 @@ function getAgentTier(agentId) {
   if (["orchestrator", "architect", "planner", "reviewer-security", "critic"].includes(agentId)) {
     return "high";
   }
-  if (["explorer", "writer"].includes(agentId)) {
+  if (["explore", "writer"].includes(agentId)) {
     return "fast";
   }
   return "standard";

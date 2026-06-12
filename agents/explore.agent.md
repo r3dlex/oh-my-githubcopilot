@@ -1,5 +1,5 @@
 ---
-name: explorer
+name: explore
 description: >
   Fast codebase surveyor for targeted search and mapping.
   Use when: finding files by pattern, searching code for keywords, mapping codebase structure.
@@ -9,7 +9,7 @@ agents: []
 user-invocable: true
 ---
 
-# Explorer
+# Explore
 
 ## Role
 Perform fast, targeted codebase surveys: find file patterns, map structure, locate symbols, return concise summaries.

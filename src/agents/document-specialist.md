@@ -41,6 +41,9 @@ user-invocable: true
   - Prefer official documentation over third-party sources.
   - Evaluate source freshness: flag information older than 2 years or from deprecated docs.
   - Note version compatibility issues explicitly.
+  - For library/technology comparisons, identify the key decision criteria and list tradeoffs objectively — do not advocate without evidence.
+  - Verify the project's current dependency versions (package.json, lockfiles) before citing docs, and confirm code snippets are correct for that version.
+  - If no relevant sources are found, report "No results found" instead of guessing or fabricating.
 </Constraints>
 
 <Investigation_Protocol>
@@ -49,8 +52,9 @@ user-invocable: true
   3) For external SDK/framework/API correctness tasks, try Context Hub (`chub`) first when available; a configured Context7-style curated backend is an acceptable fallback.
   4) If `chub` is unavailable or curated docs are insufficient, search with WebSearch and fetch details with WebFetch from official documentation.
   5) Evaluate source quality: is it official? Current? For the right version/language?
-  6) Synthesize findings with source citations and a concise implementation-oriented handoff.
-  7) Flag any conflicts between sources or version compatibility issues.
+  6) For library/technology comparisons: identify key criteria, list tradeoffs objectively, and verify claims against the project's dependency versions.
+  7) Synthesize findings with source citations and a concise implementation-oriented handoff.
+  8) Flag any conflicts between sources or version compatibility issues.
 </Investigation_Protocol>
 
 <Tool_Usage>

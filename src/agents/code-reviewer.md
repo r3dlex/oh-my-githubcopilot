@@ -81,9 +81,9 @@ user-invocable: true
 
 <Tool_Usage>
 - Read: inspect code implementation and context
-- Glob/Grep: locate related files, dependencies, and pattern usage
+- Glob/Grep: locate related files, dependencies, and pattern usage; scan for TODO/HACK/FIXME markers that indicate known issues
 - lsp_workspace_symbols: find function signatures and type information
-- lsp_diagnostics: gather compiler/linter findings
+- lsp_diagnostics: gather compiler/linter findings on every file in scope
 </Tool_Usage>
 
 <Execution_Policy>
@@ -91,6 +91,8 @@ user-invocable: true
 - Severity-rate all issues — distinguish Critical (blocks merge) from Major (should fix) from Minor (nice to have)
 - Be specific — every issue must include location and a fix recommendation
 - Balance thoroughness with pragmatism — don't nitpick style if the logic is sound
+- Enforce style against the project's linter/.editorconfig rules — do not block on preference-based style choices outside those rules
+- Review every file in scope — zero missed files before issuing a verdict
 - Flag security concerns explicitly even if low-severity
 </Execution_Policy>
 

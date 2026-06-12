@@ -40,7 +40,7 @@ omp hud --watch         # live status
 
 | Feature | Description |
 |---------|-------------|
-| **Specialized Agents** | 23+ agents (analyst, architect, executor, debugger, critic, verifier, test-engineer, writer, and more) |
+| **Specialized Agents** | 19 agents (analyst, architect, executor, debugger, critic, verifier, test-engineer, writer, and more) |
 | **Parallel Team Mode** | tmux-based multi-worker orchestration with shared task state |
 | **Workflow Skills** | 39 skills built in — plan, deep-interview, ralph, autopilot, ultrawork, code-review, and more |
 | **Persistent Hooks** | Automatic tool tracking, project memory, session management |

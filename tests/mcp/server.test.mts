@@ -58,7 +58,7 @@ vi.mock("../../src/utils/agent-loader.mts", () => ({
   loadAllAgents: vi.fn(() =>
     new Map([
       ["executor", { id: "executor", modelTier: "standard", description: "Executes tasks", tools: ["bash"] }],
-      ["explorer", { id: "explorer", modelTier: "fast", description: "Explores codebase", tools: ["glob"] }],
+      ["explore", { id: "explore", modelTier: "fast", description: "Explores codebase", tools: ["glob"] }],
     ])
   ),
 }));

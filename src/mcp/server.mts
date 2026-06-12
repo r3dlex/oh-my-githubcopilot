@@ -93,7 +93,7 @@ const TOOLS = [
   },
   {
     name: "omp_get_agents",
-    description: "List all 18 OMP agents with their IDs, tiers, tools, and roles",
+    description: "List all 19 OMP agents with their IDs, tiers, tools, and roles",
     inputSchema: { type: "object", properties: {} },
   },
   {
@@ -105,10 +105,10 @@ const TOOLS = [
         agentId: {
           type: "string",
           enum: [
-            "orchestrator", "explorer", "planner", "executor", "verifier",
-            "writer", "reviewer", "designer", "researcher", "tester",
-            "debugger", "architect", "git-master", "security-reviewer", "data",
-            "mobile", "performance", "integration",
+            "analyst", "architect", "code-reviewer", "code-simplifier", "critic",
+            "debugger", "designer", "document-specialist", "executor", "explore",
+            "git-master", "planner", "qa-tester", "scientist", "security-reviewer",
+            "test-engineer", "tracer", "verifier", "writer",
           ],
         },
         task: { type: "string", description: "Task description" },

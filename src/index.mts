@@ -4,6 +4,7 @@
  *
  * Subcommands:
  *   omp hud        — print current HUD line
+ *   omp doctor     — check installation and stale agent references
  *   omp version    — show OMP version
  *   omp psm        — shorthand for PSM commands
  *   omp bench      — run SWE-bench suite
@@ -72,6 +73,11 @@ async function main() {
       await runInstall();
       break;
     }
+    case "doctor": {
+      const { runDoctor } = await import("./cli/doctor.mts");
+      runDoctor(process.cwd());
+      break;
+    }
     default:
       console.error(`Unknown subcommand: ${resolvedSubcommand}`);
       printUsage(true);
@@ -81,7 +87,7 @@ async function main() {
 
 function printUsage(stderr = false) {
   const output = stderr ? console.error : console.log;
-  output("Usage: omp [hud|install|version|psm|bench|hook] [--watch]");
+  output("Usage: omp [hud|install|doctor|version|psm|bench|hook] [--watch]");
 }
 
 async function printHud() {

@@ -32,7 +32,7 @@ function renderPlain(state) {
   const model = state.activeModel || "sonnet";
   const reqWarningPlain = state.warningActive ? " !!" : "";
   const reqStrPlain = `req:${state.premiumRequests ?? 0}/${state.premiumRequestsTotal ?? 1500}${reqWarningPlain}`;
-  return `[OMP v${state.version}] ${mode} | ${model} | ctx:${ctx}% | tok:~${tokens}/${state.tokensTotal} | ${reqStrPlain} | ${age} | tools:${state.toolsUsed?.size || 0}/${state.toolsTotal ?? 13} | skills:${state.skillsUsed?.size || 0}/${state.skillsTotal ?? 25} | agents:${state.cumulativeAgentsUsed}/${state.agentsTotal ?? 23} | ${state.status}`;
+  return `[OMP v${state.version}] ${mode} | ${model} | ctx:${ctx}% | tok:~${tokens}/${state.tokensTotal} | ${reqStrPlain} | ${age} | tools:${state.toolsUsed?.size || 0}/${state.toolsTotal ?? 13} | skills:${state.skillsUsed?.size || 0}/${state.skillsTotal ?? 25} | agents:${state.cumulativeAgentsUsed}/${state.agentsTotal ?? 19} | ${state.status}`;
 }
 
 // src/hud/statusline.mts
@@ -99,7 +99,7 @@ function deserializeHudState(raw) {
     skillsUsed,
     toolsTotal: typeof value.toolsTotal === "number" ? value.toolsTotal : 13,
     skillsTotal: typeof value.skillsTotal === "number" ? value.skillsTotal : 25,
-    agentsTotal: typeof value.agentsTotal === "number" ? value.agentsTotal : 23,
+    agentsTotal: typeof value.agentsTotal === "number" ? value.agentsTotal : 19,
     premiumRequests: typeof value.premiumRequests === "number" ? value.premiumRequests : 0,
     premiumRequestsTotal: typeof value.premiumRequestsTotal === "number" ? value.premiumRequestsTotal : DEFAULT_PREMIUM_REQUESTS_TOTAL,
     warningActive: typeof value.warningActive === "boolean" ? value.warningActive : false
@@ -132,7 +132,7 @@ function buildHudState(snapshot, now = Date.now()) {
     skillsUsed,
     toolsTotal: 13,
     skillsTotal: 25,
-    agentsTotal: 23,
+    agentsTotal: 19,
     premiumRequests: snapshot.premium_requests ?? 0,
     premiumRequestsTotal: snapshot.premium_requests_total ?? DEFAULT_PREMIUM_REQUESTS_TOTAL,
     warningActive: snapshot.warning_active ?? false

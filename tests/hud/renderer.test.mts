@@ -145,7 +145,7 @@ describe("HUD renderer", () => {
       const output = renderPlain(state);
       expect(output).toContain("tools:0/13");
       expect(output).toContain("skills:0/25");
-      expect(output).toContain("agents:2/23");
+      expect(output).toContain("agents:2/19");
     });
 
     it("should use provided totals when specified", () => {

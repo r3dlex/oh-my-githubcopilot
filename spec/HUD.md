@@ -20,10 +20,10 @@ The HUD (Heads-Up Display) provides real-time session status to the user without
 | `duration` | `3m` | Session elapsed time |
 | `tools` | `12/13` | Count of unique tools used / total available |
 | `skills` | `5/21` | Count of unique skills invoked / total available |
-| `agents` | `3/23` | Count of cumulative agents used / total available |
+| `agents` | `3/19` | Count of cumulative agents used / total available |
 | `status` | `running` | Current session status |
 
-Example: `[OMP v1.0.0] autopilot | sonnet | ctx:67% | tok:~67k/200k | 3m | tools:12/13 | skills:5/21 | agents:3/23 | ● running`
+Example: `[OMP v1.0.0] autopilot | sonnet | ctx:67% | tok:~67k/200k | 3m | tools:12/13 | skills:5/21 | agents:3/19 | ● running`
 
 Status values: `idle`, `running`, `waiting`, `complete`, `error`, `eco`
 
@@ -35,11 +35,11 @@ Starting in v1.1, all count fields in the HUD display the N/M format showing use
 
 - `tools:12` → `tools:12/13`
 - `skills:5` → `skills:5/21`
-- `agents:3` → `agents:3/23`
+- `agents:3` → `agents:3/19`
 
 Users with tmux `status-right` configurations or scripts that parse the bare integer after `tools:`, `skills:`, or `agents:` must update their parsing to handle the `N/M` pattern (e.g., split on `/` and take the first element, or use a regex like `tools:(\d+)/\d+`).
 
-The denominator values (`toolsTotal`, `skillsTotal`, `agentsTotal`) default to 13, 21, and 23 respectively and are part of `HudState`.
+The denominator values (`toolsTotal`, `skillsTotal`, `agentsTotal`) default to 13, 21, and 19 respectively and are part of `HudState`.
 
 ## 3. HudState TypeScript Interface
 

@@ -4,7 +4,7 @@ This is the orchestration brain for the Oh My Copilot (OMP) plugin. All agents, 
 
 ## Orchestrator Role
 
-The orchestrator is the top-level coordinator. It:
+The orchestrator is the top-level coordination role of the main session — it is **not a delegatable agent**. It:
 - Receives every user request
 - Analyzes scope and chooses the appropriate agent
 - Delegates work, never implements directly
@@ -14,32 +14,31 @@ The orchestrator is the top-level coordinator. It:
 
 The orchestrator **never writes code, docs, or configs directly**. It always delegates to a specialized agent.
 
-## Agent Registry (22 Agents)
+## Agent Registry (19 Agents)
 
 | # | ID | Tier | Tools | Role |
 |---|-----|------|-------|------|
-| 1 | `orchestrator` | high | TaskList, SendMessage, Glob, Grep | Top-level coordinator; never writes |
-| 2 | `explorer` | standard | Glob, Grep, Read | Fast codebase surveys, pattern finding |
-| 3 | `planner` | high | Read, Write, TaskCreate | Architecture, sequencing, risk assessment |
-| 4 | `executor` | standard | Read, Write, Edit, Bash | Implementation, refactoring, complex changes |
-| 5 | `verifier` | standard | Bash, Read, Glob | Testing, diagnostics, evidence collection |
-| 6 | `writer` | standard | Read, Write, Glob | Documentation, README, API docs |
-| 7 | `reviewer` | high | Read, Glob, Grep, LSP | Code review, quality gates |
-| 8 | `designer` | high | WebFetch, Figma tools | UI/UX, design system, Figma integration |
-| 9 | `researcher` | standard | WebSearch, WebFetch | External docs, benchmarking, options analysis |
-| 10 | `tester` | standard | Bash, Read, Write | Test writing, execution, CI integration |
-| 11 | `debugger` | high | Bash, Read, LSP, Grep | Error diagnosis, crash analysis |
-| 12 | `architect` | high | Read, Write, Glob | System design, cross-cutting concerns |
-| 13 | `security-reviewer` | high | Grep, Glob, Read | Vulnerability scanning, dependency audit |
-| 14 | `code-simplifier` | high | Read, Edit, Grep | Code simplification, clarity, maintainability |
-| 15 | `test-engineer` | standard | Bash, Read, Write | Test authoring, coverage analysis |
-| 16 | `critic` | high | Read, Grep, Write | Plan review, gap analysis, improvement suggestions |
-| 17 | `tracer` | high | Bash, Read, Grep | Causal investigation, root cause analysis |
-| 18 | `scientist` | high | Read, Write, Bash | Experimental design, hypothesis testing |
-| 19 | `code-reviewer` | standard | Read, Glob, LSP | PR reviews, style enforcement |
-| 20 | `document-specialist` | standard | Read, Write, Grep | Technical docs, API docs, guides |
-| 21 | `qa-tester` | standard | Bash, Read, Write | QA testing, regression verification |
-| 22 | `git-master` | standard | Bash, Read, Grep | Atomic commits, history management |
+| 1 | `explore` | fast | Glob, Grep, Read | Fast codebase surveys, pattern finding |
+| 2 | `planner` | high | Read, Write, TaskCreate | Architecture, sequencing, risk assessment |
+| 3 | `executor` | standard | Read, Write, Edit, Bash | Implementation, refactoring, complex changes |
+| 4 | `verifier` | standard | Bash, Read, Glob | Testing, diagnostics, evidence collection |
+| 5 | `writer` | standard | Read, Write, Glob | Documentation, README, API docs |
+| 6 | `designer` | high | WebFetch, Figma tools | UI/UX, design system, Figma integration |
+| 7 | `debugger` | high | Bash, Read, LSP, Grep | Error diagnosis, crash analysis |
+| 8 | `architect` | high | Read, Write, Glob | System design, cross-cutting concerns |
+| 9 | `security-reviewer` | high | Grep, Glob, Read | Vulnerability scanning, dependency audit |
+| 10 | `code-simplifier` | high | Read, Edit, Grep | Code simplification, clarity, maintainability |
+| 11 | `test-engineer` | standard | Bash, Read, Write | Test authoring, execution, coverage analysis, CI integration |
+| 12 | `critic` | high | Read, Grep, Write | Plan review, gap analysis, improvement suggestions |
+| 13 | `tracer` | high | Bash, Read, Grep | Causal investigation, root cause analysis |
+| 14 | `scientist` | high | Read, Write, Bash | Experimental design, hypothesis testing |
+| 15 | `code-reviewer` | high | Read, Glob, LSP | Code review, quality gates, merge verdicts |
+| 16 | `document-specialist` | standard | Read, Write, Grep, WebSearch, WebFetch | External docs, API research, options benchmarking |
+| 17 | `qa-tester` | standard | Bash, Read, Write | QA testing, regression verification |
+| 18 | `git-master` | standard | Bash, Read, Grep | Atomic commits, history management |
+| 19 | `analyst` | high | Read, Grep | Requirements analysis, gap identification |
+
+> **Migration (2.0)**: `explorer`→`explore`, `simplifier`→`code-simplifier`; `orchestrator` is now the top-level role only; `researcher`→`document-specialist`, `reviewer`→`code-reviewer`, `tester`→`test-engineer`. Run `omp doctor` to detect stale references.
 
 ## Delegation Rules
 

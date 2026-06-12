@@ -83,7 +83,7 @@ The OMP MCP server exposes the following 10 tools:
   "inputSchema": {
     "type": "object",
     "properties": {
-      "agentId": { "type": "string", "enum": ["orchestrator","explorer","planner","executor","verifier","writer","reviewer","designer","researcher","tester","debugger","architect","security-reviewer","simplifier","test-engineer","critic","tracer","scientist","code-reviewer","document-specialist","qa-tester","git-master","analyst"] },
+      "agentId": { "type": "string", "enum": ["analyst","architect","code-reviewer","code-simplifier","critic","debugger","designer","document-specialist","executor","explore","git-master","planner","qa-tester","scientist","security-reviewer","test-engineer","tracer","verifier","writer"] },
       "task": { "type": "string", "description": "Task description" },
       "tier": { "type": "string", "enum": ["high","standard","fast"], "description": "Model tier override" }
     },
