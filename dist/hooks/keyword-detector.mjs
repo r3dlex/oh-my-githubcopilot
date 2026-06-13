@@ -3,11 +3,20 @@ import { appendFileSync, mkdirSync } from "fs";
 import { homedir } from "os";
 import { join } from "path";
 async function readStdin() {
-  const chunks = [];
-  for await (const chunk of process.stdin) {
-    chunks.push(String(chunk));
-  }
-  return chunks.join("");
+  const readStdinActual = async () => {
+    const chunks = [];
+    for await (const chunk of process.stdin) {
+      chunks.push(String(chunk));
+    }
+    return chunks.join("");
+  };
+  const stdinTimeout = new Promise(
+    (resolve) => setTimeout(
+      () => resolve(""),
+      parseInt(process.env.OMP_HOOK_STDIN_TIMEOUT_MS ?? "500")
+    )
+  );
+  return Promise.race([readStdinActual(), stdinTimeout]);
 }
 function logHookFailure(hook, reason) {
   try {

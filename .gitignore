@@ -18,6 +18,8 @@ coverage/
 # dist/ — committed to git so Copilot CLI can clone and use it directly
 bin/*.mjs
 !bin/omp.mjs
+bin/*.mjs.map
+!bin/omp.mjs.map
 
 # Dependencies
 node_modules/

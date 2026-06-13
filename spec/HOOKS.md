@@ -54,7 +54,7 @@ Legacy keyword aliases remain case-sensitive for `:`-suffixed forms (e.g. `autop
 **Trigger**: `PreToolUse`
 **Priority**: 90
 
-Intercepts orchestrator tool calls. Ensures the orchestrator never uses Read, Write, Edit, or Bash for direct implementation. If a violation is detected, reroutes the call to the appropriate agent and logs the enforcement event.
+Intercepts orchestrator tool calls. Ensures the orchestrator never uses Write or Edit for direct implementation. If a violation is detected, reroutes the call to the appropriate agent and logs the enforcement event.
 
 ```typescript
 interface EnforcementEvent {

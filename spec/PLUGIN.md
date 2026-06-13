@@ -2,7 +2,7 @@
 
 ## 1. Overview
 
-The Oh My Copilot (OMP) plugin extends GitHub Copilot CLI with a multi-agent orchestration layer. It exposes 19 agents, 25 skills, a HUD display, a Plugin State Manager (PSM), and an MCP server. This document covers plugin identity, discovery, registration, and cross-compatibility.
+The Oh My Copilot (OMP) plugin extends GitHub Copilot CLI with a multi-agent orchestration layer. It exposes 19 agents, 59 skills, a HUD display, a Plugin State Manager (PSM), and an MCP server. This document covers plugin identity, discovery, registration, and cross-compatibility.
 
 ## 2. Plugin Manifest
 
@@ -79,7 +79,7 @@ The `marketplace.json` file at the project root enables discovery by the Copilot
       "id": "oh-my-githubcopilot",
       "name": "Oh My Copilot",
       "version": "1.0.0",
-      "description": "Multi-agent orchestration layer with 19 agents, 25 skills, HUD, PSM, and MCP server",
+      "description": "Multi-agent orchestration layer with 19 agents, 59 skills, HUD, PSM, and MCP server",
       "keywords": ["agents", "orchestration", "autopilot", "HUD", "MCP"],
       "homepage": "https://github.com/oh-my-githubcopilot/oh-my-githubcopilot",
       "repository": "https://github.com/oh-my-githubcopilot/oh-my-githubcopilot",

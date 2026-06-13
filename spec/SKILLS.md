@@ -2,7 +2,7 @@
 
 ## 1. Overview
 
-Skills extend agent capabilities by activating specialized workflows triggered by magic keywords. OMP ships with 39 skills organized into three categories: execution modes (9), planning tools (9), and developer tools (21). Skills use lazy loading — they are not instantiated until triggered.
+Skills extend agent capabilities by activating specialized workflows triggered by magic keywords. OMP ships with 59 skills organized into three categories: execution modes (9), planning tools (9), and developer tools (21). Skills use lazy loading — they are not instantiated until triggered.
 
 ## 2. Lazy Loading
 
@@ -16,7 +16,7 @@ session start
   → activate(skillContext)
 ```
 
-This avoids loading all 25 skills at startup. The typical cold start latency for a triggered skill is under 200ms (within the hook performance budget).
+This avoids loading all 59 skills at startup. The typical cold start latency for a triggered skill is under 200ms (within the hook performance budget).
 
 ## 3. Skill Template
 

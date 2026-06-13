@@ -36,11 +36,22 @@ export interface RunHookOptions {
 }
 
 export async function readStdin(): Promise<string> {
-  const chunks: string[] = [];
-  for await (const chunk of process.stdin) {
-    chunks.push(String(chunk));
-  }
-  return chunks.join("");
+  const readStdinActual = async (): Promise<string> => {
+    const chunks: string[] = [];
+    for await (const chunk of process.stdin) {
+      chunks.push(String(chunk));
+    }
+    return chunks.join("");
+  };
+
+  const stdinTimeout = new Promise<string>((resolve) =>
+    setTimeout(
+      () => resolve(""),
+      (parseInt(process.env.OMP_HOOK_STDIN_TIMEOUT_MS ?? "500") || 500)
+    )
+  );
+
+  return Promise.race([readStdinActual(), stdinTimeout]);
 }
 
 /**
