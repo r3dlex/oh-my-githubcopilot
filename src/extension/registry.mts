@@ -293,6 +293,36 @@ export const SKILL_REGISTRY: SkillEntry[] = [
     description: "Deep project initialization — full codebase onboarding",
     keywords: ["deepinit:"],
   },
+  {
+    id: "self-improve",
+    description: "OMP self-improvement — analyse own skills/agents and propose improvements",
+    keywords: ["self-improve:"],
+  },
+  {
+    id: "visual-verdict",
+    description: "Visual diff/screenshot comparison verdict",
+    keywords: ["visual-verdict:"],
+  },
+  {
+    id: "ccg",
+    description: "Concurrent code generation via multi-model picker",
+    keywords: ["ccg:"],
+  },
+  {
+    id: "build-fix",
+    description: "Diagnose and fix build/CI failures automatically",
+    keywords: ["build-fix:"],
+  },
+  {
+    id: "design",
+    description: "UI/UX design and frontend component generation",
+    keywords: ["design:"],
+  },
+  {
+    id: "web-clone",
+    description: "Clone and adapt a web page/design to the codebase",
+    keywords: ["web-clone:"],
+  },
 ];
 
 /**

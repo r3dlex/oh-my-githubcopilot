@@ -750,7 +750,24 @@ var init_keyword_detector = __esm({
       "/omp:writer-memory": "writer-memory",
       "deepinit:": "deepinit",
       "/deepinit": "deepinit",
-      "/omp:deepinit": "deepinit"
+      "/omp:deepinit": "deepinit",
+      "self-improve:": "self-improve",
+      "/self-improve": "self-improve",
+      "/omp:self-improve": "self-improve",
+      "visual-verdict:": "visual-verdict",
+      "/visual-verdict": "visual-verdict",
+      "/omp:visual-verdict": "visual-verdict",
+      "ccg:": "ccg",
+      "/ccg": "ccg",
+      "/omp:ccg": "ccg",
+      "build-fix:": "build-fix",
+      "/build-fix": "build-fix",
+      "/omp:build-fix": "build-fix",
+      "design:": "design",
+      "/omp:design": "design",
+      "web-clone:": "web-clone",
+      "/web-clone": "web-clone",
+      "/omp:web-clone": "web-clone"
     };
     KEYWORD_ENTRIES = Object.entries(KEYWORD_MAP).sort(([a], [b]) => b.length - a.length);
     CANONICAL_COMMAND_MAP = {
@@ -1068,6 +1085,36 @@ var init_registry = __esm({
         id: "deepinit",
         description: "Deep project initialization \u2014 full codebase onboarding",
         keywords: ["deepinit:"]
+      },
+      {
+        id: "self-improve",
+        description: "OMP self-improvement \u2014 analyse own skills/agents and propose improvements",
+        keywords: ["self-improve:"]
+      },
+      {
+        id: "visual-verdict",
+        description: "Visual diff/screenshot comparison verdict",
+        keywords: ["visual-verdict:"]
+      },
+      {
+        id: "ccg",
+        description: "Concurrent code generation via multi-model picker",
+        keywords: ["ccg:"]
+      },
+      {
+        id: "build-fix",
+        description: "Diagnose and fix build/CI failures automatically",
+        keywords: ["build-fix:"]
+      },
+      {
+        id: "design",
+        description: "UI/UX design and frontend component generation",
+        keywords: ["design:"]
+      },
+      {
+        id: "web-clone",
+        description: "Clone and adapt a web page/design to the codebase",
+        keywords: ["web-clone:"]
       }
     ];
   }
@@ -1323,6 +1370,24 @@ async function main() {
     case "deepinit":
       console.log("OMP deepinit: use /deepinit or /oh-my-githubcopilot:deepinit in GitHub Copilot CLI to run deep project initialization.");
       break;
+    case "self-improve":
+      console.log("OMP self-improve: use /self-improve in Copilot CLI to analyse OMP skills/agents and propose improvements.");
+      break;
+    case "visual-verdict":
+      console.log("OMP visual-verdict: use /visual-verdict in Copilot CLI to compare visual diffs or screenshots.");
+      break;
+    case "ccg":
+      console.log("OMP ccg: use /ccg in Copilot CLI to run concurrent code generation via multi-model picker.");
+      break;
+    case "build-fix":
+      console.log("OMP build-fix: use /build-fix in Copilot CLI to diagnose and fix build/CI failures automatically.");
+      break;
+    case "design":
+      console.log("OMP design: use /omp:design in Copilot CLI to generate UI/UX designs and frontend components.");
+      break;
+    case "web-clone":
+      console.log("OMP web-clone: use /web-clone in Copilot CLI to clone and adapt a web page/design to your codebase.");
+      break;
     default:
       console.error(`Unknown subcommand: ${resolvedSubcommand}`);
       printUsage(true);
@@ -1331,7 +1396,7 @@ async function main() {
 }
 function printUsage(stderr = false) {
   const output = stderr ? console.error : console.log;
-  output("Usage: omp [hud|install|doctor|version|psm|bench|hook|verify|cancel|help|code-review|security-review|ultraqa|ultragoal|deep-dive|external-context|deepsearch|sciomc|remember|writer-memory|deepinit] [--watch]");
+  output("Usage: omp [hud|install|doctor|version|psm|bench|hook|verify|cancel|help|code-review|security-review|ultraqa|ultragoal|deep-dive|external-context|deepsearch|sciomc|remember|writer-memory|deepinit|self-improve|visual-verdict|ccg|build-fix|design|web-clone] [--watch]");
 }
 async function printHud() {
   try {

@@ -153,6 +153,23 @@ const KEYWORD_MAP: Record<string, string> = {
   "deepinit:": "deepinit",
   "/deepinit": "deepinit",
   "/omp:deepinit": "deepinit",
+  "self-improve:": "self-improve",
+  "/self-improve": "self-improve",
+  "/omp:self-improve": "self-improve",
+  "visual-verdict:": "visual-verdict",
+  "/visual-verdict": "visual-verdict",
+  "/omp:visual-verdict": "visual-verdict",
+  "ccg:": "ccg",
+  "/ccg": "ccg",
+  "/omp:ccg": "ccg",
+  "build-fix:": "build-fix",
+  "/build-fix": "build-fix",
+  "/omp:build-fix": "build-fix",
+  "design:": "design",
+  "/omp:design": "design",
+  "web-clone:": "web-clone",
+  "/web-clone": "web-clone",
+  "/omp:web-clone": "web-clone",
 };
 
 const KEYWORD_ENTRIES = Object.entries(KEYWORD_MAP).sort(([a], [b]) => b.length - a.length);
