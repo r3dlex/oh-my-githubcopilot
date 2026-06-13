@@ -326,6 +326,36 @@ export const COMMANDS = [
     skillId: "deepinit",
     description: "Deep project initialization — full codebase onboarding",
   },
+  {
+    name: "self-improve",
+    skillId: "self-improve",
+    description: "OMP self-improvement — analyse own skills/agents and propose improvements",
+  },
+  {
+    name: "visual-verdict",
+    skillId: "visual-verdict",
+    description: "Visual diff/screenshot comparison verdict",
+  },
+  {
+    name: "ccg",
+    skillId: "ccg",
+    description: "Concurrent code generation via multi-model picker",
+  },
+  {
+    name: "build-fix",
+    skillId: "build-fix",
+    description: "Diagnose and fix build/CI failures automatically",
+  },
+  {
+    name: "design",
+    skillId: "design",
+    description: "UI/UX design and frontend component generation",
+  },
+  {
+    name: "web-clone",
+    skillId: "web-clone",
+    description: "Clone and adapt a web page/design to the codebase",
+  },
 ];
 
 /**
