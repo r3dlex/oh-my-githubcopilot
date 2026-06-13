@@ -1,7 +1,7 @@
-# ADR-0001 — Record Architecture Decisions
+# ADR-0005 — Record Architecture Decisions
 
 **Status:** Accepted
-**Date:** '"$(date +%Y-%m-%d)"'
+**Date:** 2026-06-13
 **Deciders:** project maintainers
 
 ---

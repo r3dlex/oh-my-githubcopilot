@@ -47,7 +47,7 @@ export async function readStdin(): Promise<string> {
   const stdinTimeout = new Promise<string>((resolve) =>
     setTimeout(
       () => resolve(""),
-      parseInt(process.env.OMP_HOOK_STDIN_TIMEOUT_MS ?? "500")
+      (parseInt(process.env.OMP_HOOK_STDIN_TIMEOUT_MS ?? "500") || 500)
     )
   );
 
