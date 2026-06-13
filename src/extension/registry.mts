@@ -258,6 +258,41 @@ export const SKILL_REGISTRY: SkillEntry[] = [
     description: "Durable goal ledger in .omp/ultragoal/ with fail-closed checkpoints",
     keywords: ["ultragoal:"],
   },
+  {
+    id: "deep-dive",
+    description: "Trace→deep-interview pipeline for deep investigation",
+    keywords: ["deep-dive:"],
+  },
+  {
+    id: "external-context",
+    description: "Load external docs/URLs into session context",
+    keywords: ["external-context:"],
+  },
+  {
+    id: "deepsearch",
+    description: "Multi-source deep search across codebase and web",
+    keywords: ["deepsearch:"],
+  },
+  {
+    id: "sciomc",
+    description: "Scientific/analytical reasoning workflow — hypothesis→experiment→conclusion",
+    keywords: ["sciomc:"],
+  },
+  {
+    id: "remember",
+    description: "Persist key facts/decisions to .omp/memory/",
+    keywords: ["remember:"],
+  },
+  {
+    id: "writer-memory",
+    description: "Writing style memory — stores voice/tone preferences",
+    keywords: ["writer-memory:"],
+  },
+  {
+    id: "deepinit",
+    description: "Deep project initialization — full codebase onboarding",
+    keywords: ["deepinit:"],
+  },
 ];
 
 /**

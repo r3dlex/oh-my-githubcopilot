@@ -291,6 +291,41 @@ export const COMMANDS = [
     skillId: "ultragoal",
     description: "Durable goal ledger in .omp/ultragoal/ with fail-closed checkpoints",
   },
+  {
+    name: "deep-dive",
+    skillId: "deep-dive",
+    description: "Trace→deep-interview pipeline for deep investigation",
+  },
+  {
+    name: "external-context",
+    skillId: "external-context",
+    description: "Load external docs/URLs into session context",
+  },
+  {
+    name: "deepsearch",
+    skillId: "deepsearch",
+    description: "Multi-source deep search across codebase and web",
+  },
+  {
+    name: "sciomc",
+    skillId: "sciomc",
+    description: "Scientific/analytical reasoning workflow — hypothesis→experiment→conclusion",
+  },
+  {
+    name: "remember",
+    skillId: "remember",
+    description: "Persist key facts/decisions to .omp/memory/",
+  },
+  {
+    name: "writer-memory",
+    skillId: "writer-memory",
+    description: "Writing style memory — stores voice/tone preferences",
+  },
+  {
+    name: "deepinit",
+    skillId: "deepinit",
+    description: "Deep project initialization — full codebase onboarding",
+  },
 ];
 
 /**
