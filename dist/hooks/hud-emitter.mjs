@@ -193,7 +193,7 @@ async function readStdin() {
   const stdinTimeout = new Promise(
     (resolve) => setTimeout(
       () => resolve(""),
-      parseInt(process.env.OMP_HOOK_STDIN_TIMEOUT_MS ?? "500")
+      parseInt(process.env.OMP_HOOK_STDIN_TIMEOUT_MS ?? "500") || 500
     )
   );
   return Promise.race([readStdinActual(), stdinTimeout]);

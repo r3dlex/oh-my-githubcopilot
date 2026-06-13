@@ -134,7 +134,7 @@ describe("plugin installation", () => {
       const json = marketplaceJson();
       const plugin = (json.plugins as Array<Record<string, unknown>>)[0];
       expect(plugin.description as string).toContain("19 agents");
-      expect(plugin.description as string).toContain("39 skills");
+      expect(plugin.description as string).toContain("59 skills");
     });
   });
 
@@ -226,9 +226,9 @@ describe("plugin installation", () => {
   });
 
   describe("README.md", () => {
-    it("should reference 39 skills", () => {
+    it("should reference 59 skills", () => {
       const content = readFileSync(join(root, "README.md"), "utf-8");
-      expect(content).toContain("39 skills");
+      expect(content).toContain("59 skills");
     });
 
     it("should have build badge", () => {
