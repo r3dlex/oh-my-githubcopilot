@@ -52,6 +52,21 @@ describe("recommendForAgent", () => {
     expect(rec.tier).toBe("high");
   });
 
+  it("should recommend high tier for analyst", () => {
+    const rec = recommendForAgent("analyst");
+    expect(rec.tier).toBe("high");
+  });
+
+  it("should recommend high tier for designer", () => {
+    const rec = recommendForAgent("designer");
+    expect(rec.tier).toBe("high");
+  });
+
+  it("should recommend high tier for code-simplifier", () => {
+    const rec = recommendForAgent("code-simplifier");
+    expect(rec.tier).toBe("high");
+  });
+
   it("should recommend standard tier for test-engineer", () => {
     const rec = recommendForAgent("test-engineer");
     expect(rec.tier).toBe("standard");
@@ -73,9 +88,9 @@ describe("recommendForAgent", () => {
     expect(rec.model).toBe("gpt-5.4-mini");
   });
 
-  it("should recommend fast tier for writer", () => {
+  it("should recommend standard tier for writer", () => {
     const rec = recommendForAgent("writer");
-    expect(rec.tier).toBe("fast");
+    expect(rec.tier).toBe("standard");
   });
 
   it("should default to standard tier for unknown agent", () => {

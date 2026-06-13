@@ -74,7 +74,7 @@ describe("model-router hook", () => {
       const result = processHook({
         hook_type: "PreToolUse",
         tool_name: "Read",
-        agent_id: "analyst",
+        agent_id: "executor",
       });
       const setModelMutation = result.mutations.find((m: any) => m.type === "set_model");
       expect(setModelMutation).toBeDefined();

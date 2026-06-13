@@ -26,14 +26,15 @@ const AGENT_TIER_MAP: Record<string, ModelTier> = {
   critic: "high",
   debugger: "high",
   "code-reviewer": "high",
+  analyst: "high",
+  designer: "high",
+  "code-simplifier": "high",
   executor: "standard",
   verifier: "standard",
-  analyst: "standard",
   "test-engineer": "standard",
   "git-master": "standard",
-  designer: "standard",
+  writer: "standard",
   explore: "fast",
-  writer: "fast",
 };
 
 /**
