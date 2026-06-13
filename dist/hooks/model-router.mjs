@@ -100,10 +100,10 @@ function processHook(input) {
   }
 }
 function getAgentTier(agentId) {
-  if (["orchestrator", "architect", "planner", "security-reviewer", "critic", "debugger"].includes(agentId)) {
+  if (["orchestrator", "architect", "planner", "security-reviewer", "critic", "debugger", "code-reviewer", "analyst", "designer", "code-simplifier"].includes(agentId)) {
     return "high";
   }
-  if (["explore", "writer"].includes(agentId)) {
+  if (["explore"].includes(agentId)) {
     return "fast";
   }
   return "standard";

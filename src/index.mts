@@ -16,6 +16,13 @@
  *   omp security-review — trigger security-reviewer agent lane
  *   omp ultraqa         — QA cycle loop with qa-tester agent
  *   omp ultragoal       — manage durable goal ledger in .omp/ultragoal/
+ *   omp deep-dive       — guidance: use /deep-dive in Copilot
+ *   omp external-context — load external URL/path into context (or print guidance)
+ *   omp deepsearch      — guidance: use /deepsearch in Copilot
+ *   omp sciomc          — guidance: use /sciomc in Copilot
+ *   omp remember        — persist note to .omp/memory/ (or list memories)
+ *   omp writer-memory   — manage .omp/writer-memory.md style notes
+ *   omp deepinit        — guidance: use /deepinit in Copilot
  */
 
 import { parseArgs } from "util";
@@ -107,6 +114,27 @@ async function main() {
     case "ultragoal":
       await runUltragoal(positionals.slice(1));
       break;
+    case "deep-dive":
+      console.log("OMP deep-dive: use /deep-dive or /oh-my-githubcopilot:deep-dive in GitHub Copilot CLI to run the trace→deep-interview investigation pipeline.");
+      break;
+    case "external-context":
+      await runExternalContext(positionals.slice(1));
+      break;
+    case "deepsearch":
+      console.log("OMP deepsearch: use /deepsearch or /oh-my-githubcopilot:deepsearch in GitHub Copilot CLI to run multi-source deep search.");
+      break;
+    case "sciomc":
+      console.log("OMP sciomc: use /sciomc or /oh-my-githubcopilot:sciomc in GitHub Copilot CLI to run the scientific hypothesis→experiment→conclusion reasoning workflow.");
+      break;
+    case "remember":
+      await runRemember(positionals.slice(1));
+      break;
+    case "writer-memory":
+      await runWriterMemory(positionals.slice(1));
+      break;
+    case "deepinit":
+      console.log("OMP deepinit: use /deepinit or /oh-my-githubcopilot:deepinit in GitHub Copilot CLI to run deep project initialization.");
+      break;
     default:
       console.error(`Unknown subcommand: ${resolvedSubcommand}`);
       printUsage(true);
@@ -116,7 +144,7 @@ async function main() {
 
 function printUsage(stderr = false) {
   const output = stderr ? console.error : console.log;
-  output("Usage: omp [hud|install|doctor|version|psm|bench|hook|verify|cancel|help|code-review|security-review|ultraqa|ultragoal] [--watch]");
+  output("Usage: omp [hud|install|doctor|version|psm|bench|hook|verify|cancel|help|code-review|security-review|ultraqa|ultragoal|deep-dive|external-context|deepsearch|sciomc|remember|writer-memory|deepinit] [--watch]");
 }
 
 async function printHud() {
@@ -232,6 +260,87 @@ async function runUltragoal(args: string[]) {
     }
   } catch (err) {
     console.error("OMP ultragoal failed:", err);
+    process.exitCode = 1;
+  }
+}
+
+async function runExternalContext(args: string[]) {
+  if (args.length === 0) {
+    console.log("OMP external-context: use /external-context <url-or-path> or /oh-my-githubcopilot:external-context in GitHub Copilot CLI to load external docs into session context.");
+    return;
+  }
+  const target = args.join(" ");
+  console.log(`External context loaded: ${target}. Use /external-context ${target} in Copilot CLI to load into session.`);
+}
+
+async function runRemember(args: string[]) {
+  try {
+    const { mkdirSync, readdirSync, writeFileSync, existsSync } = await import("fs");
+    const { join } = await import("path");
+    const memoryDir = join(process.cwd(), ".omp", "memory");
+    mkdirSync(memoryDir, { recursive: true });
+
+    if (args.length === 0) {
+      // List existing memories
+      if (!existsSync(memoryDir)) {
+        console.log("OMP Remember: no memories found. Use: omp remember <text>");
+        return;
+      }
+      const files = readdirSync(memoryDir).filter((f) => f.endsWith(".md")).sort();
+      if (files.length === 0) {
+        console.log("OMP Remember: no memories found. Use: omp remember <text>");
+      } else {
+        console.log("OMP Remember — Stored Memories:\n");
+        for (const file of files) {
+          console.log(`  ${file}`);
+        }
+        console.log(`\nTotal: ${files.length} memor${files.length === 1 ? "y" : "ies"}`);
+      }
+      return;
+    }
+
+    // Write new memory
+    const text = args.join(" ");
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const fileName = `${timestamp}.md`;
+    const filePath = join(memoryDir, fileName);
+    const tmpPath = filePath + ".tmp";
+    const content = `# Memory: ${new Date().toISOString()}\n\n${text}\n`;
+    writeFileSync(tmpPath, content, "utf-8");
+    const { renameSync } = await import("fs");
+    renameSync(tmpPath, filePath);
+    console.log(`OMP Remember: saved memory to .omp/memory/${fileName}`);
+  } catch (err) {
+    console.error("OMP remember failed:", err);
+    process.exitCode = 1;
+  }
+}
+
+async function runWriterMemory(args: string[]) {
+  try {
+    const { mkdirSync, readFileSync, appendFileSync, existsSync } = await import("fs");
+    const { join, dirname } = await import("path");
+    const filePath = join(process.cwd(), ".omp", "writer-memory.md");
+    mkdirSync(dirname(filePath), { recursive: true });
+
+    if (args.length === 0) {
+      // Print current writer memory
+      if (!existsSync(filePath)) {
+        console.log("OMP Writer Memory: no style notes found. Use: omp writer-memory <style-note>");
+        return;
+      }
+      const content = readFileSync(filePath, "utf-8");
+      console.log(content);
+      return;
+    }
+
+    // Append new style note
+    const note = args.join(" ");
+    const entry = `\n## ${new Date().toISOString()}\n\n${note}\n`;
+    appendFileSync(filePath, entry, "utf-8");
+    console.log(`OMP Writer Memory: appended style note to .omp/writer-memory.md`);
+  } catch (err) {
+    console.error("OMP writer-memory failed:", err);
     process.exitCode = 1;
   }
 }

@@ -39,8 +39,12 @@ const SPAWN_SKILLS = [
   "cancel",
   "code-review",
   "configure-notifications",
+  "deep-dive",
   "deep-interview",
+  "deepinit",
+  "deepsearch",
   "ecomode",
+  "external-context",
   "help",
   "hud",
   "learner",
@@ -51,6 +55,8 @@ const SPAWN_SKILLS = [
   "psm",
   "ralph",
   "release",
+  "remember",
+  "sciomc",
   "security-review",
   "setup",
   "swarm",
@@ -62,6 +68,7 @@ const SPAWN_SKILLS = [
   "ultrawork",
   "verify",
   "wiki",
+  "writer-memory",
 ] as const;
 
 for (const skillName of SPAWN_SKILLS) {
