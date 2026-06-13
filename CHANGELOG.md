@@ -5,7 +5,7 @@ All notable changes to oh-my-githubcopilot are documented here.
 ## [2.0.0] — 2026-06-13
 
 ### Breaking Changes
-- **Agent parity (23→19):** Six agents removed or merged:
+- **Agent parity (23→19):** Six agents removed, merged, or renamed:
   - `orchestrator` → top-level instruction role (not delegatable)
   - `researcher` → merged into `document-specialist`
   - `reviewer` → merged into `code-reviewer`
