@@ -30,8 +30,8 @@ The orchestrator **never writes code, docs, or configs directly**. It always del
 | 10 | `code-simplifier` | high | Read, Edit, Grep | Code simplification, clarity, maintainability |
 | 11 | `test-engineer` | standard | Bash, Read, Write | Test authoring, execution, coverage analysis, CI integration |
 | 12 | `critic` | high | Read, Grep, Write | Plan review, gap analysis, improvement suggestions |
-| 13 | `tracer` | high | Bash, Read, Grep | Causal investigation, root cause analysis |
-| 14 | `scientist` | high | Read, Write, Bash | Experimental design, hypothesis testing |
+| 13 | `tracer` | standard | Bash, Read, Grep | Causal investigation, root cause analysis |
+| 14 | `scientist` | standard | Read, Write, Bash | Experimental design, hypothesis testing |
 | 15 | `code-reviewer` | high | Read, Glob, LSP | Code review, quality gates, merge verdicts |
 | 16 | `document-specialist` | standard | Read, Write, Grep, WebSearch, WebFetch | External docs, API research, options benchmarking |
 | 17 | `qa-tester` | standard | Bash, Read, Write | QA testing, regression verification |

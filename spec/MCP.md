@@ -97,7 +97,7 @@ The OMP MCP server exposes the following 10 tools:
 ```json
 {
   "name": "omp_get_agents",
-  "description": "List all 18 OMP agents with their IDs, tiers, tools, and roles",
+  "description": "List all 19 OMP agents with their IDs, tiers, tools, and roles",
   "inputSchema": { "type": "object", "properties": {} }
 }
 ```

@@ -9,7 +9,7 @@ OMP implementation is divided into 6 phases. Each phase has defined duration, sc
 | Phase | Name | Duration | Exit Criteria |
 |-------|------|----------|---------------|
 | 1 | Core Plugin Shell | Weeks 1-2 | `plugin.json` loads, 3 stub agents register, CLI `omp --version` works |
-| 2 | Agent Registry + Hooks | Weeks 3-4 | All 18 agents implement `run()`, all 6 hooks fire on correct triggers |
+| 2 | Agent Registry + Hooks | Weeks 3-4 | All 19 agents implement `run()`, all 6 hooks fire on correct triggers |
 | 3 | Skills + Orchestration | Weeks 5-6 | 8 execution mode skills activate; orchestrator delegates correctly |
 | 4 | HUD + PSM | Weeks 7-8 | HUD renders in tmux; PSM persists session to SQLite |
 | 5 | MCP Server + Integration | Weeks 9-10 | All 10 MCP tools respond; fleet mode syncs |
@@ -21,7 +21,7 @@ OMP implementation is divided into 6 phases. Each phase has defined duration, sc
 |------|-----------|--------|------------|
 | Hook cycle overhead exceeds 200ms budget | Medium | High | Profile early with synthetic load; lazy-import heavy hooks |
 | Copilot CLI plugin API instability | Low | High | Use feature detection; degrade gracefully on API changes |
-| 18-agent delegation loops | Medium | Medium | Implement cycle detection (3-delegation cap with escalation) |
+| 19-agent delegation loops | Medium | Medium | Implement cycle detection (3-delegation cap with escalation) |
 | SQLite schema migration on upgrade | Low | Medium | Use `CREATE TABLE IF NOT EXISTS`; version migrations in `migrations/` |
 | MCP stdio protocol version mismatch | Low | Medium | Pin MCP server version to known-compatible client versions |
 | tmux status-right refresh performance | Medium | Low | Debounce HUD writes to 3s; use `status-interval 1` in tmux config |
@@ -202,7 +202,7 @@ The primary implementation agent. Implementation notes:
 | Phase | Verification Steps |
 |-------|-------------------|
 | 1 | `node dist/cli/index.js --version` prints version; `plugin.json` passes schema validation |
-| 2 | All 18 agents respond to test delegation; all 6 hooks fire on synthetic input |
+| 2 | All 19 agents respond to test delegation; all 6 hooks fire on synthetic input |
 | 3 | `autopilot:`, `ralph:`, `ulw:`, `team:` skills activate; orchestrator never writes directly |
 | 4 | `~/.omp/hud/display.txt` updates on each cycle; `~/.omp/state/omp.db` has rows after `omp state save` |
 | 5 | All 10 MCP tools return valid JSON-RPC responses; `omp fleet status` returns fleet data |

@@ -107,4 +107,34 @@ describe("src/index.mts CLI", () => {
     expect(consoleError).toHaveBeenCalledWith("Usage: omp [hud|install|doctor|version|psm|bench|hook] [--watch]");
     expect(processExit).toHaveBeenCalledWith(1);
   });
+
+  it("sets exit code 1 when doctor finds stale agent references", async () => {
+    const originalExitCode = process.exitCode;
+    const runDoctor = vi.fn(() => 2);
+    vi.doMock("../../src/cli/doctor.mts", () => ({ runDoctor }));
+    try {
+      await runIndex(["doctor"]);
+
+      expect(runDoctor).toHaveBeenCalledWith(process.cwd());
+      expect(process.exitCode).toBe(1);
+    } finally {
+      process.exitCode = originalExitCode;
+      vi.doUnmock("../../src/cli/doctor.mts");
+    }
+  });
+
+  it("sets exit code 0 when doctor finds no stale agent references", async () => {
+    const originalExitCode = process.exitCode;
+    const runDoctor = vi.fn(() => 0);
+    vi.doMock("../../src/cli/doctor.mts", () => ({ runDoctor }));
+    try {
+      await runIndex(["doctor"]);
+
+      expect(runDoctor).toHaveBeenCalledWith(process.cwd());
+      expect(process.exitCode).toBe(0);
+    } finally {
+      process.exitCode = originalExitCode;
+      vi.doUnmock("../../src/cli/doctor.mts");
+    }
+  });
 });

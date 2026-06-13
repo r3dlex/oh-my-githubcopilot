@@ -3,7 +3,7 @@ name: security-reviewer
 description: >
   Security vulnerability detection specialist (OWASP Top 10, secrets, unsafe patterns).
   Use when: "security review", "find vulnerabilities", "check for secrets", auth/crypto changes.
-model: claude-sonnet-4-6
+model: claude-opus-4-6
 tools: [readFile, search, codebase]
 agents: [explore]
 user-invocable: true

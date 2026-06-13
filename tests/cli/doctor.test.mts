@@ -1,10 +1,11 @@
 import { mkdtemp, mkdir, rm, writeFile } from "fs/promises";
 import { tmpdir } from "os";
 import { join } from "path";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   AGENT_MIGRATIONS,
+  runDoctor,
   scanTextForStaleAgents,
   scanProjectForStaleAgents,
 } from "../../src/cli/doctor.mts";
@@ -115,6 +116,30 @@ describe("doctor agent migration check", () => {
 
     it("returns no warnings when scan targets do not exist", () => {
       expect(scanProjectForStaleAgents(projectDir)).toHaveLength(0);
+    });
+  });
+
+  describe("runDoctor", () => {
+    let projectDir: string;
+
+    beforeEach(async () => {
+      projectDir = await mkdtemp(join(tmpdir(), "omp-doctor-run-"));
+      vi.spyOn(console, "log").mockImplementation(() => {});
+    });
+
+    afterEach(async () => {
+      vi.restoreAllMocks();
+      await rm(projectDir, { recursive: true, force: true });
+    });
+
+    it("returns 0 for a clean project", async () => {
+      await writeFile(join(projectDir, "AGENTS.md"), "Use @explore and @code-reviewer.");
+      expect(runDoctor(projectDir)).toBe(0);
+    });
+
+    it("returns the warning count when stale references are found", async () => {
+      await writeFile(join(projectDir, "AGENTS.md"), "Use @reviewer.\nAlso @tester.");
+      expect(runDoctor(projectDir)).toBe(2);
     });
   });
 });

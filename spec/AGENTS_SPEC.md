@@ -78,8 +78,8 @@ entry: ./src/agents/executor.ts
 | 10 | `code-simplifier` | high | Read, Edit, Grep | Code simplification, reuse analysis, quality improvements, efficiency refactoring. |
 | 11 | `test-engineer` | standard | Bash, Read, Write | Test strategy, test authoring, suite execution, coverage analysis, CI integration. |
 | 12 | `critic` | high | Read, Grep, Write | Plan review, gap analysis, improvement suggestions, quality gates. |
-| 13 | `tracer` | high | Bash, Read, Grep | Causal investigation, root cause analysis, trace-driven debugging. |
-| 14 | `scientist` | high | Read, Write, Bash | Experimental design, hypothesis testing, data analysis. |
+| 13 | `tracer` | standard | Bash, Read, Grep | Causal investigation, root cause analysis, trace-driven debugging. |
+| 14 | `scientist` | standard | Read, Write, Bash | Experimental design, hypothesis testing, data analysis. |
 | 15 | `code-reviewer` | high | Read, Glob, LSP | PR reviews, severity-rated findings, style enforcement, merge gate verdicts. |
 | 16 | `document-specialist` | standard | Read, Write, Grep, WebSearch, WebFetch | External documentation lookup, API research, options benchmarking, guides. |
 | 17 | `qa-tester` | standard | Bash, Read, Write | QA testing, regression verification, test plan execution. |

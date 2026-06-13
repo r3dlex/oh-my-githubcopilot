@@ -37,8 +37,28 @@ describe("recommendForAgent", () => {
     expect(rec.model).toBe("claude-sonnet-4.5");
   });
 
-  it("should recommend standard tier for debugger", () => {
+  it("should recommend high tier for debugger", () => {
     const rec = recommendForAgent("debugger");
+    expect(rec.tier).toBe("high");
+  });
+
+  it("should recommend high tier for security-reviewer", () => {
+    const rec = recommendForAgent("security-reviewer");
+    expect(rec.tier).toBe("high");
+  });
+
+  it("should recommend high tier for code-reviewer", () => {
+    const rec = recommendForAgent("code-reviewer");
+    expect(rec.tier).toBe("high");
+  });
+
+  it("should recommend standard tier for test-engineer", () => {
+    const rec = recommendForAgent("test-engineer");
+    expect(rec.tier).toBe("standard");
+  });
+
+  it("should recommend standard tier for git-master", () => {
+    const rec = recommendForAgent("git-master");
     expect(rec.tier).toBe("standard");
   });
 

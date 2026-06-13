@@ -75,7 +75,8 @@ async function main() {
     }
     case "doctor": {
       const { runDoctor } = await import("./cli/doctor.mts");
-      runDoctor(process.cwd());
+      const warnings = runDoctor(process.cwd());
+      process.exitCode = warnings > 0 ? 1 : 0;
       break;
     }
     default:

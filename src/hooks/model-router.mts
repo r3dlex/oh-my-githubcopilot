@@ -84,7 +84,7 @@ export function processHook(input: HookInput): HookOutput {
 
 function getAgentTier(agentId: string): string {
   // Tier 1 — High ("orchestrator" is the top-level coordinator role, not a delegatable agent)
-  if (["orchestrator", "architect", "planner", "reviewer-security", "critic"].includes(agentId)) {
+  if (["orchestrator", "architect", "planner", "security-reviewer", "critic", "debugger"].includes(agentId)) {
     return "high";
   }
   // Tier 3 — Fast

@@ -929,7 +929,8 @@ async function main() {
     }
     case "doctor": {
       const { runDoctor: runDoctor2 } = await Promise.resolve().then(() => (init_doctor(), doctor_exports));
-      runDoctor2(process.cwd());
+      const warnings = runDoctor2(process.cwd());
+      process.exitCode = warnings > 0 ? 1 : 0;
       break;
     }
     default:

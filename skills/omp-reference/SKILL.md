@@ -26,8 +26,8 @@ Prefix: `omp:`. See `agents/*.md` for full prompts.
 | 10 | `code-simplifier` | high | Read, Edit, Grep | Code reuse, quality, efficiency improvements |
 | 11 | `test-engineer` | standard | Bash, Read, Write | Test authoring, execution, coverage, CI integration |
 | 12 | `critic` | high | Read, Grep, Write | Plan review, gap analysis, improvement suggestions |
-| 13 | `tracer` | high | Bash, Read, Grep | Causal investigation, root cause analysis |
-| 14 | `scientist` | high | Read, Write, Bash | Experimental design, hypothesis testing |
+| 13 | `tracer` | standard | Bash, Read, Grep | Causal investigation, root cause analysis |
+| 14 | `scientist` | standard | Read, Write, Bash | Experimental design, hypothesis testing |
 | 15 | `code-reviewer` | high | Read, Glob, LSP | PR reviews, quality gates, merge verdicts |
 | 16 | `document-specialist` | standard | Read, Write, Grep, WebSearch, WebFetch | External docs, benchmarking, options analysis |
 | 17 | `qa-tester` | standard | Bash, Read, Write | QA testing, regression verification |

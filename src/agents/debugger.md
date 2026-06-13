@@ -3,8 +3,8 @@ name: debugger
 description: >
   Root-cause analysis and failure diagnosis specialist.
   Use when: "debug this", "find the bug", "diagnose failure", stack trace analysis, build errors.
-model: claude-sonnet-4-6
-model_tier: standard
+model: claude-opus-4-6
+model_tier: high
 tools: [readFile, runInTerminal, search, codebase, problems]
 agents: [explore, architect]
 user-invocable: true
