@@ -51,7 +51,7 @@ This is a checklist artifact per the AI SDLC ci-policy module. It documents the 
 
 Merge is allowed only when all of these are true:
 
-1. The **architect** confirms the PR still matches ADRs (`docs/adr/`), module boundaries, branch policy, and acceptance criteria.
+1. The **architect** confirms the PR still matches ADRs (`docs/architecture/adr/`), module boundaries, branch policy, and acceptance criteria.
 2. The **reviewer** confirms code quality, safety, documentation, and drift checks have no blocking findings.
 3. The **executor** confirms the requested change is complete, cleanup is done, and the required hosted checks are green.
 4. The architect, reviewer, and executor loop reaches explicit agreement. If any role disagrees or required checks are not green, do not merge.

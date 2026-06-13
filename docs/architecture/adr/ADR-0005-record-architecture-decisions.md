@@ -16,7 +16,7 @@ way to capture design decisions as they are made.
 ## Decision
 
 > We will use Architecture Decision Records (ADRs) in MADR format, stored in
-> `docs/adr/`, to document all significant architectural decisions.
+> `docs/architecture/adr/`, to document all significant architectural decisions.
 
 ## Consequences
 

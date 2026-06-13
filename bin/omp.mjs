@@ -134,7 +134,7 @@ function deserializeHudState(raw) {
     toolsUsed,
     skillsUsed,
     toolsTotal: typeof value.toolsTotal === "number" ? value.toolsTotal : 13,
-    skillsTotal: typeof value.skillsTotal === "number" ? value.skillsTotal : 25,
+    skillsTotal: typeof value.skillsTotal === "number" ? value.skillsTotal : 59,
     agentsTotal: typeof value.agentsTotal === "number" ? value.agentsTotal : 19,
     premiumRequests: typeof value.premiumRequests === "number" ? value.premiumRequests : 0,
     premiumRequestsTotal: typeof value.premiumRequestsTotal === "number" ? value.premiumRequestsTotal : DEFAULT_PREMIUM_REQUESTS_TOTAL,
@@ -167,7 +167,7 @@ function buildHudState(snapshot, now = Date.now()) {
     toolsUsed,
     skillsUsed,
     toolsTotal: 13,
-    skillsTotal: 25,
+    skillsTotal: 59,
     agentsTotal: 19,
     premiumRequests: snapshot.premium_requests ?? 0,
     premiumRequestsTotal: snapshot.premium_requests_total ?? DEFAULT_PREMIUM_REQUESTS_TOTAL,
@@ -465,11 +465,20 @@ import { appendFileSync, mkdirSync as mkdirSync2 } from "fs";
 import { homedir as homedir5 } from "os";
 import { join as join6 } from "path";
 async function readStdin() {
-  const chunks = [];
-  for await (const chunk of process.stdin) {
-    chunks.push(String(chunk));
-  }
-  return chunks.join("");
+  const readStdinActual = async () => {
+    const chunks = [];
+    for await (const chunk of process.stdin) {
+      chunks.push(String(chunk));
+    }
+    return chunks.join("");
+  };
+  const stdinTimeout = new Promise(
+    (resolve) => setTimeout(
+      () => resolve(""),
+      parseInt(process.env.OMP_HOOK_STDIN_TIMEOUT_MS ?? "500")
+    )
+  );
+  return Promise.race([readStdinActual(), stdinTimeout]);
 }
 function logHookFailure(hook, reason) {
   try {
