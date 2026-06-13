@@ -87,7 +87,7 @@ async function main() {
       break;
     }
     case "verify":
-      await runSkillSubcommand("verify", positionals.slice(1));
+      console.log("OMP verify: use /verify or /oh-my-githubcopilot:verify in GitHub Copilot CLI to trigger @verifier evidence-based completion check.");
       break;
     case "cancel":
       await runCancel();
@@ -96,13 +96,13 @@ async function main() {
       await runHelp();
       break;
     case "code-review":
-      await runSkillSubcommand("code-review", positionals.slice(1));
+      console.log("OMP code-review: use /code-review or /oh-my-githubcopilot:code-review in GitHub Copilot CLI to trigger @code-reviewer agent.");
       break;
     case "security-review":
-      await runSkillSubcommand("security-review", positionals.slice(1));
+      console.log("OMP security-review: use /security-review or /oh-my-githubcopilot:security-review in GitHub Copilot CLI to trigger @security-reviewer agent.");
       break;
     case "ultraqa":
-      await runSkillSubcommand("ultraqa", positionals.slice(1));
+      console.log("OMP ultraqa: use /ultraqa or /oh-my-githubcopilot:ultraqa in GitHub Copilot CLI to start a QA cycle with @qa-tester agent.");
       break;
     case "ultragoal":
       await runUltragoal(positionals.slice(1));
@@ -159,21 +159,6 @@ async function runBench(_args: string[]) {
   console.log("Usage: /omp:swe-bench --suite lite --compare baseline");
 }
 
-/**
- * Generic skill subcommand runner — dynamically imports the skill module and
- * calls activate(). Sets process.exitCode = 1 on error.
- */
-async function runSkillSubcommand(id: string, args: string[]) {
-  try {
-    const mod = await import(`./skills/${id}.mts`);
-    const result = await mod.activate({ trigger: id, args });
-    if (result.status === "error") process.exitCode = 1;
-  } catch (err) {
-    console.error(`Failed to run skill ${id}:`, err);
-    process.exitCode = 1;
-  }
-}
-
 async function runCancel() {
   try {
     const { rmSync, existsSync } = await import("fs");
@@ -221,9 +206,13 @@ async function runUltragoal(args: string[]) {
       goals = JSON.parse(readFileSync(goalsPath, "utf-8"));
     }
     if (args.length > 0) {
-      const newGoal = { id: goals.length + 1, goal: args.join(" "), status: "active", createdAt: new Date().toISOString() };
+      const nextId = goals.length === 0 ? 1 : Math.max(...goals.map((g) => g.id)) + 1;
+      const newGoal = { id: nextId, goal: args.join(" "), status: "active", createdAt: new Date().toISOString() };
       goals.push(newGoal);
-      writeFileSync(goalsPath, JSON.stringify(goals, null, 2));
+      const tmpPath = goalsPath + ".tmp";
+      writeFileSync(tmpPath, JSON.stringify(goals, null, 2));
+      const { renameSync } = await import("fs");
+      renameSync(tmpPath, goalsPath);
       console.log(`OMP UltraGoal: added goal #${newGoal.id}: "${newGoal.goal}"`);
     } else {
       if (goals.length === 0) {
