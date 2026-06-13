@@ -32,4 +32,6 @@ export function deactivate(): void
 
 Extension-only skill. Triggers concurrent code generation in Copilot. The CLI prints guidance directing users to the Copilot CLI slash command.
 
+> **Constraint:** Uses Copilot's built-in multi-model picker **exclusively**. Does NOT invoke Claude CLI, GPT CLI, or Gemini CLI subprocesses. External CLI orchestration is out of scope for this skill.
+
 > **P3 scope:** Automatic result merging and consensus scoring across models (as specified in SPEC-omp-2.0 §3) are deferred to P3. The current implementation presents ranked results for manual selection.

@@ -83,7 +83,7 @@ Execution mode skills are top-level workflows that take over session orchestrati
 | 18 | `simplify` | Review changed code for reuse, quality, and efficiency; fix issues found. |
 | 19 | `debug` | Diagnose the current session or repo state using logs, traces, state, and focused reproduction. |
 | 20 | `ask` | Process-first advisor routing for Claude, Codex, or Gemini via `omp ask`; captures artifacts. |
-| 21 | `ccg` | Claude-Codex-Gemini tri-model orchestration via `/ask codex` + `/ask gemini`; Claude synthesizes results. |
+| 21 | `ccg` | Concurrent code generation via Copilot's built-in multi-model picker. Dispatches the prompt to N models in parallel; presents ranked results for selection. **Constraint: uses Copilot model picker only — does NOT invoke Claude CLI, GPT CLI, or Gemini CLI subprocesses.** |
 | 22 | `skill` | Manage local skills — list, add, remove, search, edit, setup wizard. |
 | 23 | `skillify` | Turn a repeatable workflow into a reusable OMP skill draft. |
 | 24 | `self-improve` | Autonomous evolutionary code improvement engine with tournament selection. |
@@ -103,6 +103,9 @@ Execution mode skills are top-level workflows that take over session orchestrati
 | 38 | `notifications` | Configure and send notifications (Telegram, Discord, Slack) via webhook integrations. |
 | 39 | `doctor` | General environment health check — shell, Node, Git, and plugin state diagnostics. |
 | 40 | `session` | Manage OMP session state — save, restore, list, and switch between named sessions. |
+| 41 | `build-fix` | Diagnose and automatically fix build/CI failures by analysing error output and applying targeted patches. |
+| 42 | `design` | Generate UI/UX designs and frontend components. Trigger: `design:`, `/omp:design` (not `/design` — collision risk). |
+| 43 | `web-clone` | Clone and adapt a web page or design reference to the current codebase's component/style conventions. |
 
 ## 5. OMA Skill Porting (5-Step Process)
 
