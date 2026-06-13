@@ -716,10 +716,8 @@ var init_keyword_detector = __esm({
       "/verify": "verify",
       "/omp:verify": "verify",
       "cancel:": "cancel",
-      "/cancel": "cancel",
       "/omp:cancel": "cancel",
       "help:": "help",
-      "/help": "help",
       "/omp:help": "help",
       "code-review:": "code-review",
       "/code-review": "code-review",
@@ -1335,7 +1333,13 @@ async function runUltragoal(args) {
     mkdirSync3(goalDir, { recursive: true });
     let goals = [];
     if (existsSync2(goalsPath)) {
-      goals = JSON.parse(readFileSync4(goalsPath, "utf-8"));
+      const parsed = JSON.parse(readFileSync4(goalsPath, "utf-8"));
+      if (Array.isArray(parsed)) {
+        goals = parsed;
+      } else {
+        console.error("OMP UltraGoal: goals.json is corrupted (not an array). Resetting to empty.");
+        goals = [];
+      }
     }
     if (args.length > 0) {
       const nextId = goals.length === 0 ? 1 : Math.max(...goals.map((g) => g.id)) + 1;

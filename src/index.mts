@@ -203,7 +203,13 @@ async function runUltragoal(args: string[]) {
     mkdirSync(goalDir, { recursive: true });
     let goals: Array<{ id: number; goal: string; status: string; createdAt: string }> = [];
     if (existsSync(goalsPath)) {
-      goals = JSON.parse(readFileSync(goalsPath, "utf-8"));
+      const parsed: unknown = JSON.parse(readFileSync(goalsPath, "utf-8"));
+      if (Array.isArray(parsed)) {
+        goals = parsed;
+      } else {
+        console.error("OMP UltraGoal: goals.json is corrupted (not an array). Resetting to empty.");
+        goals = [];
+      }
     }
     if (args.length > 0) {
       const nextId = goals.length === 0 ? 1 : Math.max(...goals.map((g) => g.id)) + 1;
