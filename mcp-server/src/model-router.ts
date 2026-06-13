@@ -20,6 +20,7 @@ const OPUS_47_AGENTS = new Set([
   "architect",
   "code-reviewer",
   "critic",
+  "debugger",
   "omg-coordinator",
   "planner",
   "security-reviewer",
@@ -28,7 +29,6 @@ const OPUS_47_AGENTS = new Set([
 const GPT_55_AGENTS = new Set([
   "csharp-reviewer",
   "database-reviewer",
-  "debugger",
   "designer",
   "document-specialist",
   "go-reviewer",

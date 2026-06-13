@@ -40,7 +40,7 @@ const SCAN_FILES = [
 ];
 
 /** Directories scanned recursively (state dirs) relative to the project root. */
-const SCAN_DIRS = [".omg"];
+const SCAN_DIRS = [".omg", ".omp"];
 
 const SCANNABLE_EXTENSIONS = [".md", ".json", ".yml", ".yaml", ".txt"];
 const MAX_SCAN_DEPTH = 3;
