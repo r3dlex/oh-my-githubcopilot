@@ -18,24 +18,23 @@ const MODEL_MAP: Record<ModelTier, string> = {
 };
 
 const AGENT_TIER_MAP: Record<string, ModelTier> = {
+  // "orchestrator" is the top-level coordinator role (not a delegatable agent)
   orchestrator: "high",
   architect: "high",
   planner: "high",
-  reviewer_security: "high",
+  "security-reviewer": "high",
   critic: "high",
+  debugger: "high",
+  "code-reviewer": "high",
+  analyst: "high",
+  designer: "high",
+  "code-simplifier": "high",
   executor: "standard",
-  debugger: "standard",
   verifier: "standard",
-  analyst: "standard",
-  "reviewer-style": "standard",
-  "reviewer-performance": "standard",
-  test_engineer: "standard",
-  dependency_expert: "standard",
-  build_fixer: "standard",
-  git_master: "standard",
-  designer: "standard",
-  explorer: "fast",
-  writer: "fast",
+  "test-engineer": "standard",
+  "git-master": "standard",
+  writer: "standard",
+  explore: "fast",
 };
 
 /**

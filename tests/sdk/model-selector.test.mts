@@ -37,8 +37,43 @@ describe("recommendForAgent", () => {
     expect(rec.model).toBe("claude-sonnet-4.5");
   });
 
-  it("should recommend standard tier for debugger", () => {
+  it("should recommend high tier for debugger", () => {
     const rec = recommendForAgent("debugger");
+    expect(rec.tier).toBe("high");
+  });
+
+  it("should recommend high tier for security-reviewer", () => {
+    const rec = recommendForAgent("security-reviewer");
+    expect(rec.tier).toBe("high");
+  });
+
+  it("should recommend high tier for code-reviewer", () => {
+    const rec = recommendForAgent("code-reviewer");
+    expect(rec.tier).toBe("high");
+  });
+
+  it("should recommend high tier for analyst", () => {
+    const rec = recommendForAgent("analyst");
+    expect(rec.tier).toBe("high");
+  });
+
+  it("should recommend high tier for designer", () => {
+    const rec = recommendForAgent("designer");
+    expect(rec.tier).toBe("high");
+  });
+
+  it("should recommend high tier for code-simplifier", () => {
+    const rec = recommendForAgent("code-simplifier");
+    expect(rec.tier).toBe("high");
+  });
+
+  it("should recommend standard tier for test-engineer", () => {
+    const rec = recommendForAgent("test-engineer");
+    expect(rec.tier).toBe("standard");
+  });
+
+  it("should recommend standard tier for git-master", () => {
+    const rec = recommendForAgent("git-master");
     expect(rec.tier).toBe("standard");
   });
 
@@ -47,15 +82,15 @@ describe("recommendForAgent", () => {
     expect(rec.tier).toBe("standard");
   });
 
-  it("should recommend fast tier for explorer", () => {
-    const rec = recommendForAgent("explorer");
+  it("should recommend fast tier for explore", () => {
+    const rec = recommendForAgent("explore");
     expect(rec.tier).toBe("fast");
     expect(rec.model).toBe("gpt-5.4-mini");
   });
 
-  it("should recommend fast tier for writer", () => {
+  it("should recommend standard tier for writer", () => {
     const rec = recommendForAgent("writer");
-    expect(rec.tier).toBe("fast");
+    expect(rec.tier).toBe("standard");
   });
 
   it("should default to standard tier for unknown agent", () => {

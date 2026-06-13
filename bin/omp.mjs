@@ -44,7 +44,7 @@ function renderAnsi(state) {
   const modeStr = mode === "-" ? "-" : `\x1B[36m${mode}${reset()}`;
   const reqWarning = state.warningActive ? " !!" : "";
   const reqStr = `req:${state.premiumRequests ?? 0}/${state.premiumRequestsTotal ?? 1500}${reqWarning}`;
-  return `[OMP v${state.version}] ${modeStr} | ${model} | ${ctxStr} | ${tokenStr} | ${reqStr} | ${age} | tools:${state.toolsUsed?.size || 0}/${state.toolsTotal ?? 13} | skills:${state.skillsUsed?.size || 0}/${state.skillsTotal ?? 25} | agents:${state.cumulativeAgentsUsed}/${state.agentsTotal ?? 23} | ${icon} ${state.status}`;
+  return `[OMP v${state.version}] ${modeStr} | ${model} | ${ctxStr} | ${tokenStr} | ${reqStr} | ${age} | tools:${state.toolsUsed?.size || 0}/${state.toolsTotal ?? 13} | skills:${state.skillsUsed?.size || 0}/${state.skillsTotal ?? 25} | agents:${state.cumulativeAgentsUsed}/${state.agentsTotal ?? 19} | ${icon} ${state.status}`;
 }
 function renderPlain(state) {
   const age = formatAge(state.startedAt);
@@ -54,7 +54,7 @@ function renderPlain(state) {
   const model = state.activeModel || "sonnet";
   const reqWarningPlain = state.warningActive ? " !!" : "";
   const reqStrPlain = `req:${state.premiumRequests ?? 0}/${state.premiumRequestsTotal ?? 1500}${reqWarningPlain}`;
-  return `[OMP v${state.version}] ${mode} | ${model} | ctx:${ctx}% | tok:~${tokens}/${state.tokensTotal} | ${reqStrPlain} | ${age} | tools:${state.toolsUsed?.size || 0}/${state.toolsTotal ?? 13} | skills:${state.skillsUsed?.size || 0}/${state.skillsTotal ?? 25} | agents:${state.cumulativeAgentsUsed}/${state.agentsTotal ?? 23} | ${state.status}`;
+  return `[OMP v${state.version}] ${mode} | ${model} | ctx:${ctx}% | tok:~${tokens}/${state.tokensTotal} | ${reqStrPlain} | ${age} | tools:${state.toolsUsed?.size || 0}/${state.toolsTotal ?? 13} | skills:${state.skillsUsed?.size || 0}/${state.skillsTotal ?? 25} | agents:${state.cumulativeAgentsUsed}/${state.agentsTotal ?? 19} | ${state.status}`;
 }
 var STATUS_ICONS;
 var init_renderer = __esm({
@@ -135,7 +135,7 @@ function deserializeHudState(raw) {
     skillsUsed,
     toolsTotal: typeof value.toolsTotal === "number" ? value.toolsTotal : 13,
     skillsTotal: typeof value.skillsTotal === "number" ? value.skillsTotal : 25,
-    agentsTotal: typeof value.agentsTotal === "number" ? value.agentsTotal : 23,
+    agentsTotal: typeof value.agentsTotal === "number" ? value.agentsTotal : 19,
     premiumRequests: typeof value.premiumRequests === "number" ? value.premiumRequests : 0,
     premiumRequestsTotal: typeof value.premiumRequestsTotal === "number" ? value.premiumRequestsTotal : DEFAULT_PREMIUM_REQUESTS_TOTAL,
     warningActive: typeof value.warningActive === "boolean" ? value.warningActive : false
@@ -168,7 +168,7 @@ function buildHudState(snapshot, now = Date.now()) {
     skillsUsed,
     toolsTotal: 13,
     skillsTotal: 25,
-    agentsTotal: 23,
+    agentsTotal: 19,
     premiumRequests: snapshot.premium_requests ?? 0,
     premiumRequestsTotal: snapshot.premium_requests_total ?? DEFAULT_PREMIUM_REQUESTS_TOTAL,
     warningActive: snapshot.warning_active ?? false
@@ -339,6 +339,122 @@ var init_install = __esm({
   }
 });
 
+// src/cli/doctor.mts
+var doctor_exports = {};
+__export(doctor_exports, {
+  AGENT_MIGRATIONS: () => AGENT_MIGRATIONS,
+  runDoctor: () => runDoctor,
+  scanProjectForStaleAgents: () => scanProjectForStaleAgents,
+  scanTextForStaleAgents: () => scanTextForStaleAgents
+});
+import { existsSync, readFileSync as readFileSync3, readdirSync, statSync } from "fs";
+import { join as join5, relative } from "path";
+function scanTextForStaleAgents(text, file) {
+  const warnings = [];
+  const lines = text.split("\n");
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    for (const match of line.matchAll(STALE_AGENT_PATTERN)) {
+      const staleId = match[1];
+      warnings.push({
+        file,
+        line: i + 1,
+        staleId: `@${staleId}`,
+        replacement: AGENT_MIGRATIONS[staleId],
+        text: line.trim()
+      });
+    }
+  }
+  return warnings;
+}
+function collectDirFiles(dir, depth) {
+  if (depth > MAX_SCAN_DEPTH) return [];
+  const files = [];
+  let entries;
+  try {
+    entries = readdirSync(dir);
+  } catch {
+    return [];
+  }
+  for (const entry of entries) {
+    const fullPath = join5(dir, entry);
+    try {
+      const stats = statSync(fullPath);
+      if (stats.isDirectory()) {
+        files.push(...collectDirFiles(fullPath, depth + 1));
+      } else if (SCANNABLE_EXTENSIONS.some((ext) => entry.endsWith(ext))) {
+        files.push(fullPath);
+      }
+    } catch {
+    }
+  }
+  return files;
+}
+function scanProjectForStaleAgents(cwd) {
+  const targets = [];
+  for (const file of SCAN_FILES) {
+    const fullPath = join5(cwd, file);
+    if (existsSync(fullPath)) targets.push(fullPath);
+  }
+  for (const dir of SCAN_DIRS) {
+    const fullPath = join5(cwd, dir);
+    if (existsSync(fullPath)) targets.push(...collectDirFiles(fullPath, 0));
+  }
+  const warnings = [];
+  for (const target of targets) {
+    try {
+      const text = readFileSync3(target, "utf-8");
+      warnings.push(...scanTextForStaleAgents(text, relative(cwd, target)));
+    } catch {
+    }
+  }
+  return warnings;
+}
+function runDoctor(cwd = process.cwd()) {
+  console.log("OMP Doctor \u2014 agent migration check (2.0)");
+  console.log("");
+  const warnings = scanProjectForStaleAgents(cwd);
+  if (warnings.length === 0) {
+    console.log("OK: no stale agent references found.");
+    return 0;
+  }
+  console.log(`WARN: found ${warnings.length} stale agent reference(s):`);
+  console.log("");
+  for (const warning of warnings) {
+    console.log(`  ${warning.file}:${warning.line} \u2014 ${warning.staleId} \u2192 ${warning.replacement}`);
+    console.log(`    ${warning.text}`);
+  }
+  console.log("");
+  console.log("Suggested replacements (OMP 2.0 agent parity):");
+  for (const [staleId, replacement] of Object.entries(AGENT_MIGRATIONS)) {
+    console.log(`  @${staleId} \u2192 ${replacement}`);
+  }
+  return warnings.length;
+}
+var AGENT_MIGRATIONS, STALE_AGENT_PATTERN, SCAN_FILES, SCAN_DIRS, SCANNABLE_EXTENSIONS, MAX_SCAN_DEPTH;
+var init_doctor = __esm({
+  "src/cli/doctor.mts"() {
+    "use strict";
+    AGENT_MIGRATIONS = {
+      explorer: "explore",
+      simplifier: "code-simplifier",
+      researcher: "document-specialist",
+      reviewer: "code-reviewer",
+      tester: "test-engineer",
+      orchestrator: "top-level orchestration role (no longer a delegatable agent)"
+    };
+    STALE_AGENT_PATTERN = /(?<![\w-])@(explorer|simplifier|researcher|reviewer|tester|orchestrator)(?![\w-])/g;
+    SCAN_FILES = [
+      ".github/copilot-instructions.md",
+      ".copilot/copilot-instructions.md",
+      "AGENTS.md"
+    ];
+    SCAN_DIRS = [".omg"];
+    SCANNABLE_EXTENSIONS = [".md", ".json", ".yml", ".yaml", ".txt"];
+    MAX_SCAN_DEPTH = 3;
+  }
+});
+
 // src/hooks/runner.mts
 var runner_exports = {};
 __export(runner_exports, {
@@ -347,7 +463,7 @@ __export(runner_exports, {
 });
 import { appendFileSync, mkdirSync as mkdirSync2 } from "fs";
 import { homedir as homedir5 } from "os";
-import { join as join5 } from "path";
+import { join as join6 } from "path";
 async function readStdin() {
   const chunks = [];
   for await (const chunk of process.stdin) {
@@ -362,10 +478,10 @@ function logHookFailure(hook, reason) {
   } catch {
   }
   try {
-    const logsDir = join5(homedir5(), ".omp", "logs");
+    const logsDir = join6(homedir5(), ".omp", "logs");
     mkdirSync2(logsDir, { recursive: true });
     const record = JSON.stringify({ ts: (/* @__PURE__ */ new Date()).toISOString(), hook, reason });
-    appendFileSync(join5(logsDir, "hook-failures.jsonl"), record + "\n", "utf-8");
+    appendFileSync(join6(logsDir, "hook-failures.jsonl"), record + "\n", "utf-8");
   } catch {
   }
 }
@@ -811,6 +927,12 @@ async function main() {
       await runInstall2();
       break;
     }
+    case "doctor": {
+      const { runDoctor: runDoctor2 } = await Promise.resolve().then(() => (init_doctor(), doctor_exports));
+      const warnings = runDoctor2(process.cwd());
+      process.exitCode = warnings > 0 ? 1 : 0;
+      break;
+    }
     default:
       console.error(`Unknown subcommand: ${resolvedSubcommand}`);
       printUsage(true);
@@ -819,15 +941,15 @@ async function main() {
 }
 function printUsage(stderr = false) {
   const output = stderr ? console.error : console.log;
-  output("Usage: omp [hud|install|version|psm|bench|hook] [--watch]");
+  output("Usage: omp [hud|install|doctor|version|psm|bench|hook] [--watch]");
 }
 async function printHud() {
   try {
-    const { readFileSync: readFileSync3 } = await import("fs");
-    const { join: join6 } = await import("path");
+    const { readFileSync: readFileSync4 } = await import("fs");
+    const { join: join7 } = await import("path");
     const { homedir: homedir6 } = await import("os");
-    const hudPath = join6(homedir6(), ".omp", "hud.line");
-    const line = readFileSync3(hudPath, "utf-8").trim();
+    const hudPath = join7(homedir6(), ".omp", "hud.line");
+    const line = readFileSync4(hudPath, "utf-8").trim();
     console.log(line);
   } catch {
     console.log(`OMP v${PKG_VERSION} | hud: no active session`);

@@ -10,7 +10,7 @@
   "plugins": [
     {
       "name": "oh-my-githubcopilot",
-      "description": "Agent orchestration engine for GitHub Copilot CLI. 23 agents, 39 skills, HUD, PSM, SWE-bench.",
+      "description": "Agent orchestration engine for GitHub Copilot CLI. 19 agents, 39 skills, HUD, PSM, SWE-bench.",
       "version": "1.8.1",
       "source": "."
     }

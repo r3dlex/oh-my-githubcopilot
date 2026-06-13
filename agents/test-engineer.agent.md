@@ -2,7 +2,7 @@
 name: test-engineer
 description: >
   Test strategy, integration/e2e coverage, and TDD workflows.
-  Use when: "add tests", "improve test coverage", "design testing strategy", TDD implementation.
+  Use when: "add tests", "improve test coverage", "design testing strategy", writing unit tests, executing test suites, CI integration, TDD implementation.
 model: claude-sonnet-4-6
 tools: [readFile, editFiles, runInTerminal, findTestFiles, testFailures]
 agents: [explore, architect]
@@ -16,5 +16,7 @@ Test strategy, integration/e2e coverage analysis, flaky test hardening, and TDD 
 
 ## Responsibilities
 - Test strategy design and coverage gap analysis
+- Unit and integration test authoring matching project conventions
+- Test suite execution and CI pipeline integration
 - Integration and e2e test implementation
 - Flaky test diagnosis and hardening

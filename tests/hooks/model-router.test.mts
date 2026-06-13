@@ -28,6 +28,17 @@ describe("model-router hook", () => {
       expect(result.mutations.length).toBeGreaterThan(0);
     });
 
+    it("should set opus model for security-reviewer and debugger", () => {
+      for (const agentId of ["security-reviewer", "debugger"]) {
+        const result = processHook({
+          hook_type: "PreToolUse",
+          tool_name: "Read",
+          agent_id: agentId,
+        });
+        expect(result.mutations).toContainEqual({ type: "set_model", model: "opus" });
+      }
+    });
+
     it("should include set_model mutation for high-tier agents", () => {
       const result = processHook({
         hook_type: "PreToolUse",
@@ -53,7 +64,7 @@ describe("model-router hook", () => {
       const result = processHook({
         hook_type: "PreToolUse",
         tool_name: "Read",
-        agent_id: "explorer",
+        agent_id: "explore",
       });
       const setModelMutation = result.mutations.find((m: any) => m.type === "set_model");
       expect(setModelMutation).toBeDefined();
@@ -63,7 +74,7 @@ describe("model-router hook", () => {
       const result = processHook({
         hook_type: "PreToolUse",
         tool_name: "Read",
-        agent_id: "analyst",
+        agent_id: "executor",
       });
       const setModelMutation = result.mutations.find((m: any) => m.type === "set_model");
       expect(setModelMutation).toBeDefined();

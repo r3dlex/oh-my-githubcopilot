@@ -6,7 +6,7 @@
  * Tier:     cleanup pass
  *
  * Regression-safe, deletion-first cleanup of AI-generated code slop.
- * Optional --review mode for writer/reviewer separation.
+ * Optional --review mode for writer/code-reviewer separation.
  */
 
 export interface SkillInput {

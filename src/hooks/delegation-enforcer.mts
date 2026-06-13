@@ -3,7 +3,9 @@
  * Trigger: pre-cycle (PreToolUse equivalent)
  * Priority: 90
  *
- * Blocks orchestrator from using Write/Edit — forces delegation.
+ * Blocks the top-level coordinator (orchestrator role) from using Write/Edit — forces delegation.
+ * Note: since OMP 2.0, "orchestrator" is the orchestration role of the main session,
+ * not a delegatable agent.
  */
 
 import { readFileSync } from "fs";

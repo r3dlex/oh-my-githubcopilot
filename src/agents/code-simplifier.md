@@ -1,5 +1,5 @@
 ---
-name: simplifier
+name: code-simplifier
 description: >
   Code simplification and refactoring specialist.
   Use when: simplifying code, improving clarity, removing dead code, reducing complexity.

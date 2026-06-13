@@ -45,7 +45,7 @@ function makeStatusJson(overrides: {
     skillsUsed: [],
     toolsTotal: 13,
     skillsTotal: 25,
-    agentsTotal: 23,
+    agentsTotal: 19,
     premiumRequests: 0,
     premiumRequestsTotal: 1500,
     warningActive: false,

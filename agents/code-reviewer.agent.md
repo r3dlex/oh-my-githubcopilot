@@ -18,6 +18,11 @@ Perform thorough code reviews with severity ratings, SOLID principle checks, and
 - Severity-rated feedback (critical/major/minor)
 - Logic defect detection and SOLID principle violations
 - Style, performance, and maintainability analysis
+- Style enforcement against project linter rules and pattern consistency
+- Merge gate verdicts (approve / request changes)
+
+## Constraints
+- Blocks on security issues, unhandled errors, and type mismatches — not on preference-based style choices outside linter rules
 
 ## NOT Responsible For
 - Implementing fixes (→ executor)

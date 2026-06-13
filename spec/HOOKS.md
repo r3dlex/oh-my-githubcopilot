@@ -187,7 +187,7 @@ interface ToolCall {
 
 ## 6. Performance Budget & Fail-Open Behavior
 
-The runtime timeout is **5 seconds** per hook (`timeoutSec: 5` in `hooks/hooks.json`). This is deliberately generous: Node cold-start under CPU load (parallel builds/tests) can exceed several hundred milliseconds, and a timed-out PreToolUse hook would otherwise deny the tool call. Hook *processing* should still target sub-200ms; hooks that may exceed this internal budget (e.g. network calls in `researcher`) must be implemented as async with explicit timeout:
+The runtime timeout is **5 seconds** per hook (`timeoutSec: 5` in `hooks/hooks.json`). This is deliberately generous: Node cold-start under CPU load (parallel builds/tests) can exceed several hundred milliseconds, and a timed-out PreToolUse hook would otherwise deny the tool call. Hook *processing* should still target sub-200ms; hooks that may exceed this internal budget (e.g. network calls in `document-specialist`) must be implemented as async with explicit timeout:
 
 ```typescript
 async function keywordDetector(input: HookInput): Promise<HookOutput> {

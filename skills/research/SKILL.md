@@ -97,7 +97,7 @@ Conduct thorough research and investigation on topics.
 
 ## Agent Routing
 
-Delegate research tasks to the `researcher` agent (standard tier). For deep code archaeology, use the `explorer` agent. For architecture trade-offs, escalate to the `architect` agent.
+Delegate research tasks to the `document-specialist` agent (standard tier). For deep code archaeology, use the `explore` agent. For architecture trade-offs, escalate to the `architect` agent.
 
 State for in-progress research is stored under `.omp/research/`.
 

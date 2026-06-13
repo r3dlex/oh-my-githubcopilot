@@ -133,7 +133,7 @@ describe("plugin installation", () => {
     it("should describe the plugin in marketplace listing", () => {
       const json = marketplaceJson();
       const plugin = (json.plugins as Array<Record<string, unknown>>)[0];
-      expect(plugin.description as string).toContain("23 agents");
+      expect(plugin.description as string).toContain("19 agents");
       expect(plugin.description as string).toContain("39 skills");
     });
   });

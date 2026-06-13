@@ -59,7 +59,29 @@ ls -la ~/.config/github-copilot/plugins/oh-my-githubcopilot/agents/ 2>/dev/null
 - If known agents are missing: WARN - incomplete agent set
 
 **Known agent names** (check agents/ for these):
-`orchestrator`, `explorer`, `planner`, `executor`, `verifier`, `writer`, `reviewer`, `designer`, `researcher`, `tester`, `debugger`, `architect`, `security-reviewer`, `simplifier`, `test-engineer`, `critic`, `tracer`, `scientist`, `code-reviewer`, `document-specialist`, `qa-tester`, `git-master`, `analyst`
+`explore`, `planner`, `executor`, `verifier`, `writer`, `designer`, `debugger`, `architect`, `security-reviewer`, `code-simplifier`, `test-engineer`, `critic`, `tracer`, `scientist`, `code-reviewer`, `document-specialist`, `qa-tester`, `git-master`, `analyst`
+
+### Step 4b: Check for Stale Agent References (2.0 migration)
+
+Run the built-in migration scan, which checks project config files (`.github/copilot-instructions.md`, `AGENTS.md`, `.omg/` state) for agent IDs that were renamed or dropped in OMP 2.0:
+
+```bash
+node bin/omp.mjs doctor
+```
+
+**Stale ID → replacement mapping**:
+
+| Stale ID | Replacement |
+|----------|-------------|
+| `@explorer` | `@explore` |
+| `@simplifier` | `@code-simplifier` |
+| `@researcher` | `@document-specialist` |
+| `@reviewer` | `@code-reviewer` |
+| `@tester` | `@test-engineer` |
+| `@orchestrator` | top-level orchestration role (no longer a delegatable agent) |
+
+**Diagnosis**:
+- If stale references found: WARN - suggest the replacement IDs above
 
 ### Step 5: Check AGENTS.md
 
