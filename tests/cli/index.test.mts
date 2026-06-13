@@ -104,7 +104,7 @@ describe("src/index.mts CLI", () => {
     await runIndex(["unknown"]);
 
     expect(consoleError).toHaveBeenCalledWith("Unknown subcommand: unknown");
-    expect(consoleError).toHaveBeenCalledWith("Usage: omp [hud|install|doctor|version|psm|bench|hook|verify|cancel|help|code-review|security-review|ultraqa|ultragoal|deep-dive|external-context|deepsearch|sciomc|remember|writer-memory|deepinit] [--watch]");
+    expect(consoleError).toHaveBeenCalledWith("Usage: omp [hud|install|doctor|version|psm|bench|hook|verify|cancel|help|code-review|security-review|ultraqa|ultragoal|deep-dive|external-context|deepsearch|sciomc|remember|writer-memory|deepinit|self-improve|visual-verdict|ccg|build-fix|design|web-clone] [--watch]");
     expect(processExit).toHaveBeenCalledWith(1);
   });
 
