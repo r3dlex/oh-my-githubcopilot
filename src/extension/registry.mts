@@ -223,6 +223,41 @@ export const SKILL_REGISTRY: SkillEntry[] = [
     description: "Worktree and tmux session management",
     keywords: ["session:"],
   },
+  {
+    id: "verify",
+    description: "Evidence-based completion check via verifier agent",
+    keywords: ["verify:"],
+  },
+  {
+    id: "cancel",
+    description: "Ends active execution modes and clears .omp/state/",
+    keywords: ["cancel:"],
+  },
+  {
+    id: "help",
+    description: "Command and skill discovery; prints the full skill catalog",
+    keywords: ["help:"],
+  },
+  {
+    id: "code-review",
+    description: "Trigger the code-reviewer agent lane for structured code review",
+    keywords: ["code-review:"],
+  },
+  {
+    id: "security-review",
+    description: "Trigger the security-reviewer agent lane for security analysis",
+    keywords: ["security-review:"],
+  },
+  {
+    id: "ultraqa",
+    description: "QA cycle loop with qa-tester agent; runs until all checks pass",
+    keywords: ["ultraqa:"],
+  },
+  {
+    id: "ultragoal",
+    description: "Durable goal ledger in .omp/ultragoal/ with fail-closed checkpoints",
+    keywords: ["ultragoal:"],
+  },
 ];
 
 /**

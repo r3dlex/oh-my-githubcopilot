@@ -449,7 +449,7 @@ var init_doctor = __esm({
       ".copilot/copilot-instructions.md",
       "AGENTS.md"
     ];
-    SCAN_DIRS = [".omg"];
+    SCAN_DIRS = [".omg", ".omp"];
     SCANNABLE_EXTENSIONS = [".md", ".json", ".yml", ".yaml", ".txt"];
     MAX_SCAN_DEPTH = 3;
   }
@@ -711,7 +711,26 @@ var init_keyword_detector = __esm({
       "/omp:notifications": "notifications",
       "session:": "session",
       "/session": "session",
-      "/omp:session": "session"
+      "/omp:session": "session",
+      "verify:": "verify",
+      "/verify": "verify",
+      "/omp:verify": "verify",
+      "cancel:": "cancel",
+      "/omp:cancel": "cancel",
+      "help:": "help",
+      "/omp:help": "help",
+      "code-review:": "code-review",
+      "/code-review": "code-review",
+      "/omp:code-review": "code-review",
+      "security-review:": "security-review",
+      "/security-review": "security-review",
+      "/omp:security-review": "security-review",
+      "ultraqa:": "ultraqa",
+      "/ultraqa": "ultraqa",
+      "/omp:ultraqa": "ultraqa",
+      "ultragoal:": "ultragoal",
+      "/ultragoal": "ultragoal",
+      "/omp:ultragoal": "ultragoal"
     };
     KEYWORD_ENTRIES = Object.entries(KEYWORD_MAP).sort(([a], [b]) => b.length - a.length);
     CANONICAL_COMMAND_MAP = {
@@ -722,6 +741,280 @@ var init_keyword_detector = __esm({
     if (process.argv[1]?.endsWith("keyword-detector.mjs") || process.argv[1]?.endsWith("keyword-detector.mts")) {
       await runHookMain(processHook, { failOpenDecision: true, hookName: "keyword-detector" });
     }
+  }
+});
+
+// src/extension/commands.mts
+function buildActivationInstruction(skillId, args) {
+  const trimmed = args.trim();
+  return `Activate the OMP skill "${skillId}" with args: ${trimmed.length > 0 ? trimmed : "(none)"}`;
+}
+function buildCommands(registry) {
+  const commands = [];
+  for (const entry of registry) {
+    commands.push({
+      name: entry.id,
+      description: entry.description,
+      handler: (args) => buildActivationInstruction(entry.id, args)
+    });
+    for (const alias of entry.aliases ?? []) {
+      commands.push({
+        name: alias,
+        description: `Alias for /${entry.id} \u2014 ${entry.description}`,
+        handler: (args) => buildActivationInstruction(entry.id, args)
+      });
+    }
+  }
+  return commands;
+}
+var init_commands = __esm({
+  "src/extension/commands.mts"() {
+    "use strict";
+  }
+});
+
+// src/extension/registry.mts
+var registry_exports = {};
+__export(registry_exports, {
+  SKILL_REGISTRY: () => SKILL_REGISTRY,
+  getCommandDefinitions: () => getCommandDefinitions
+});
+function getCommandDefinitions() {
+  return buildCommands(SKILL_REGISTRY);
+}
+var SKILL_REGISTRY;
+var init_registry = __esm({
+  "src/extension/registry.mts"() {
+    "use strict";
+    init_commands();
+    SKILL_REGISTRY = [
+      {
+        id: "autopilot",
+        description: "Autonomous end-to-end execution from idea to working code",
+        keywords: ["autopilot:"]
+      },
+      {
+        id: "ralph",
+        description: "Persistence loop with architect verification gate",
+        keywords: ["ralph:"]
+      },
+      {
+        id: "ultrawork",
+        description: "Parallel multi-agent high-throughput implementation",
+        aliases: ["ulw"],
+        keywords: ["ulw:", "ultrawork:"]
+      },
+      {
+        id: "team",
+        description: "Coordinated N-agent team with staged pipeline",
+        keywords: ["team:"]
+      },
+      {
+        id: "ecomode",
+        description: "Cost-optimized execution with low-cost model tier",
+        aliases: ["eco"],
+        keywords: ["eco:", "ecomode:"]
+      },
+      {
+        id: "swarm",
+        description: "Parallel agent swarm for independent subtasks",
+        keywords: ["swarm:"]
+      },
+      {
+        id: "pipeline",
+        description: "Sequential stage-based execution pipeline",
+        keywords: ["pipeline:"]
+      },
+      {
+        id: "deep-interview",
+        description: "Socratic deep requirements interview with ambiguity gating",
+        aliases: ["di"],
+        keywords: ["deep interview:"]
+      },
+      {
+        id: "omp-plan",
+        description: "Strategic planning with interview, direct, consensus, and review modes",
+        aliases: ["plan"],
+        keywords: ["plan:"]
+      },
+      {
+        id: "omp-setup",
+        description: "OMP onboarding and configuration wizard",
+        keywords: ["setup:"]
+      },
+      {
+        id: "hud",
+        description: "Display current HUD session state",
+        keywords: ["hud:"]
+      },
+      {
+        id: "wiki",
+        description: "Project wiki operations and management",
+        keywords: ["wiki:"]
+      },
+      {
+        id: "learner",
+        description: "Structured learning and knowledge sessions",
+        keywords: ["learner:"]
+      },
+      {
+        id: "note",
+        description: "Session notes and context management",
+        keywords: ["note:"]
+      },
+      {
+        id: "trace",
+        description: "Execution tracing and debugging",
+        keywords: ["trace:"]
+      },
+      {
+        id: "release",
+        description: "Guided release workflow and automation",
+        keywords: ["release:"]
+      },
+      {
+        id: "configure-notifications",
+        description: "Configure session notification settings",
+        keywords: ["configure-notifications:"]
+      },
+      {
+        id: "psm",
+        description: "Plugin State Manager operations",
+        keywords: ["psm:"]
+      },
+      {
+        id: "swe-bench",
+        description: "SWE-bench evaluation harness runner",
+        keywords: ["swe-bench:"]
+      },
+      {
+        id: "mcp-setup",
+        description: "MCP server configuration wizard",
+        keywords: ["mcp:", "mcp-setup:"]
+      },
+      {
+        id: "setup",
+        description: "OMP setup and onboarding wizard"
+      },
+      {
+        id: "graphify",
+        description: "Convert any input to a knowledge graph",
+        keywords: ["graphify:"]
+      },
+      {
+        id: "graphwiki",
+        description: "GraphWiki CLI operations: query, lint, build",
+        keywords: ["graphwiki:"]
+      },
+      {
+        id: "graph-provider",
+        description: "Manage and configure the active graph provider",
+        keywords: ["graph:"]
+      },
+      {
+        id: "spending",
+        description: "Track and reset premium request usage",
+        keywords: ["spending:"]
+      },
+      {
+        id: "ralplan",
+        description: "Consensus planning gate for vague ralph/autopilot/team requests"
+      },
+      {
+        id: "research",
+        description: "Research and investigation workflows (investigate, deep dive)",
+        keywords: ["autoresearch:"]
+      },
+      {
+        id: "omp-doctor",
+        description: "Diagnose and fix oh-my-githubcopilot installation issues"
+      },
+      {
+        id: "omp-reference",
+        description: "OMP agent catalog, tools, routing, commit protocol, and skills registry"
+      },
+      {
+        id: "ai-slop-cleaner",
+        description: "Clean AI-generated code slop with a regression-safe, deletion-first workflow",
+        keywords: ["deslop", "anti-slop"]
+      },
+      {
+        id: "tdd",
+        description: "Test-Driven Development with Red-Green-Refactor cycle",
+        keywords: ["tdd:"]
+      },
+      {
+        id: "improve-codebase-architecture",
+        description: "Deep exploration and architectural improvement via friction detection"
+      },
+      {
+        id: "skillify",
+        description: "Turn a repeatable session workflow into a reusable OMP skill draft"
+      },
+      {
+        id: "interview",
+        description: "Socratic interview and ambiguity scoring",
+        keywords: ["interview:"]
+      },
+      {
+        id: "graph-context",
+        description: "Load codebase context from the knowledge graph instead of raw files"
+      },
+      {
+        id: "interactive-menu",
+        description: "Numbered-choice selection pattern for OMP's conversational TUI"
+      },
+      {
+        id: "notifications",
+        description: "Send and manage runtime notifications (Telegram, Discord, Slack, Email)",
+        keywords: ["notifications:"]
+      },
+      {
+        id: "doctor",
+        description: "Diagnose and fix common issues",
+        keywords: ["doctor:"]
+      },
+      {
+        id: "session",
+        description: "Worktree and tmux session management",
+        keywords: ["session:"]
+      },
+      {
+        id: "verify",
+        description: "Evidence-based completion check via verifier agent",
+        keywords: ["verify:"]
+      },
+      {
+        id: "cancel",
+        description: "Ends active execution modes and clears .omp/state/",
+        keywords: ["cancel:"]
+      },
+      {
+        id: "help",
+        description: "Command and skill discovery; prints the full skill catalog",
+        keywords: ["help:"]
+      },
+      {
+        id: "code-review",
+        description: "Trigger the code-reviewer agent lane for structured code review",
+        keywords: ["code-review:"]
+      },
+      {
+        id: "security-review",
+        description: "Trigger the security-reviewer agent lane for security analysis",
+        keywords: ["security-review:"]
+      },
+      {
+        id: "ultraqa",
+        description: "QA cycle loop with qa-tester agent; runs until all checks pass",
+        keywords: ["ultraqa:"]
+      },
+      {
+        id: "ultragoal",
+        description: "Durable goal ledger in .omp/ultragoal/ with fail-closed checkpoints",
+        keywords: ["ultragoal:"]
+      }
+    ];
   }
 });
 
@@ -933,6 +1226,27 @@ async function main() {
       process.exitCode = warnings > 0 ? 1 : 0;
       break;
     }
+    case "verify":
+      console.log("OMP verify: use /verify or /oh-my-githubcopilot:verify in GitHub Copilot CLI to trigger @verifier evidence-based completion check.");
+      break;
+    case "cancel":
+      await runCancel();
+      break;
+    case "help":
+      await runHelp();
+      break;
+    case "code-review":
+      console.log("OMP code-review: use /code-review or /oh-my-githubcopilot:code-review in GitHub Copilot CLI to trigger @code-reviewer agent.");
+      break;
+    case "security-review":
+      console.log("OMP security-review: use /security-review or /oh-my-githubcopilot:security-review in GitHub Copilot CLI to trigger @security-reviewer agent.");
+      break;
+    case "ultraqa":
+      console.log("OMP ultraqa: use /ultraqa or /oh-my-githubcopilot:ultraqa in GitHub Copilot CLI to start a QA cycle with @qa-tester agent.");
+      break;
+    case "ultragoal":
+      await runUltragoal(positionals.slice(1));
+      break;
     default:
       console.error(`Unknown subcommand: ${resolvedSubcommand}`);
       printUsage(true);
@@ -941,7 +1255,7 @@ async function main() {
 }
 function printUsage(stderr = false) {
   const output = stderr ? console.error : console.log;
-  output("Usage: omp [hud|install|doctor|version|psm|bench|hook] [--watch]");
+  output("Usage: omp [hud|install|doctor|version|psm|bench|hook|verify|cancel|help|code-review|security-review|ultraqa|ultragoal] [--watch]");
 }
 async function printHud() {
   try {
@@ -975,6 +1289,81 @@ async function runHook(args) {
 async function runBench(_args) {
   console.log("SWE-bench requires Node.js subprocess with Python evaluation harness.");
   console.log("Usage: /omp:swe-bench --suite lite --compare baseline");
+}
+async function runCancel() {
+  try {
+    const { rmSync, existsSync: existsSync2 } = await import("fs");
+    const { join: join7 } = await import("path");
+    const statePath = join7(process.cwd(), ".omp", "state");
+    if (existsSync2(statePath)) {
+      rmSync(statePath, { recursive: true, force: true });
+      console.log("OMP: active session cancelled. .omp/state/ cleared.");
+    } else {
+      console.log("OMP: no active session state found. Nothing to cancel.");
+    }
+  } catch (err) {
+    console.error("OMP cancel failed:", err);
+    process.exitCode = 1;
+  }
+}
+async function runHelp() {
+  try {
+    const { SKILL_REGISTRY: SKILL_REGISTRY2 } = await Promise.resolve().then(() => (init_registry(), registry_exports));
+    console.log("OMP Skills Catalog\n");
+    console.log("  ID                           Description");
+    console.log("  " + "-".repeat(70));
+    for (const skill of SKILL_REGISTRY2) {
+      const id = skill.id.padEnd(30);
+      console.log(`  ${id} ${skill.description}`);
+    }
+    console.log(`
+Total: ${SKILL_REGISTRY2.length} skills`);
+    console.log("\nUsage: /omp:<skill-id> [args]");
+  } catch (err) {
+    console.error("OMP help failed:", err);
+    process.exitCode = 1;
+  }
+}
+async function runUltragoal(args) {
+  try {
+    const { mkdirSync: mkdirSync3, readFileSync: readFileSync4, writeFileSync: writeFileSync2, existsSync: existsSync2 } = await import("fs");
+    const { join: join7 } = await import("path");
+    const goalDir = join7(process.cwd(), ".omp", "ultragoal");
+    const goalsPath = join7(goalDir, "goals.json");
+    mkdirSync3(goalDir, { recursive: true });
+    let goals = [];
+    if (existsSync2(goalsPath)) {
+      const parsed = JSON.parse(readFileSync4(goalsPath, "utf-8"));
+      if (Array.isArray(parsed)) {
+        goals = parsed;
+      } else {
+        console.error("OMP UltraGoal: goals.json is corrupted (not an array). Resetting to empty.");
+        goals = [];
+      }
+    }
+    if (args.length > 0) {
+      const nextId = goals.length === 0 ? 1 : Math.max(...goals.map((g) => g.id)) + 1;
+      const newGoal = { id: nextId, goal: args.join(" "), status: "active", createdAt: (/* @__PURE__ */ new Date()).toISOString() };
+      goals.push(newGoal);
+      const tmpPath = goalsPath + ".tmp";
+      writeFileSync2(tmpPath, JSON.stringify(goals, null, 2));
+      const { renameSync: renameSync2 } = await import("fs");
+      renameSync2(tmpPath, goalsPath);
+      console.log(`OMP UltraGoal: added goal #${newGoal.id}: "${newGoal.goal}"`);
+    } else {
+      if (goals.length === 0) {
+        console.log("OMP UltraGoal: no goals set. Use: omp ultragoal <goal description>");
+      } else {
+        console.log("OMP UltraGoal \u2014 Current Goals:\n");
+        for (const g of goals) {
+          console.log(`  #${g.id} [${g.status}] ${g.goal}`);
+        }
+      }
+    }
+  } catch (err) {
+    console.error("OMP ultragoal failed:", err);
+    process.exitCode = 1;
+  }
 }
 main().catch((err) => {
   console.error(err);

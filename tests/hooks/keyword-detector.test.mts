@@ -170,10 +170,10 @@ describe("keyword-detector hook", () => {
       expect(result.modifiedPrompt).toBeUndefined();
     });
 
-    it("should no longer route removed ultraqa alias", () => {
+    it("should route ultraqa: keyword now that ultraqa is a registered skill", () => {
       const result = processHook({ hook_type: "UserPromptSubmitted", prompt: "ultraqa: verify this" });
       expect(result.status).toBe("ok");
-      expect(result.modifiedPrompt).toBeUndefined();
+      expect(result.modifiedPrompt).toBeDefined();
     });
 
     it("should include latency in result", () => {

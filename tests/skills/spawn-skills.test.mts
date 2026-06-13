@@ -36,9 +36,12 @@ beforeEach(() => {
 
 const SPAWN_SKILLS = [
   "autopilot",
+  "cancel",
+  "code-review",
   "configure-notifications",
   "deep-interview",
   "ecomode",
+  "help",
   "hud",
   "learner",
   "note",
@@ -48,12 +51,16 @@ const SPAWN_SKILLS = [
   "psm",
   "ralph",
   "release",
+  "security-review",
   "setup",
   "swarm",
   "swe-bench",
   "team",
   "trace",
+  "ultragoal",
+  "ultraqa",
   "ultrawork",
+  "verify",
   "wiki",
 ] as const;
 
