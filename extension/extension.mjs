@@ -256,6 +256,41 @@ export const COMMANDS = [
     skillId: "session",
     description: "Worktree and tmux session management",
   },
+  {
+    name: "verify",
+    skillId: "verify",
+    description: "Evidence-based completion check via verifier agent",
+  },
+  {
+    name: "cancel",
+    skillId: "cancel",
+    description: "Ends active execution modes and clears .omp/state/",
+  },
+  {
+    name: "help",
+    skillId: "help",
+    description: "Command and skill discovery; prints the full skill catalog",
+  },
+  {
+    name: "code-review",
+    skillId: "code-review",
+    description: "Trigger the code-reviewer agent lane for structured code review",
+  },
+  {
+    name: "security-review",
+    skillId: "security-review",
+    description: "Trigger the security-reviewer agent lane for security analysis",
+  },
+  {
+    name: "ultraqa",
+    skillId: "ultraqa",
+    description: "QA cycle loop with qa-tester agent; runs until all checks pass",
+  },
+  {
+    name: "ultragoal",
+    skillId: "ultragoal",
+    description: "Durable goal ledger in .omp/ultragoal/ with fail-closed checkpoints",
+  },
 ];
 
 /**

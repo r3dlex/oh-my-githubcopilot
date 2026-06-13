@@ -3,12 +3,19 @@
  * Entry point: bin/omp.mjs
  *
  * Subcommands:
- *   omp hud        — print current HUD line
- *   omp doctor     — check installation and stale agent references
- *   omp version    — show OMP version
- *   omp psm        — shorthand for PSM commands
- *   omp bench      — run SWE-bench suite
- *   omp hook       — execute a packaged hook from stdin
+ *   omp hud             — print current HUD line
+ *   omp doctor          — check installation and stale agent references
+ *   omp version         — show OMP version
+ *   omp psm             — shorthand for PSM commands
+ *   omp bench           — run SWE-bench suite
+ *   omp hook            — execute a packaged hook from stdin
+ *   omp verify          — evidence-based completion check via verifier agent
+ *   omp cancel          — end active execution modes and clear .omp/state/
+ *   omp help            — print skill catalog and command discovery
+ *   omp code-review     — trigger code-reviewer agent lane
+ *   omp security-review — trigger security-reviewer agent lane
+ *   omp ultraqa         — QA cycle loop with qa-tester agent
+ *   omp ultragoal       — manage durable goal ledger in .omp/ultragoal/
  */
 
 import { parseArgs } from "util";
@@ -79,6 +86,27 @@ async function main() {
       process.exitCode = warnings > 0 ? 1 : 0;
       break;
     }
+    case "verify":
+      await runSkillSubcommand("verify", positionals.slice(1));
+      break;
+    case "cancel":
+      await runCancel();
+      break;
+    case "help":
+      await runHelp();
+      break;
+    case "code-review":
+      await runSkillSubcommand("code-review", positionals.slice(1));
+      break;
+    case "security-review":
+      await runSkillSubcommand("security-review", positionals.slice(1));
+      break;
+    case "ultraqa":
+      await runSkillSubcommand("ultraqa", positionals.slice(1));
+      break;
+    case "ultragoal":
+      await runUltragoal(positionals.slice(1));
+      break;
     default:
       console.error(`Unknown subcommand: ${resolvedSubcommand}`);
       printUsage(true);
@@ -88,7 +116,7 @@ async function main() {
 
 function printUsage(stderr = false) {
   const output = stderr ? console.error : console.log;
-  output("Usage: omp [hud|install|doctor|version|psm|bench|hook] [--watch]");
+  output("Usage: omp [hud|install|doctor|version|psm|bench|hook|verify|cancel|help|code-review|security-review|ultraqa|ultragoal] [--watch]");
 }
 
 async function printHud() {
@@ -129,6 +157,88 @@ async function runHook(args: string[]) {
 async function runBench(_args: string[]) {
   console.log("SWE-bench requires Node.js subprocess with Python evaluation harness.");
   console.log("Usage: /omp:swe-bench --suite lite --compare baseline");
+}
+
+/**
+ * Generic skill subcommand runner — dynamically imports the skill module and
+ * calls activate(). Sets process.exitCode = 1 on error.
+ */
+async function runSkillSubcommand(id: string, args: string[]) {
+  try {
+    const mod = await import(`./skills/${id}.mts`);
+    const result = await mod.activate({ trigger: id, args });
+    if (result.status === "error") process.exitCode = 1;
+  } catch (err) {
+    console.error(`Failed to run skill ${id}:`, err);
+    process.exitCode = 1;
+  }
+}
+
+async function runCancel() {
+  try {
+    const { rmSync, existsSync } = await import("fs");
+    const { join } = await import("path");
+    const statePath = join(process.cwd(), ".omp", "state");
+    if (existsSync(statePath)) {
+      rmSync(statePath, { recursive: true, force: true });
+      console.log("OMP: active session cancelled. .omp/state/ cleared.");
+    } else {
+      console.log("OMP: no active session state found. Nothing to cancel.");
+    }
+  } catch (err) {
+    console.error("OMP cancel failed:", err);
+    process.exitCode = 1;
+  }
+}
+
+async function runHelp() {
+  try {
+    const { SKILL_REGISTRY } = await import("./extension/registry.mts");
+    console.log("OMP Skills Catalog\n");
+    console.log("  ID                           Description");
+    console.log("  " + "-".repeat(70));
+    for (const skill of SKILL_REGISTRY) {
+      const id = skill.id.padEnd(30);
+      console.log(`  ${id} ${skill.description}`);
+    }
+    console.log(`\nTotal: ${SKILL_REGISTRY.length} skills`);
+    console.log("\nUsage: /omp:<skill-id> [args]");
+  } catch (err) {
+    console.error("OMP help failed:", err);
+    process.exitCode = 1;
+  }
+}
+
+async function runUltragoal(args: string[]) {
+  try {
+    const { mkdirSync, readFileSync, writeFileSync, existsSync } = await import("fs");
+    const { join } = await import("path");
+    const goalDir = join(process.cwd(), ".omp", "ultragoal");
+    const goalsPath = join(goalDir, "goals.json");
+    mkdirSync(goalDir, { recursive: true });
+    let goals: Array<{ id: number; goal: string; status: string; createdAt: string }> = [];
+    if (existsSync(goalsPath)) {
+      goals = JSON.parse(readFileSync(goalsPath, "utf-8"));
+    }
+    if (args.length > 0) {
+      const newGoal = { id: goals.length + 1, goal: args.join(" "), status: "active", createdAt: new Date().toISOString() };
+      goals.push(newGoal);
+      writeFileSync(goalsPath, JSON.stringify(goals, null, 2));
+      console.log(`OMP UltraGoal: added goal #${newGoal.id}: "${newGoal.goal}"`);
+    } else {
+      if (goals.length === 0) {
+        console.log("OMP UltraGoal: no goals set. Use: omp ultragoal <goal description>");
+      } else {
+        console.log("OMP UltraGoal — Current Goals:\n");
+        for (const g of goals) {
+          console.log(`  #${g.id} [${g.status}] ${g.goal}`);
+        }
+      }
+    }
+  } catch (err) {
+    console.error("OMP ultragoal failed:", err);
+    process.exitCode = 1;
+  }
 }
 
 main().catch((err) => {

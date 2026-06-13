@@ -58,7 +58,14 @@
     "./skills/interactive-menu",
     "./skills/notifications",
     "./skills/doctor",
-    "./skills/session"
+    "./skills/session",
+    "./skills/verify",
+    "./skills/cancel",
+    "./skills/help",
+    "./skills/code-review",
+    "./skills/security-review",
+    "./skills/ultraqa",
+    "./skills/ultragoal"
   ],
   "hooks": "./hooks/hooks.json",
   "mcp": "./.mcp.json",
