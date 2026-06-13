@@ -33,3 +33,7 @@ export function deactivate(): void
 ## Implementation
 
 Real CLI logic: `omp remember <text>` writes `.omp/memory/<ISO-timestamp>.md` atomically (tmp+rename). `omp remember` lists existing memory files. Extension-side stores the memory and confirms to the agent.
+
+> **Note:** Memory files are stored relative to `process.cwd()`. Run `omp remember` from the project root for consistent cross-session lookup.
+
+> **P3 scope:** Automatic classification into project memory / notepad / durable docs (as specified in SPEC-omp-2.0 §3) is deferred to P3.

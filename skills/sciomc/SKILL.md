@@ -31,3 +31,5 @@ export function deactivate(): void
 ## Implementation
 
 Extension-only skill. Triggers the scientific reasoning pipeline in Copilot. The CLI prints guidance directing users to the Copilot CLI slash command.
+
+> **P3 scope:** Parallel scientist agents with AUTO mode (as specified in SPEC-omp-2.0 §3) are deferred to P3. The current implementation triggers a single hypothesis→experiment→conclusion chain.
