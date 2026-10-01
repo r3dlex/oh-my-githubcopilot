@@ -8,7 +8,9 @@
  * This skill is lazy-loaded — it is not loaded until triggered.
  */
 
-import { spawn } from "child_process";
+import { runSkill } from "./spawn-skill.mts";
+
+export type { SkillInput, SkillOutput } from "./spawn-skill.mts";
 
 export interface McpSetupSkillInput {
   args?: string[];
@@ -44,27 +46,5 @@ export async function activateMcpSetupSkill(
     }
   }
 
-  return new Promise((resolve) => {
-    const child = spawn("omp", spawnArgs, { stdio: "inherit" });
-    child.on("close", (code) => {
-      if (code === 0) {
-        resolve({
-          status: "ok",
-          message: "MCP configuration complete.",
-          hud: "MCP servers configured.",
-        });
-      } else {
-        resolve({
-          status: "error",
-          message: `MCP configuration exited with code ${code}.`,
-        });
-      }
-    });
-    child.on("error", (err) => {
-      resolve({
-        status: "error",
-        message: `Failed to spawn omp: ${err.message}`,
-      });
-    });
-  });
+  return runSkill("setup", spawnArgs);
 }

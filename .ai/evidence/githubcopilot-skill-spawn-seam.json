@@ -1,0 +1,11 @@
+{
+  "goal_id": "githubcopilot-skill-spawn-seam",
+  "green": {
+    "command": "npm test",
+    "exit_code": 0
+  },
+  "red": {
+    "command": "npm test",
+    "exit_code": 1
+  }
+}

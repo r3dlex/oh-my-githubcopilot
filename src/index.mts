@@ -2,6 +2,11 @@
  * omp CLI companion tool
  * Entry point: bin/omp.mjs
  *
+ * This usage list advertises exactly the verbs the switch below serves.
+ * Skills (skills/<id>/SKILL.md via plugin.json) that delegate to this CLI go
+ * through the one spawn seam, src/skills/spawn-skill.mts — they do not spawn
+ * bin/omp.mjs from a cwd-relative path or advertise unserved verbs.
+ *
  * Subcommands:
  *   omp hud             — print current HUD line
  *   omp doctor          — check installation and stale agent references

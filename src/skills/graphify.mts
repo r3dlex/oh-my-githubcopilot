@@ -11,16 +11,7 @@
 
 import { GraphifyAdapter } from "../graph/graphify-adapter.mjs";
 import type { GraphifyBuildResult, GraphifyStatusResult } from "../graph/graphify-adapter.mjs";
-
-export interface SkillInput {
-  trigger: string;
-  args: string[];
-}
-
-export interface SkillOutput {
-  status: "ok" | "error";
-  message: string;
-}
+import type { SkillInput, SkillOutput } from "./spawn-skill.mts";
 
 // Re-export types for backward compatibility
 export type BuildResult = GraphifyBuildResult;

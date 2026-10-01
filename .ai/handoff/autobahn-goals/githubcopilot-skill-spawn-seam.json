@@ -1,0 +1,47 @@
+{
+  "id": "githubcopilot-skill-spawn-seam",
+  "implementation_ready": true,
+  "issue_ref": "src/skills/code-review.mts",
+  "context": "Skill activation is a triple pass-through chain: 53 of 59 src/skills/*.mts are byte-identical 33-37-line boilerplate (only the id string differs) whose activate() spawns node bin/omp.mjs <id> where src/index.mts has no case for 30 of those ids - Unknown subcommand, exit 1. The real skill surface is skills/<id>/SKILL.md (59 entries in plugin.json) loaded by src/utils/skill-loader.mts; the .mts modules are not the runtime surface. 26 test files (1,968 lines) mock child_process.spawn, asserting the spawn command string while never exercising the path, so the 30 dead verbs are invisible to CI. No production code imports the 53 boilerplate modules; their only consumer is the test suite.",
+  "root_causes": [
+    "the .mts skill modules were generated as pass-through scaffolding and never wired to a real runtime surface",
+    "tests mock the only layer that could expose the dead verbs (child_process.spawn), so the suite conceals the bug",
+    "no end-to-end test runs the real bin/omp.mjs verb for a skill id"
+  ],
+  "evidence": [
+    "53 of 59 src/skills/*.mts are byte-identical boilerplate except the id string",
+    "30 boilerplate ids (ralph, ultrawork, autopilot, team, ecomode, swarm, pipeline, wiki, trace, note, tdd, research, omp-plan, omp-setup, release, session, swe-bench, deep-interview, learner, ralplan, skillify, omp-doctor, omp-reference, notifications, configure-notifications, ai-slop-cleaner, graph-context, interactive-menu, improve-codebase-architecture, interview) spawn bin/omp.mjs <id> with no CLI case -> Unknown subcommand, exit 1",
+    "26 test files mock child_process.spawn and assert only the spawn command string",
+    "esbuild.config.mts bundles only setup.mts/mcp-setup.mts, so the .mts skills are not even shipped as bundles"
+  ],
+  "solutions": [
+    "delete the 53 boilerplate modules and 26 mock-only test files (~3,800 LOC)",
+    "add src/skills/spawn-skill.mts: runSkill(id, args) - resolve real bin path (fixing the cwd-relative bin/omp.mjs resolution), spawn, map to SkillOutput; the 6 real skill modules (graph-provider, graphify, graphwiki, spending, setup, mcp-setup) consume it",
+    "trim src/index.mts to verbs the CLI actually serves; guidance-only cases point at the real surface",
+    "update ARCH-002: skills are discovered via skills/<id>/SKILL.md + plugin.json, not src/skills/ modules",
+    "goal record + tdd evidence"
+  ],
+  "acceptance_criteria": [
+    "the 53 boilerplate modules and 26 mock-only test files are deleted; the 6 real modules remain and consume spawn-skill.mts",
+    "src/skills/spawn-skill.mts is the one spawn seam (real bin path resolution, spawn, SkillOutput mapping)",
+    "a real-bin end-to-end test runs bin/omp.mjs <verb> for representative skill ids (no mocks) and asserts honest outcomes",
+    "src/index.mts no longer advertises 30 verbs with no case",
+    "ARCH-002 updated to the real discovery model",
+    "npm test passes; eslint/prek clean; dist/ untouched per RELEASING.md"
+  ],
+  "scope": [
+    "src/skills/*.mts",
+    "src/skills/spawn-skill.mts",
+    "src/index.mts",
+    "tests/skills/",
+    "docs/architecture/adr/ARCH-002 (update, not delete)",
+    ".ai/handoff/autobahn-goals/githubcopilot-skill-spawn-seam.json",
+    ".ai/evidence/githubcopilot-skill-spurn-seam.json (typo guard: ...skill-spawn-seam.json)",
+    ".ai/evidence/githubcopilot-skill-spawn-seam.json"
+  ],
+  "verification": [
+    "npm test"
+  ],
+  "coverage_percent": 90,
+  "state": "implementation_ready"
+}

@@ -11,16 +11,7 @@
 
 import { getProvider, setProvider, listProviders } from "../graph/registry.mjs";
 import { loadConfig } from "../utils/config.mjs";
-
-export interface SkillInput {
-  trigger: string;
-  args: string[];
-}
-
-export interface SkillOutput {
-  status: "ok" | "error";
-  message: string;
-}
+import type { SkillInput, SkillOutput } from "./spawn-skill.mts";
 
 export async function activate(input: SkillInput): Promise<SkillOutput> {
   const [action, ...rest] = input.args;

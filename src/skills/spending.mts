@@ -20,16 +20,7 @@ import { join } from "path";
 import { loadConfig } from "../utils/config.mjs";
 import { loadSpending } from "../spending/tracker.mjs";
 import type { SpendingConfig } from "../spending/types.mjs";
-
-export interface SkillInput {
-  trigger: string;
-  args: string[];
-}
-
-export interface SkillOutput {
-  status: "ok" | "error";
-  message: string;
-}
+import type { SkillInput, SkillOutput } from "./spawn-skill.mts";
 
 const SPENDING_STATE_PATH = join(homedir(), ".omp", "state", "spending-monthly.json");
 
