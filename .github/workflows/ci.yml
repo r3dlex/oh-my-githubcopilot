@@ -88,15 +88,14 @@ jobs:
       - run: npm run typecheck
       - run: timeout 120 npm test < /dev/null
       - name: Run archgate check
+        # archgate is preinstalled on the r3dlex self-hosted Linux/ARM64
+        # runners via scripts/provision-host.sh (Bun's --compile builds
+        # a native binary from source; the upstream has no linux/arm64
+        # release). The binary is on the runner's PATH (see the runner's
+        # .path file), so we call it directly here.
         run: |
-          # archgate ships no linux/arm64 binary; skip gracefully on arm64
-          # self-hosted runners instead of failing the advisory leg.
-          if [ "$(uname -m)" = "aarch64" ] || [ "$(uname -m)" = "arm64" ]; then
-            echo "archgate: unsupported platform $(uname -m), skipping"
-            exit 0
-          fi
-          npx archgate --version
-          npx archgate check
+          archgate --version
+          archgate check
       - id: mark
         if: success()
         run: echo "passed=true" >> "$GITHUB_OUTPUT"
