@@ -1,6 +1,24 @@
 name: CI
 on: [push, pull_request]
 
+# Runner policy
+# -------------
+# Every job in this workflow runs on the org's self-hosted ARM64 fleet
+# (r3dlex-runner-3 / r3dlex-runner-4, labels [self-hosted, ubuntu-latest]).
+#
+# `runs-on: ubuntu-latest` is a BARE STRING and therefore always means
+# GitHub-hosted -- it is not a label filter. The org's GitHub-hosted Actions
+# minutes are exhausted, so a GitHub-hosted job in this repository cannot be
+# scheduled onto a runner at all: it dies in ~3 seconds with an empty
+# runner_name and an empty step list. A job with no runner and no steps is not
+# evidence that anything was verified.
+#
+# The `_<job>-self-hosted` probes are the opt-in canary leg: they are skipped
+# unless the repository variable SELF_HOSTED_CI_ENABLED is set to 'true' (it is
+# currently unset), and the paired `_<job>` job then performs the work itself.
+# Both legs therefore run on the same fleet, so the fallback never depends on
+# GitHub-hosted capacity.
+
 jobs:
   # ==========================================================================
   # build — compile once on the self-hosted runner, publish an artifact the
