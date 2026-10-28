@@ -27,7 +27,7 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, ubuntu-latest]
     outputs:
       release_type: ${{ steps.version.outputs.release_type }}
       publish_version: ${{ steps.version.outputs.publish_version }}
@@ -108,7 +108,7 @@ jobs:
           if-no-files-found: ignore
 
   test:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, ubuntu-latest]
     needs: build
     steps:
       - name: Download artifact
@@ -143,12 +143,16 @@ jobs:
       - run: timeout 120 npm test < /dev/null
 
       - name: Run archgate check
+        # The archgate npm shim has no linux/arm64 release artifact (it
+        # hard-rejects the platform), so on the ARM64 fleet it can only run
+        # the native binary that provision-host.sh builds from source and
+        # installs to ~/.archgate/bin (on the runner's PATH).
         run: |
-          npx archgate --version
-          npx archgate check
+          archgate --version
+          archgate check
 
   publish:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, ubuntu-latest]
     needs: [build, test]
     permissions:
       contents: read
@@ -251,7 +255,7 @@ jobs:
         run: npm publish --dry-run --ignore-scripts --tag ${{ needs.build.outputs.npm_tag }}
 
   github-release:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, ubuntu-latest]
     needs: [build, publish]
     if: ${{ needs.build.outputs.release_type == 'stable' && !inputs.dry-run }}
     permissions:

@@ -31,7 +31,7 @@ jobs:
     name: Pre-commit Hooks
     needs: _prek-check-self-hosted
     if: always()
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, ubuntu-latest]
     steps:
       - name: Route
         run: echo "self-hosted passed=${{ needs._prek-check-self-hosted.outputs.passed }}"

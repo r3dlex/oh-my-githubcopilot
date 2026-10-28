@@ -7,11 +7,13 @@ on: [push, pull_request]
 # (r3dlex-runner-3 / r3dlex-runner-4, labels [self-hosted, ubuntu-latest]).
 #
 # `runs-on: ubuntu-latest` is a BARE STRING and therefore always means
-# GitHub-hosted -- it is not a label filter. The org's GitHub-hosted Actions
-# minutes are exhausted, so a GitHub-hosted job in this repository cannot be
-# scheduled onto a runner at all: it dies in ~3 seconds with an empty
-# runner_name and an empty step list. A job with no runner and no steps is not
-# evidence that anything was verified.
+# GitHub-hosted -- it is not a label filter. GitHub-hosted capacity is not a
+# dependable base for CI in this organisation: the org's Actions spending
+# limit has been exhausted at times, and a hosted job that cannot be
+# scheduled dies in ~3 seconds with an empty runner_name and an empty step
+# list while still reporting a conclusion. A job with no runner and no steps
+# is not evidence that anything was verified, so the signal has to come from
+# the fleet.
 #
 # The `_<job>-self-hosted` probes are the opt-in canary leg: they are skipped
 # unless the repository variable SELF_HOSTED_CI_ENABLED is set to 'true' (it is
@@ -22,8 +24,9 @@ on: [push, pull_request]
 jobs:
   # ==========================================================================
   # build — compile once on the self-hosted runner, publish an artifact the
-  # downstream self-hosted legs reuse. Canonical fallback rebuilds on
-  # GitHub-hosted (x64) so native deps match that runner's architecture.
+  # downstream self-hosted legs reuse. The canonical leg and the opt-in
+  # canary both build on the same ARM64 fleet, so the native dependency
+  # (better-sqlite3) is resolved for one architecture only.
   # ==========================================================================
   _build-self-hosted:
     name: "build (self-hosted)"
@@ -55,7 +58,7 @@ jobs:
   build:
     needs: _build-self-hosted
     if: always()
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, ubuntu-latest]
     steps:
       - name: Route
         run: echo "self-hosted passed=${{ needs._build-self-hosted.outputs.passed }}"
@@ -121,7 +124,7 @@ jobs:
   test:
     needs: [build, _test-self-hosted]
     if: always() && needs.build.result == 'success'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, ubuntu-latest]
     steps:
       - name: Route
         run: echo "self-hosted passed=${{ needs._test-self-hosted.outputs.passed }}"
@@ -142,9 +145,14 @@ jobs:
         if: needs._test-self-hosted.outputs.passed != 'true'
       - name: Run archgate check
         if: needs._test-self-hosted.outputs.passed != 'true'
+        # The archgate npm shim has no linux/arm64 release artifact (it
+        # hard-rejects the platform), so on the ARM64 fleet it can only run
+        # the native binary that provision-host.sh builds from source and
+        # installs to ~/.archgate/bin (on the runner's PATH). This mirrors
+        # the self-hosted canary leg above.
         run: |
-          npx archgate --version
-          npx archgate check
+          archgate --version
+          archgate check
 
   # ==========================================================================
   # coverage
@@ -177,7 +185,7 @@ jobs:
   coverage:
     needs: [build, _coverage-self-hosted]
     if: always() && needs.build.result == 'success'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, ubuntu-latest]
     timeout-minutes: 15
     steps:
       - name: Route
@@ -245,7 +253,7 @@ jobs:
   vscode-omp:
     needs: [build, _vscode-omp-self-hosted]
     if: always() && needs.build.result == 'success'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, ubuntu-latest]
     steps:
       - name: Route
         run: echo "self-hosted passed=${{ needs._vscode-omp-self-hosted.outputs.passed }}"
