@@ -51,7 +51,7 @@ if [ ! -s "$ARCHGATE_REPORT" ]; then
   fail "archgate produced no JSON report at $ARCHGATE_REPORT"
 fi
 
-total="$(node -p "require('./$ARCHGATE_REPORT').total" 2>/dev/null || true)"
+total="$(node -p "JSON.parse(require('node:fs').readFileSync(process.argv[1],'utf8')).total" "$ARCHGATE_REPORT" 2>/dev/null || true)"
 case "$total" in
   "" | *[!0-9]*)
     fail "could not read a numeric 'total' from $ARCHGATE_REPORT"

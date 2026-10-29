@@ -194,6 +194,22 @@ describe("archgate gate", () => {
     expect(status).not.toBe(0);
     expect(output).toContain("numeric 'total'");
   });
+
+  it("reads the report from an absolute ARCHGATE_REPORT path", () => {
+    stub = writeStub(workdir, {
+      version: "0.60.0",
+      report: JSON.stringify({ pass: true, total: 3, passed: 3, failed: 0 }),
+      exitCode: 0,
+    });
+
+    const { status, output } = runGate(stub, workdir, {
+      EXPECTED_ARCHGATE_VERSION: "0.60.0",
+      ARCHGATE_REPORT: join(workdir, "report.json"),
+    });
+
+    expect(status).toBe(0);
+    expect(output).toContain("checked 3 rule(s)");
+  });
 });
 
 describe("archgate ADR wiring", () => {
