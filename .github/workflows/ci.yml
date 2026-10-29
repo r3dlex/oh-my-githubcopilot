@@ -1,10 +1,16 @@
 name: CI
 on: [push, pull_request]
 
+# These jobs only need to READ the repository. Without an explicit block they
+# inherit the repository's default GITHUB_TOKEN scope, and that token is
+# materialised in a shared runner's job environment.
+permissions:
+  contents: read
+
 # Runner policy
 # -------------
 # Every job in this workflow runs on the org's self-hosted ARM64 fleet
-# (r3dlex-runner-3 / r3dlex-runner-4, labels [self-hosted, ubuntu-latest]).
+# (labels [self-hosted, ubuntu-latest] -> r3dlex-runner-3 / r3dlex-runner-4).
 #
 # `runs-on: ubuntu-latest` is a BARE STRING and therefore always means
 # GitHub-hosted -- it is not a label filter. GitHub-hosted capacity is not a
@@ -15,11 +21,20 @@ on: [push, pull_request]
 # is not evidence that anything was verified, so the signal has to come from
 # the fleet.
 #
-# The `_<job>-self-hosted` probes are the opt-in canary leg: they are skipped
-# unless the repository variable SELF_HOSTED_CI_ENABLED is set to 'true' (it is
-# currently unset), and the paired `_<job>` job then performs the work itself.
-# Both legs therefore run on the same fleet, so the fallback never depends on
-# GitHub-hosted capacity.
+# A `runs-on` ARRAY is a pure AND over labels, so the array below names the
+# label set the fleet actually carries. The macOS runners are labelled
+# `self-hosted, ARM64, macOS, r3dlex-org` with no `Linux` label and the
+# Linux x64 runners carry `X64` rather than `ARM64`, so neither can match.
+#
+# The `_<job>-self-hosted` probes are the opt-in canary leg, and they are
+# DORMANT: SELF_HOSTED_CI_ENABLED is unset at BOTH repository and org scope
+# (verified against the Actions variables API), so
+# `vars.SELF_HOSTED_CI_ENABLED == 'true'` is false and every canary job is
+# skipped. Turning the canary on means CREATING that variable, which is a
+# host-policy decision -- it changes what every repo in the org schedules --
+# and is deliberately not made from this workflow. Until it exists, the
+# paired `_<job>` job performs the work itself, on the same fleet the canary
+# would use, so the fallback never depends on GitHub-hosted capacity.
 
 jobs:
   # ==========================================================================
@@ -36,8 +51,8 @@ jobs:
     outputs:
       passed: ${{ steps.mark.outputs.passed }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: "22"
           cache: "npm"
@@ -46,7 +61,7 @@ jobs:
       - name: Tar artifact
         run: tar czf ci-artifact.tar.gz --exclude='.git' --exclude='node_modules/.cache' . || true
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: ci-artifact-self-hosted
           path: ci-artifact.tar.gz
@@ -62,9 +77,9 @@ jobs:
     steps:
       - name: Route
         run: echo "self-hosted passed=${{ needs._build-self-hosted.outputs.passed }}"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         if: needs._build-self-hosted.outputs.passed != 'true'
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         if: needs._build-self-hosted.outputs.passed != 'true'
         with:
           node-version: "22"
@@ -73,16 +88,6 @@ jobs:
         if: needs._build-self-hosted.outputs.passed != 'true'
       - run: npm run build
         if: needs._build-self-hosted.outputs.passed != 'true'
-      - name: Tar artifact
-        if: needs._build-self-hosted.outputs.passed != 'true'
-        run: tar czf ci-artifact.tar.gz --exclude='.git' --exclude='node_modules/.cache' . || true
-      - name: Upload artifact
-        if: needs._build-self-hosted.outputs.passed != 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: ci-artifact
-          path: ci-artifact.tar.gz
-          retention-days: 1
 
   # ==========================================================================
   # test — typecheck + unit tests + archgate
@@ -96,11 +101,11 @@ jobs:
     outputs:
       passed: ${{ steps.mark.outputs.passed }}
     steps:
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: "22"
       - name: Download artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: ci-artifact-self-hosted
           path: .
@@ -110,13 +115,36 @@ jobs:
       - run: timeout 120 npm test < /dev/null
       - name: Run archgate check
         # archgate is preinstalled on the r3dlex self-hosted Linux/ARM64
-        # runners via scripts/provision-host.sh (Bun's --compile builds
-        # a native binary from source; the upstream has no linux/arm64
-        # release). The binary is on the runner's PATH (see the runner's
-        # .path file), so we call it directly here.
+        # runners via scripts/provision-host.sh (Bun's --compile builds a
+        # native binary from source; upstream publishes no linux/arm64
+        # release asset). The binary is on the runner's PATH (see the
+        # runner's .path file), so we call it directly here.
+        #
+        # We do NOT use `npx archgate`: the npm shim resolves the CACHED
+        # ~/.archgate/bin/archgate first, so `npx archgate --version` reports
+        # the cached binary's version rather than the version in
+        # package.json — the repository's pin was never enforced. The
+        # EXPECTED_ARCHGATE_VERSION assertion below is what pins the
+        # version, repo-side.
+        #
+        # `archgate check` also exits 0 when it checked NOTHING (every ADR
+        # declared `rules: false` and no companion .rules.ts existed), so
+        # the report's rule count is asserted too: a gate that checks zero
+        # rules fails instead of passing.
+        env:
+          EXPECTED_ARCHGATE_VERSION: "0.60.0"
         run: |
-          archgate --version
-          archgate check
+          set -euo pipefail
+          expected="${EXPECTED_ARCHGATE_VERSION:-}"
+          [ -n "$expected" ] \
+            || { echo "::error::EXPECTED_ARCHGATE_VERSION is not set"; exit 1; }
+          archgate --version | grep -qx "$expected" \
+            || { echo "::error::archgate version mismatch (expected $expected)"; exit 1; }
+          archgate check --output json > archgate-report.json
+          total=$(node -p "require('./archgate-report.json').total")
+          [ "$total" -gt 0 ] \
+            || { echo "::error::archgate checked 0 rules — the ADR gate is vacuous"; exit 1; }
+          echo "archgate $expected checked $total rule(s)"
       - id: mark
         if: success()
         run: echo "passed=true" >> "$GITHUB_OUTPUT"
@@ -128,9 +156,9 @@ jobs:
     steps:
       - name: Route
         run: echo "self-hosted passed=${{ needs._test-self-hosted.outputs.passed }}"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         if: needs._test-self-hosted.outputs.passed != 'true'
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         if: needs._test-self-hosted.outputs.passed != 'true'
         with:
           node-version: "22"
@@ -145,14 +173,22 @@ jobs:
         if: needs._test-self-hosted.outputs.passed != 'true'
       - name: Run archgate check
         if: needs._test-self-hosted.outputs.passed != 'true'
-        # The archgate npm shim has no linux/arm64 release artifact (it
-        # hard-rejects the platform), so on the ARM64 fleet it can only run
-        # the native binary that provision-host.sh builds from source and
-        # installs to ~/.archgate/bin (on the runner's PATH). This mirrors
-        # the self-hosted canary leg above.
+        # See the canary leg above for why the binary is called directly and
+        # why both the version and the rule count are asserted.
+        env:
+          EXPECTED_ARCHGATE_VERSION: "0.60.0"
         run: |
-          archgate --version
-          archgate check
+          set -euo pipefail
+          expected="${EXPECTED_ARCHGATE_VERSION:-}"
+          [ -n "$expected" ] \
+            || { echo "::error::EXPECTED_ARCHGATE_VERSION is not set"; exit 1; }
+          archgate --version | grep -qx "$expected" \
+            || { echo "::error::archgate version mismatch (expected $expected)"; exit 1; }
+          archgate check --output json > archgate-report.json
+          total=$(node -p "require('./archgate-report.json').total")
+          [ "$total" -gt 0 ] \
+            || { echo "::error::archgate checked 0 rules — the ADR gate is vacuous"; exit 1; }
+          echo "archgate $expected checked $total rule(s)"
 
   # ==========================================================================
   # coverage
@@ -167,11 +203,11 @@ jobs:
     outputs:
       passed: ${{ steps.mark.outputs.passed }}
     steps:
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: "22"
       - name: Download artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: ci-artifact-self-hosted
           path: .
@@ -190,9 +226,9 @@ jobs:
     steps:
       - name: Route
         run: echo "self-hosted passed=${{ needs._coverage-self-hosted.outputs.passed }}"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         if: needs._coverage-self-hosted.outputs.passed != 'true'
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         if: needs._coverage-self-hosted.outputs.passed != 'true'
         with:
           node-version: "22"
@@ -217,13 +253,13 @@ jobs:
       passed: ${{ steps.mark.outputs.passed }}
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: ci-artifact-self-hosted
           path: .
       - name: Extract artifact
         run: tar xzf ci-artifact.tar.gz && rm ci-artifact.tar.gz
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: "22"
           cache: "npm"
@@ -238,7 +274,7 @@ jobs:
         run: cd vscode-omp && npm run package --if-present
       - name: Upload VSIX artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: vscode-omp-artifacts-self-hosted
           path: |
@@ -257,9 +293,9 @@ jobs:
     steps:
       - name: Route
         run: echo "self-hosted passed=${{ needs._vscode-omp-self-hosted.outputs.passed }}"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         if: needs._vscode-omp-self-hosted.outputs.passed != 'true'
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         if: needs._vscode-omp-self-hosted.outputs.passed != 'true'
         with:
           node-version: "22"
@@ -284,7 +320,7 @@ jobs:
         run: cd vscode-omp && npm run package --if-present
       - name: Upload VSIX artifacts
         if: always() && needs._vscode-omp-self-hosted.outputs.passed != 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: vscode-omp-artifacts
           path: |

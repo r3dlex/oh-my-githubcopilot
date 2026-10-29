@@ -25,9 +25,19 @@ concurrency:
   group: release
   cancel-in-progress: false
 
+# Default for every job that does not declare its own block. The credential-
+# bearing jobs (publish, github-release) declare theirs explicitly.
+permissions:
+  contents: read
+
 jobs:
+  # ==========================================================================
+  # build — assemble the release artifact on the self-hosted fleet
+  # ==========================================================================
   build:
     runs-on: [self-hosted, ubuntu-latest]
+    permissions:
+      contents: read
     outputs:
       release_type: ${{ steps.version.outputs.release_type }}
       publish_version: ${{ steps.version.outputs.publish_version }}
@@ -35,7 +45,7 @@ jobs:
       base_version: ${{ steps.version.outputs.base_version }}
       git_tag: ${{ steps.version.outputs.git_tag }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0
 
@@ -66,7 +76,7 @@ jobs:
           git branch -r --contains HEAD | grep -q 'origin/main' || \
             { echo "::error::Tagged commit is not reachable from origin/main"; exit 1; }
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: "22"
           cache: "npm"
@@ -90,7 +100,7 @@ jobs:
         run: tar -czf /tmp/release-artifact.tar.gz --exclude='.git' --exclude='node_modules/.cache' .
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: release-build
           path: /tmp/release-artifact.tar.gz
@@ -98,7 +108,7 @@ jobs:
 
       - name: Upload VSIX artifacts
         if: ${{ hashFiles('vscode-omp/package.json') != '' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: vscode-omp-artifacts
           path: |
@@ -107,12 +117,17 @@ jobs:
             vscode-omp/out/**
           if-no-files-found: ignore
 
+  # ==========================================================================
+  # test — verify the built artifact on the self-hosted fleet
+  # ==========================================================================
   test:
     runs-on: [self-hosted, ubuntu-latest]
     needs: build
+    permissions:
+      contents: read
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: release-build
           path: .
@@ -120,7 +135,7 @@ jobs:
       - name: Extract artifact
         run: tar -xzf release-artifact.tar.gz && rm release-artifact.tar.gz
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: "22"
           cache: "npm"
@@ -143,16 +158,62 @@ jobs:
       - run: timeout 120 npm test < /dev/null
 
       - name: Run archgate check
-        # The archgate npm shim has no linux/arm64 release artifact (it
-        # hard-rejects the platform), so on the ARM64 fleet it can only run
-        # the native binary that provision-host.sh builds from source and
-        # installs to ~/.archgate/bin (on the runner's PATH).
+        # archgate is preinstalled on the r3dlex self-hosted Linux/ARM64
+        # runners via scripts/provision-host.sh (Bun's --compile builds a
+        # native binary from source; upstream publishes no linux/arm64
+        # release asset). The binary is on the runner's PATH (see the
+        # runner's .path file), so we call it directly here.
+        #
+        # We do NOT use `npx archgate`: the npm shim resolves the CACHED
+        # ~/.archgate/bin/archgate first, so `npx archgate --version` reports
+        # the cached binary's version rather than the version in
+        # package.json — the repository's pin was never enforced. The
+        # EXPECTED_ARCHGATE_VERSION assertion below is what pins the
+        # version, repo-side.
+        #
+        # `archgate check` also exits 0 when it checked NOTHING (every ADR
+        # declared `rules: false` and no companion .rules.ts existed), so
+        # the report's rule count is asserted too: a gate that checks zero
+        # rules fails instead of passing.
+        env:
+          EXPECTED_ARCHGATE_VERSION: "0.60.0"
         run: |
-          archgate --version
-          archgate check
+          set -euo pipefail
+          expected="${EXPECTED_ARCHGATE_VERSION:-}"
+          [ -n "$expected" ] \
+            || { echo "::error::EXPECTED_ARCHGATE_VERSION is not set"; exit 1; }
+          archgate --version | grep -qx "$expected" \
+            || { echo "::error::archgate version mismatch (expected $expected)"; exit 1; }
+          archgate check --output json > archgate-report.json
+          total=$(node -p "require('./archgate-report.json').total")
+          [ "$total" -gt 0 ] \
+            || { echo "::error::archgate checked 0 rules — the ADR gate is vacuous"; exit 1; }
+          echo "archgate $expected checked $total rule(s)"
 
+  # ==========================================================================
+  # publish — npm publish (npmjs.com + GitHub Packages) and the GitHub
+  # release.
+  #
+  # These two jobs deliberately stay on GitHub-HOSTED runners
+  # (`runs-on: ubuntu-latest` as a BARE STRING means hosted). The org's
+  # self-hosted fleet is org-level and PERSISTENT: r3dlex-runner-3/-4 are
+  # shared by every repo in the organisation, and their PATH and HOME
+  # survive across jobs and across repos (~/.archgate/bin, ~/.local/bin,
+  # ~/.npm/_cacache). A job from any other repo can poison those paths, and
+  # the next release job here would then execute the poisoned binary with
+  # secrets.NPM_TOKEN and id-token: write in its environment — an arbitrary
+  # publish under the maintainer's npm identity, or a mintable npmjs OIDC
+  # token.
+  #
+  # The known cost: the org's GitHub-hosted Actions minutes are exhausted at
+  # times, so these two jobs can die with the hosted zero-step signature
+  # (empty runner_name, empty step list). That is the correct trade-off for
+  # a credential-bearing job — a hosted runner's filesystem is thrown away
+  # with the job, so nothing survives to poison the next one. The build and
+  # test legs above carry no publish credential and stay on the fleet.
+  # ==========================================================================
   publish:
-    runs-on: [self-hosted, ubuntu-latest]
+    runs-on: ubuntu-latest
     needs: [build, test]
     permissions:
       contents: read
@@ -160,7 +221,7 @@ jobs:
       packages: write
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: release-build
           path: .
@@ -168,7 +229,7 @@ jobs:
       - name: Extract artifact
         run: tar -xzf release-artifact.tar.gz && rm release-artifact.tar.gz
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: "22"
 
@@ -202,7 +263,7 @@ jobs:
 
       # ── GitHub Packages (always, GITHUB_TOKEN) ──────────────────────────────
       - name: Setup Node for GitHub Packages
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: "22"
           registry-url: "https://npm.pkg.github.com"
@@ -227,7 +288,7 @@ jobs:
 
       # ── npmjs.com (OIDC Trusted Publishing) ─────────────────────────────────
       - name: Setup Node for npmjs.com
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: "22"
           registry-url: "https://registry.npmjs.org"
@@ -254,15 +315,20 @@ jobs:
         if: ${{ inputs.dry-run == true }}
         run: npm publish --dry-run --ignore-scripts --tag ${{ needs.build.outputs.npm_tag }}
 
+  # ==========================================================================
+  # github-release — create the GitHub release and attach the tarball.
+  # Hosted on purpose: it holds `contents: write`. See the publish job's
+  # comment for the full reasoning.
+  # ==========================================================================
   github-release:
-    runs-on: [self-hosted, ubuntu-latest]
+    runs-on: ubuntu-latest
     needs: [build, publish]
     if: ${{ needs.build.outputs.release_type == 'stable' && !inputs.dry-run }}
     permissions:
       contents: write
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: release-build
           path: .
@@ -270,7 +336,7 @@ jobs:
       - name: Extract artifact
         run: tar -xzf release-artifact.tar.gz && rm release-artifact.tar.gz
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: "22"
 

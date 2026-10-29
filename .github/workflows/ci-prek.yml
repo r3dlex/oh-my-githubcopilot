@@ -6,6 +6,31 @@ on:
   pull_request:
     branches: [main]
 
+# The pre-commit job only needs to READ the repository. Without an explicit
+# block it inherits the repository's default GITHUB_TOKEN scope, and that
+# token is materialised in a shared runner's job environment.
+permissions:
+  contents: read
+
+# Runner policy
+# -------------
+# These jobs run on the org's self-hosted ARM64 fleet
+# (labels [self-hosted, ubuntu-latest] -> r3dlex-runner-3 / r3dlex-runner-4).
+# `runs-on: ubuntu-latest` as a BARE STRING always means GitHub-hosted, and
+# hosted capacity in this org is not dependable (a job that cannot be
+# scheduled dies in ~3s with an empty runner_name and an empty step list
+# while still reporting a conclusion). A `runs-on` ARRAY is a pure AND over
+# labels.
+#
+# The `_prek-check-self-hosted` probe is the opt-in canary leg, and it is
+# DORMANT: SELF_HOSTED_CI_ENABLED is unset at BOTH repository and org scope
+# (verified against the Actions variables API), so the job is skipped and
+# the paired `prek-check` job performs the work itself.
+#
+# Action refs are pinned to commit SHAs. These jobs now execute third-party
+# action code on a persistent, org-shared runner, so a mutable major-version
+# tag is a supply-chain window that a SHA closes.
+
 jobs:
   _prek-check-self-hosted:
     name: "Pre-commit Hooks (self-hosted)"
@@ -16,10 +41,10 @@ jobs:
       passed: ${{ steps.mark.outputs.passed }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Run prek
-        uses: j178/prek-action@v2
+        uses: j178/prek-action@5337cb91e0fa35a7ff31b9ca345126d8bbbcdf16 # v2.0.6
         with:
           extra-args: "--all-files"
 
@@ -38,10 +63,10 @@ jobs:
 
       - name: Checkout
         if: needs._prek-check-self-hosted.outputs.passed != 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Run prek
         if: needs._prek-check-self-hosted.outputs.passed != 'true'
-        uses: j178/prek-action@v2
+        uses: j178/prek-action@5337cb91e0fa35a7ff31b9ca345126d8bbbcdf16 # v2.0.6
         with:
           extra-args: "--all-files"
