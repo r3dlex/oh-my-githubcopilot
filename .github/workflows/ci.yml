@@ -7,6 +7,12 @@ on: [push, pull_request]
 permissions:
   contents: read
 
+# The pinned archgate version. The gate script refuses to run without it:
+# `archgate --version` only prints, so nothing else would notice a rebuilt
+# or drifted binary changing what CI enforces.
+env:
+  EXPECTED_ARCHGATE_VERSION: "0.60.0"
+
 # Runner policy
 # -------------
 # Every job in this workflow runs on the org's self-hosted ARM64 fleet
@@ -25,6 +31,15 @@ permissions:
 # label set the fleet actually carries. The macOS runners are labelled
 # `self-hosted, ARM64, macOS, r3dlex-org` with no `Linux` label and the
 # Linux x64 runners carry `X64` rather than `ARM64`, so neither can match.
+#
+# The pool is deliberately NOT widened to [self-hosted, Linux, ARM64], even
+# though that would also match r3dlex-linux-arm64-1..4 (six runners instead
+# of two). A probe run against the wider label set showed those runners
+# carry no CI toolchain at all -- no node, no npm, no bun, no archgate
+# (`command -v archgate` -> not found). Upstream publishes no linux/arm64
+# archgate release asset, so the binary has to be built from source on the
+# host by scripts/provision-host.sh; a runner without it cannot run the ADR
+# gate at all. Widening the pool would trade a working gate for capacity.
 #
 # The `_<job>-self-hosted` probes are the opt-in canary leg, and they are
 # DORMANT: SELF_HOSTED_CI_ENABLED is unset at BOTH repository and org scope
@@ -124,27 +139,13 @@ jobs:
         # ~/.archgate/bin/archgate first, so `npx archgate --version` reports
         # the cached binary's version rather than the version in
         # package.json — the repository's pin was never enforced. The
-        # EXPECTED_ARCHGATE_VERSION assertion below is what pins the
-        # version, repo-side.
+        # gate script asserts EXPECTED_ARCHGATE_VERSION instead, repo-side.
         #
         # `archgate check` also exits 0 when it checked NOTHING (every ADR
         # declared `rules: false` and no companion .rules.ts existed), so
-        # the report's rule count is asserted too: a gate that checks zero
-        # rules fails instead of passing.
-        env:
-          EXPECTED_ARCHGATE_VERSION: "0.60.0"
-        run: |
-          set -euo pipefail
-          expected="${EXPECTED_ARCHGATE_VERSION:-}"
-          [ -n "$expected" ] \
-            || { echo "::error::EXPECTED_ARCHGATE_VERSION is not set"; exit 1; }
-          archgate --version | grep -qx "$expected" \
-            || { echo "::error::archgate version mismatch (expected $expected)"; exit 1; }
-          archgate check --output json > archgate-report.json
-          total=$(node -p "require('./archgate-report.json').total")
-          [ "$total" -gt 0 ] \
-            || { echo "::error::archgate checked 0 rules — the ADR gate is vacuous"; exit 1; }
-          echo "archgate $expected checked $total rule(s)"
+        # the gate script asserts the report's rule count too: a gate that
+        # checks zero rules fails instead of passing.
+        run: scripts/archgate-gate.sh
       - id: mark
         if: success()
         run: echo "passed=true" >> "$GITHUB_OUTPUT"
@@ -175,20 +176,7 @@ jobs:
         if: needs._test-self-hosted.outputs.passed != 'true'
         # See the canary leg above for why the binary is called directly and
         # why both the version and the rule count are asserted.
-        env:
-          EXPECTED_ARCHGATE_VERSION: "0.60.0"
-        run: |
-          set -euo pipefail
-          expected="${EXPECTED_ARCHGATE_VERSION:-}"
-          [ -n "$expected" ] \
-            || { echo "::error::EXPECTED_ARCHGATE_VERSION is not set"; exit 1; }
-          archgate --version | grep -qx "$expected" \
-            || { echo "::error::archgate version mismatch (expected $expected)"; exit 1; }
-          archgate check --output json > archgate-report.json
-          total=$(node -p "require('./archgate-report.json').total")
-          [ "$total" -gt 0 ] \
-            || { echo "::error::archgate checked 0 rules — the ADR gate is vacuous"; exit 1; }
-          echo "archgate $expected checked $total rule(s)"
+        run: scripts/archgate-gate.sh
 
   # ==========================================================================
   # coverage
