@@ -2,7 +2,7 @@
 id: ARCH-005
 title: MCP Server via @modelcontextprotocol/sdk
 domain: integration
-rules: false
+rules: true
 ---
 
 # MCP Server via @modelcontextprotocol/sdk
@@ -35,4 +35,12 @@ MCP server tools:
 
 ## Compliance and Enforcement
 
-Set `rules: true` and create a companion `.rules.ts` file to enforce MCP tool schema compliance and correct `.mcp.json` registration.
+`rules: true` — enforced by the companion `ARCH-005-mcp-server.rules.ts`:
+
+- `mcp-server-uses-sdk-server` — the MCP server must import `Server` from
+  `@modelcontextprotocol/sdk/server/index.js` and construct it.
+- `mcp-json-registers-dist-mjs` — `.mcp.json` must register the built server as
+  `dist/mcp/server.mjs` (never `dist/mcp/server.js`).
+
+CI runs `archgate check` and asserts the report is non-vacuous (a rule count
+above zero), so a gate that stops checking anything fails instead of passing.

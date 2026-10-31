@@ -6,22 +6,81 @@ on:
   pull_request:
     branches: [main]
 
+# The pre-commit job only needs to READ the repository. Without an explicit
+# block it inherits the repository's default GITHUB_TOKEN scope, and that
+# token is materialised in a shared runner's job environment.
+permissions:
+  contents: read
+
+# One check per commit. The push run and the pull_request run for the same
+# commit used to run the hooks twice at the same time, on two runners that
+# share one $HOME; the group is keyed by the commit so the second run
+# cancels the first instead of duplicating the work.
+concurrency:
+  group: prek-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
+
+# Runner policy
+# -------------
+# These jobs run on the org's self-hosted ARM64 fleet: r3dlex-runner-3 and
+# r3dlex-runner-4.
+#
+# `runs-on: ubuntu-latest` as a BARE STRING always means GitHub-hosted, and
+# hosted capacity in this org is not dependable (a job that cannot be
+# scheduled dies in ~3s with an empty runner_name and an empty step list
+# while still reporting a conclusion). A `runs-on` ARRAY is a pure AND over
+# labels.
+#
+# The discriminator is the `ubuntu-latest` LABEL, which is a custom label on
+# this fleet and not the GitHub-hosted image name. As of 2026-10-31 only
+# r3dlex-runner-3 and r3dlex-runner-4 carry it:
+#
+#   r3dlex-runner-3, r3dlex-runner-4
+#       self-hosted, Linux, ARM64, r3dlex-org, ubuntu-latest,
+#       dpua-validation, arm64-standard
+#   r3dlex-linux-arm64-1..4
+#       self-hosted, Linux, ARM64, r3dlex-org, r3dlex-linux-arm64,
+#       arm64-standard
+#   r3dlex-linux-x64-1..4
+#       self-hosted, Linux, r3dlex-org, X64
+#   r3dlex-runner-1, r3dlex-runner-2
+#       self-hosted, ARM64, r3dlex-org, macOS, mac-arm64, arm64-primary
+#
+# `Linux`, `ARM64` and `X64` are not part of the array and do not narrow
+# the pool; adding them would change which runners match.
+#
+# The `_prek-check-self-hosted` probe is the opt-in canary leg, and it is
+# DORMANT: SELF_HOSTED_CI_ENABLED is unset at BOTH repository and org scope
+# (verified against the Actions variables API), so the job is skipped and
+# the paired `prek-check` job performs the work itself.
+#
+# Action refs are pinned to commit SHAs. These jobs now execute third-party
+# action code on a persistent, org-shared runner, so a mutable major-version
+# tag is a supply-chain window that a SHA closes.
+#
+# `timeout-minutes` bounds the RUNNING time of a job, not the queue wait:
+# a job that never gets a runner stays queued regardless. The concurrency
+# group above is what stops duplicate work from piling up in that queue.
+
 jobs:
   _prek-check-self-hosted:
     name: "Pre-commit Hooks (self-hosted)"
     if: vars.SELF_HOSTED_CI_ENABLED == 'true'
     runs-on: [self-hosted, ubuntu-latest]
+    timeout-minutes: 15
     continue-on-error: true
     outputs:
       passed: ${{ steps.mark.outputs.passed }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Run prek
-        uses: j178/prek-action@v2
+        uses: j178/prek-action@5337cb91e0fa35a7ff31b9ca345126d8bbbcdf16 # v2.0.6
         with:
           extra-args: "--all-files"
+        env:
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
 
       - id: mark
         if: success()
@@ -31,17 +90,20 @@ jobs:
     name: Pre-commit Hooks
     needs: _prek-check-self-hosted
     if: always()
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, ubuntu-latest]
+    timeout-minutes: 15
     steps:
       - name: Route
         run: echo "self-hosted passed=${{ needs._prek-check-self-hosted.outputs.passed }}"
 
       - name: Checkout
         if: needs._prek-check-self-hosted.outputs.passed != 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Run prek
         if: needs._prek-check-self-hosted.outputs.passed != 'true'
-        uses: j178/prek-action@v2
+        uses: j178/prek-action@5337cb91e0fa35a7ff31b9ca345126d8bbbcdf16 # v2.0.6
         with:
           extra-args: "--all-files"
+        env:
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache

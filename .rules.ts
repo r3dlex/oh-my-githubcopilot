@@ -1,9 +1,13 @@
 // .rules.ts — Archgate domain rules
-// Each rule: name, severity ("error" | "warn" | "info"), match, violation, correction.
+// Each rule: name, severity ("error" | "warning" | "info"), match, violation, correction.
+//
+// `severity` uses the archgate 0.60.0 vocabulary. The older "warn" spelling is
+// not a valid Severity there (it is "warning"), and this file is the one
+// place the repo's own rule vocabulary is declared.
 
 export interface Rule {
   name: string;
-  severity: "error" | "warn" | "info";
+  severity: "error" | "warning" | "info";
   match: string;
   violation?: string;
   correction?: string;
@@ -63,7 +67,7 @@ export const data: Rule[] = [
   },
   {
     name: "query-batching",
-    severity: "warn",
+    severity: "warning",
     match: "ORM queries inside loops are prohibited.",
     violation: "for (const id of ids) { await User.findOne(id); }",
     correction: "await User.findAll({ where: { id: ids } });",
@@ -99,14 +103,14 @@ export const architecture: Rule[] = [
 export const general: Rule[] = [
   {
     name: "file-naming",
-    severity: "warn",
+    severity: "warning",
     match: "Source files must use kebab-case. Test files must end in .test.ts or .spec.ts.",
     violation: "UserService.ts",
     correction: "user-service.ts",
   },
   {
     name: "function-length",
-    severity: "warn",
+    severity: "warning",
     match: "Functions must not exceed 40 lines.",
     violation: "// 80-line parseAndValidateAndSaveUser function",
     correction: "parseUser(), validateUser(), saveUser() — each ≤ 40 lines",

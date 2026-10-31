@@ -1,0 +1,39 @@
+{
+  "_comment": [
+    "SHA256 digests of the archgate BINARIES that the ADR gate is allowed to execute.",
+    "",
+    "The gate copies the binary it finds, verifies the copy against the digest",
+    "pinned here, and runs the verified copy. A version string is not a pin: a",
+    "replaced binary prints whatever version it likes. The runners are",
+    "persistent and shared by every repository in the organisation and their",
+    "$HOME (and therefore ~/.archgate/bin) is writable by every job that runs",
+    "on them, so the bytes have to be checked, not the version.",
+    "",
+    "platform key = <uname -s lowercased>-<arch>, where x86_64/amd64 becomes",
+    "x64 and aarch64/arm64 becomes arm64.",
+    "",
+    "ONE linux-arm64 digest covers BOTH runners in the ubuntu-latest pool.",
+    "r3dlex-runner-3 and r3dlex-runner-4 are two runner instances on the same",
+    "Colima VM, running as the same user with the same HOME",
+    "(/home/redlexgilgamesh.guest), so they share one ~/.archgate/bin/archgate",
+    "file and therefore one digest.",
+    "",
+    "When a digest has to change, the change is expected to be visible: the gate",
+    "fails closed and prints the expected and the actual digest."
+  ],
+  "linux-arm64": {
+    "sha256": "89116fdffd54673e86dc0f61d4b9721eb8657da5462f40b47ac04267b715daac",
+    "version": "0.60.0",
+    "source": "built from source on the runner host (bun --compile); upstream publishes no linux/arm64 release asset; shared by r3dlex-runner-3 and r3dlex-runner-4"
+  },
+  "linux-x64": {
+    "sha256": "bf4520c576c97d62d1d160701f407421f7ae6eb3b7cafc6e74214494297b66bc",
+    "version": "0.60.0",
+    "source": "https://github.com/archgate/cli/releases/download/v0.60.0/archgate-linux-x64.tar.gz"
+  },
+  "darwin-arm64": {
+    "sha256": "16aad8cfdcd1a7e36b51b287dfa2d37917d374d6ce8f9fb3008130f496910f34",
+    "version": "0.60.0",
+    "source": "https://github.com/archgate/cli/releases/download/v0.60.0/archgate-darwin-arm64.tar.gz"
+  }
+}
