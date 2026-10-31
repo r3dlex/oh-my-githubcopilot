@@ -103,6 +103,18 @@ jobs:
         with:
           node-version: "22"
           cache: "npm"
+        # The npm cache that setup-node restores and saves is the JOB's
+        # cache, not the runners' shared ~/.npm. The fleet's two runners
+        # share one $HOME, so ~/.npm is written by every job of every
+        # repository in the organisation; caching it means tarring and
+        # uploading a directory that another job is mutating at the same
+        # time (measured: a ~6 minute post step on a cache miss), and it
+        # leaves this repository's tarballs in a directory any other
+        # repository's job can read. The Actions cache service is the
+        # shared store, so nothing is lost by pointing it at the
+        # job-local directory.
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
       - run: npm ci
         env:
           npm_config_cache: ${{ runner.temp }}/npm-cache
@@ -138,6 +150,18 @@ jobs:
         with:
           node-version: "22"
           cache: "npm"
+        # The npm cache that setup-node restores and saves is the JOB's
+        # cache, not the runners' shared ~/.npm. The fleet's two runners
+        # share one $HOME, so ~/.npm is written by every job of every
+        # repository in the organisation; caching it means tarring and
+        # uploading a directory that another job is mutating at the same
+        # time (measured: a ~6 minute post step on a cache miss), and it
+        # leaves this repository's tarballs in a directory any other
+        # repository's job can read. The Actions cache service is the
+        # shared store, so nothing is lost by pointing it at the
+        # job-local directory.
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
       - run: npm ci
         if: needs._build-self-hosted.outputs.passed != 'true'
         env:
@@ -220,6 +244,18 @@ jobs:
         with:
           node-version: "22"
           cache: "npm"
+        # The npm cache that setup-node restores and saves is the JOB's
+        # cache, not the runners' shared ~/.npm. The fleet's two runners
+        # share one $HOME, so ~/.npm is written by every job of every
+        # repository in the organisation; caching it means tarring and
+        # uploading a directory that another job is mutating at the same
+        # time (measured: a ~6 minute post step on a cache miss), and it
+        # leaves this repository's tarballs in a directory any other
+        # repository's job can read. The Actions cache service is the
+        # shared store, so nothing is lost by pointing it at the
+        # job-local directory.
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
       - run: npm ci
         if: needs._test-self-hosted.outputs.passed != 'true'
         env:
@@ -292,6 +328,18 @@ jobs:
         with:
           node-version: "22"
           cache: "npm"
+        # The npm cache that setup-node restores and saves is the JOB's
+        # cache, not the runners' shared ~/.npm. The fleet's two runners
+        # share one $HOME, so ~/.npm is written by every job of every
+        # repository in the organisation; caching it means tarring and
+        # uploading a directory that another job is mutating at the same
+        # time (measured: a ~6 minute post step on a cache miss), and it
+        # leaves this repository's tarballs in a directory any other
+        # repository's job can read. The Actions cache service is the
+        # shared store, so nothing is lost by pointing it at the
+        # job-local directory.
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
       - run: npm ci
         if: needs._coverage-self-hosted.outputs.passed != 'true'
         env:
@@ -333,6 +381,18 @@ jobs:
           node-version: "22"
           cache: "npm"
           cache-dependency-path: vscode-omp/package-lock.json
+        # The npm cache that setup-node restores and saves is the JOB's
+        # cache, not the runners' shared ~/.npm. The fleet's two runners
+        # share one $HOME, so ~/.npm is written by every job of every
+        # repository in the organisation; caching it means tarring and
+        # uploading a directory that another job is mutating at the same
+        # time (measured: a ~6 minute post step on a cache miss), and it
+        # leaves this repository's tarballs in a directory any other
+        # repository's job can read. The Actions cache service is the
+        # shared store, so nothing is lost by pointing it at the
+        # job-local directory.
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
       - name: Install extension dependencies
         run: cd vscode-omp && npm ci
         env:
@@ -382,6 +442,18 @@ jobs:
         with:
           node-version: "22"
           cache: "npm"
+        # The npm cache that setup-node restores and saves is the JOB's
+        # cache, not the runners' shared ~/.npm. The fleet's two runners
+        # share one $HOME, so ~/.npm is written by every job of every
+        # repository in the organisation; caching it means tarring and
+        # uploading a directory that another job is mutating at the same
+        # time (measured: a ~6 minute post step on a cache miss), and it
+        # leaves this repository's tarballs in a directory any other
+        # repository's job can read. The Actions cache service is the
+        # shared store, so nothing is lost by pointing it at the
+        # job-local directory.
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
       - name: Install root dependencies
         if: needs._vscode-omp-self-hosted.outputs.passed != 'true'
         run: npm ci

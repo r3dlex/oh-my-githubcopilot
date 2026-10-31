@@ -139,6 +139,57 @@ describe("one build per commit", () => {
   );
 });
 
+describe("the npm cache never leaves the job", () => {
+  it.each(WORKFLOW_FILES)(
+    "%s caches npm in the job-local directory, not the runners' shared ~/.npm",
+    (file) => {
+      const workflow = load(file);
+
+      for (const [jobName, job] of jobsOf(workflow)) {
+        for (const step of stepsOf(job)) {
+          if (!(step.uses ?? "").includes("actions/setup-node")) continue;
+          if (step.with?.cache !== "npm") continue;
+
+          // setup-node resolves the npm cache directory with
+          // `npm config get cache`, so the env on the ACTION step is what
+          // decides whether it caches the job-local directory or the
+          // runners' shared ~/.npm. The fleet's two runners share one
+          // $HOME, so ~/.npm is written by every job of every repository
+          // in the organisation: caching it means tarring and uploading a
+          // directory another job is mutating at the same time (measured:
+          // a ~6 minute post step on a cache miss) and leaving this
+          // repository's tarballs where any other repository can read them.
+          expect(
+            step.env?.npm_config_cache,
+            `${file}: job "${jobName}" caches the runners' shared ~/.npm`,
+          ).toContain("runner.temp");
+        }
+      }
+    },
+  );
+
+  it.each(WORKFLOW_FILES)(
+    "%s keeps the cache the job uses and the cache setup-node manages identical",
+    (file) => {
+      const workflow = load(file);
+
+      for (const [jobName, job] of jobsOf(workflow)) {
+        const cacheDirs = new Set<string>();
+        for (const step of stepsOf(job)) {
+          const dir = step.env?.npm_config_cache;
+          if (typeof dir === "string") cacheDirs.add(dir);
+        }
+        if (cacheDirs.size === 0) continue;
+
+        expect(
+          [...cacheDirs],
+          `${file}: job "${jobName}" mixes npm cache directories`,
+        ).toHaveLength(1);
+      }
+    },
+  );
+});
+
 describe("the release workflow fires on a tag, not on every push to main", () => {
   it("has tags but no branches in its push trigger", () => {
     const workflow = load(".github/workflows/release.yml");
