@@ -7,16 +7,26 @@ on: [push, pull_request]
 permissions:
   contents: read
 
-# The pinned archgate version. The gate script refuses to run without it:
-# `archgate --version` only prints, so nothing else would notice a rebuilt
-# or drifted binary changing what CI enforces.
-env:
-  EXPECTED_ARCHGATE_VERSION: "0.60.0"
+# One build per commit.
+#
+# A push run and the pull_request run for the same commit used to build it
+# twice, at the same time, on two runners that share one $HOME. The
+# concurrency group is keyed by the commit, so the second run cancels the
+# first instead of duplicating the work, and the shared $HOME sees one build
+# at a time.
+#
+# `github.event.pull_request.head.sha` is null for a push, so the expression
+# falls through to `github.sha`: a commit that is pushed and also opened as a
+# PR shares one group. A merge commit is a different SHA from the PR head,
+# so the push run for `main` never cancels the PR run it came from.
+concurrency:
+  group: ci-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
 
 # Runner policy
 # -------------
-# Every job in this workflow runs on the org's self-hosted ARM64 fleet
-# (labels [self-hosted, ubuntu-latest] -> r3dlex-runner-3 / r3dlex-runner-4).
+# Every job in this workflow runs on the org's self-hosted ARM64 fleet:
+# r3dlex-runner-3 and r3dlex-runner-4.
 #
 # `runs-on: ubuntu-latest` is a BARE STRING and therefore always means
 # GitHub-hosted -- it is not a label filter. GitHub-hosted capacity is not a
@@ -28,18 +38,33 @@ env:
 # the fleet.
 #
 # A `runs-on` ARRAY is a pure AND over labels, so the array below names the
-# label set the fleet actually carries. The macOS runners are labelled
-# `self-hosted, ARM64, macOS, r3dlex-org` with no `Linux` label and the
-# Linux x64 runners carry `X64` rather than `ARM64`, so neither can match.
+# label set the fleet actually carries. The discriminator is the
+# `ubuntu-latest` LABEL, which is a custom label on this fleet and not the
+# GitHub-hosted image name: as of 2026-10-31 only r3dlex-runner-3 and
+# r3dlex-runner-4 carry it.
 #
-# The pool is deliberately NOT widened to [self-hosted, Linux, ARM64], even
-# though that would also match r3dlex-linux-arm64-1..4 (six runners instead
-# of two). A probe run against the wider label set showed those runners
-# carry no CI toolchain at all -- no node, no npm, no bun, no archgate
-# (`command -v archgate` -> not found). Upstream publishes no linux/arm64
-# archgate release asset, so the binary has to be built from source on the
-# host by scripts/provision-host.sh; a runner without it cannot run the ADR
-# gate at all. Widening the pool would trade a working gate for capacity.
+#   r3dlex-runner-3, r3dlex-runner-4
+#       self-hosted, Linux, ARM64, r3dlex-org, ubuntu-latest,
+#       dpua-validation, arm64-standard
+#   r3dlex-linux-arm64-1..4
+#       self-hosted, Linux, ARM64, r3dlex-org, r3dlex-linux-arm64,
+#       arm64-standard
+#   r3dlex-linux-x64-1..4
+#       self-hosted, Linux, r3dlex-org, X64
+#   r3dlex-runner-1, r3dlex-runner-2
+#       self-hosted, ARM64, r3dlex-org, macOS, mac-arm64, arm64-primary
+#
+# `Linux`, `ARM64` and `X64` are deliberately NOT part of the array: they
+# are not what narrows the pool, and adding them would change which runners
+# match. The pool is deliberately NOT widened to [self-hosted, Linux, ARM64]
+# either, even though that would also match r3dlex-linux-arm64-1..4 (six
+# runners instead of two). A probe run against the wider label set showed
+# those runners carry no CI toolchain at all -- no node, no npm, no bun, no
+# archgate (`command -v archgate` -> not found). Upstream publishes no
+# linux/arm64 archgate release asset, so the binary has to be built from
+# source on the host by scripts/provision-host.sh; a runner without it
+# cannot run the ADR gate at all. Widening the pool would trade a working
+# gate for capacity.
 #
 # The `_<job>-self-hosted` probes are the opt-in canary leg, and they are
 # DORMANT: SELF_HOSTED_CI_ENABLED is unset at BOTH repository and org scope
@@ -50,6 +75,12 @@ env:
 # and is deliberately not made from this workflow. Until it exists, the
 # paired `_<job>` job performs the work itself, on the same fleet the canary
 # would use, so the fallback never depends on GitHub-hosted capacity.
+#
+# Every job declares `timeout-minutes`. That bounds the RUNNING time of a
+# job, so a hung build cannot hold a runner forever. It does NOT bound the
+# queue wait: a job that never gets a runner stays `queued` until the
+# timeout is irrelevant, which is why the concurrency group above exists --
+# it is what stops duplicate work from piling up in the queue.
 
 jobs:
   # ==========================================================================
@@ -62,6 +93,7 @@ jobs:
     name: "build (self-hosted)"
     if: vars.SELF_HOSTED_CI_ENABLED == 'true'
     runs-on: [self-hosted, ubuntu-latest]
+    timeout-minutes: 20
     continue-on-error: true
     outputs:
       passed: ${{ steps.mark.outputs.passed }}
@@ -72,7 +104,13 @@ jobs:
           node-version: "22"
           cache: "npm"
       - run: npm ci
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
       - run: npm run build
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
       - name: Tar artifact
         run: tar czf ci-artifact.tar.gz --exclude='.git' --exclude='node_modules/.cache' . || true
       - name: Upload artifact
@@ -89,6 +127,7 @@ jobs:
     needs: _build-self-hosted
     if: always()
     runs-on: [self-hosted, ubuntu-latest]
+    timeout-minutes: 20
     steps:
       - name: Route
         run: echo "self-hosted passed=${{ needs._build-self-hosted.outputs.passed }}"
@@ -101,8 +140,14 @@ jobs:
           cache: "npm"
       - run: npm ci
         if: needs._build-self-hosted.outputs.passed != 'true'
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
       - run: npm run build
         if: needs._build-self-hosted.outputs.passed != 'true'
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
 
   # ==========================================================================
   # test — typecheck + unit tests + archgate
@@ -112,6 +157,7 @@ jobs:
     needs: _build-self-hosted
     if: always() && vars.SELF_HOSTED_CI_ENABLED == 'true' && needs._build-self-hosted.outputs.passed == 'true'
     runs-on: [self-hosted, ubuntu-latest]
+    timeout-minutes: 15
     continue-on-error: true
     outputs:
       passed: ${{ steps.mark.outputs.passed }}
@@ -127,7 +173,13 @@ jobs:
       - name: Extract artifact
         run: tar xzf ci-artifact.tar.gz && rm ci-artifact.tar.gz
       - run: npm run typecheck
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
       - run: timeout 120 npm test < /dev/null
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
       - name: Run archgate check
         # archgate is preinstalled on the r3dlex self-hosted Linux/ARM64
         # runners via scripts/provision-host.sh (Bun's --compile builds a
@@ -138,8 +190,11 @@ jobs:
         # We do NOT use `npx archgate`: the npm shim resolves the CACHED
         # ~/.archgate/bin/archgate first, so `npx archgate --version` reports
         # the cached binary's version rather than the version in
-        # package.json — the repository's pin was never enforced. The
-        # gate script asserts EXPECTED_ARCHGATE_VERSION instead, repo-side.
+        # package.json — the repository's pin was never enforced. The gate
+        # script asserts the version from package.json repo-side, and it
+        # asserts the SHA256 of the binary it executes against the digest
+        # pinned in .archgate/archgate-digests.json: a version string is not
+        # a pin, because a replaced binary prints whatever version it likes.
         #
         # `archgate check` also exits 0 when it checked NOTHING (every ADR
         # declared `rules: false` and no companion .rules.ts existed), so
@@ -154,6 +209,7 @@ jobs:
     needs: [build, _test-self-hosted]
     if: always() && needs.build.result == 'success'
     runs-on: [self-hosted, ubuntu-latest]
+    timeout-minutes: 15
     steps:
       - name: Route
         run: echo "self-hosted passed=${{ needs._test-self-hosted.outputs.passed }}"
@@ -166,16 +222,28 @@ jobs:
           cache: "npm"
       - run: npm ci
         if: needs._test-self-hosted.outputs.passed != 'true'
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
       - run: npm run build
         if: needs._test-self-hosted.outputs.passed != 'true'
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
       - run: npm run typecheck
         if: needs._test-self-hosted.outputs.passed != 'true'
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
       - run: timeout 120 npm test < /dev/null
         if: needs._test-self-hosted.outputs.passed != 'true'
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
       - name: Run archgate check
         if: needs._test-self-hosted.outputs.passed != 'true'
         # See the canary leg above for why the binary is called directly and
-        # why both the version and the rule count are asserted.
+        # why both the digest and the rule count are asserted.
         run: scripts/archgate-gate.sh
 
   # ==========================================================================
@@ -202,6 +270,9 @@ jobs:
       - name: Extract artifact
         run: tar xzf ci-artifact.tar.gz && rm ci-artifact.tar.gz
       - run: timeout 600 npm run test:coverage < /dev/null
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
       - id: mark
         if: success()
         run: echo "passed=true" >> "$GITHUB_OUTPUT"
@@ -223,10 +294,19 @@ jobs:
           cache: "npm"
       - run: npm ci
         if: needs._coverage-self-hosted.outputs.passed != 'true'
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
       - run: npm run build
         if: needs._coverage-self-hosted.outputs.passed != 'true'
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
       - run: timeout 600 npm run test:coverage < /dev/null
         if: needs._coverage-self-hosted.outputs.passed != 'true'
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
 
   # ==========================================================================
   # vscode-omp — build + package the VS Code companion extension
@@ -236,6 +316,7 @@ jobs:
     needs: _build-self-hosted
     if: always() && vars.SELF_HOSTED_CI_ENABLED == 'true' && needs._build-self-hosted.outputs.passed == 'true'
     runs-on: [self-hosted, ubuntu-latest]
+    timeout-minutes: 20
     continue-on-error: true
     outputs:
       passed: ${{ steps.mark.outputs.passed }}
@@ -254,12 +335,24 @@ jobs:
           cache-dependency-path: vscode-omp/package-lock.json
       - name: Install extension dependencies
         run: cd vscode-omp && npm ci
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
       - name: Build extension
         run: cd vscode-omp && npm run build --if-present
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
       - name: Test extension
         run: cd vscode-omp && npm test --if-present
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
       - name: Package VSIX
         run: cd vscode-omp && npm run package --if-present
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
       - name: Upload VSIX artifacts
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -278,6 +371,7 @@ jobs:
     needs: [build, _vscode-omp-self-hosted]
     if: always() && needs.build.result == 'success'
     runs-on: [self-hosted, ubuntu-latest]
+    timeout-minutes: 20
     steps:
       - name: Route
         run: echo "self-hosted passed=${{ needs._vscode-omp-self-hosted.outputs.passed }}"
@@ -291,21 +385,39 @@ jobs:
       - name: Install root dependencies
         if: needs._vscode-omp-self-hosted.outputs.passed != 'true'
         run: npm ci
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
       - name: Build root project
         if: needs._vscode-omp-self-hosted.outputs.passed != 'true'
         run: npm run build
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
       - name: Install extension dependencies
         if: needs._vscode-omp-self-hosted.outputs.passed != 'true'
         run: cd vscode-omp && npm ci
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
       - name: Build extension
         if: needs._vscode-omp-self-hosted.outputs.passed != 'true'
         run: cd vscode-omp && npm run build --if-present
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
       - name: Test extension
         if: needs._vscode-omp-self-hosted.outputs.passed != 'true'
         run: cd vscode-omp && npm test --if-present
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
       - name: Package VSIX
         if: needs._vscode-omp-self-hosted.outputs.passed != 'true'
         run: cd vscode-omp && npm run package --if-present
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
       - name: Upload VSIX artifacts
         if: always() && needs._vscode-omp-self-hosted.outputs.passed != 'true'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

@@ -1,11 +1,15 @@
 name: Release
 
+# The release runs on a TAG, not on every push to main. `push:` with both
+# `tags:` and `branches:` matches EITHER, so the workflow used to fire a
+# full release build and test on the shared fleet for every commit pushed to
+# main — burning fleet capacity on builds nobody asked to publish. A manual
+# run is still one `workflow_dispatch` away, and `release_type: alpha`
+# reproduces the old on-demand alpha publish.
 on:
   push:
     tags:
       - "v*.*.*"
-    branches:
-      - main
   workflow_dispatch:
     inputs:
       dry-run:
@@ -30,11 +34,24 @@ concurrency:
 permissions:
   contents: read
 
-# The pinned archgate version. The gate script refuses to run without it:
-# `archgate --version` only prints, so nothing else would notice a rebuilt
-# or drifted binary changing what CI enforces.
-env:
-  EXPECTED_ARCHGATE_VERSION: "0.60.0"
+# ============================================================================
+# Platform policy
+# ----------------
+# The published bytes are produced by the `publish` job, so the job that
+# VERIFIES them has to run on the same platform.
+#
+# `build` runs on the self-hosted ARM64 fleet and produces a tarball of the
+# repository source. That tarball is architecture-neutral: package.json's
+# `files` whitelist publishes source only, node_modules is not bundled, and
+# better-sqlite3 is a runtime `dependencies` entry that is compiled on the
+# consumer's machine. `test` and `publish` therefore both run on
+# GitHub-hosted x64 and both consume the SAME tarball, so the bytes that
+# are tested are the bytes that are published.
+#
+# `npm ci --omit=dev` in the publish job regenerates better-sqlite3 for
+# x86_64; the test job does the same, on the same platform, against the
+# same tarball.
+# ============================================================================
 
 jobs:
   # ==========================================================================
@@ -42,6 +59,7 @@ jobs:
   # ==========================================================================
   build:
     runs-on: [self-hosted, ubuntu-latest]
+    timeout-minutes: 30
     permissions:
       contents: read
     outputs:
@@ -88,8 +106,14 @@ jobs:
           cache: "npm"
 
       - run: npm ci
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
 
       - run: npm run build
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
 
       - name: Build optional VS Code companion
         if: ${{ hashFiles('vscode-omp/package.json') != '' }}
@@ -99,17 +123,27 @@ jobs:
           npm run build --if-present
           npm test --if-present
           npm run package --if-present
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
 
       - run: npm run sync-claude-plugin
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
 
       - name: Tar full repo artifact
-        run: tar -czf /tmp/release-artifact.tar.gz --exclude='.git' --exclude='node_modules/.cache' .
+        # The tarball goes into the RUNNER's temp directory, not into /tmp:
+        # /tmp is host-global and shared by every job on the runner host, so
+        # a fixed /tmp path is a collision between concurrent jobs and it
+        # survives the job.
+        run: tar -czf "${{ runner.temp }}/release-artifact.tar.gz" --exclude='.git' --exclude='node_modules/.cache' .
 
       - name: Upload artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: release-build
-          path: /tmp/release-artifact.tar.gz
+          path: ${{ runner.temp }}/release-artifact.tar.gz
           retention-days: 1
 
       - name: Upload VSIX artifacts
@@ -124,10 +158,17 @@ jobs:
           if-no-files-found: ignore
 
   # ==========================================================================
-  # test — verify the built artifact on the self-hosted fleet
+  # test — verify the built artifact on the SAME platform that publishes it.
+  #
+  # `runs-on: ubuntu-latest` as a BARE STRING means GitHub-hosted. That is
+  # the point: the publish job below is hosted x64, so the verification has
+  # to happen on hosted x64 too, otherwise `npm ci` regenerates
+  # better-sqlite3 for a different architecture than the one that is
+  # published.
   # ==========================================================================
   test:
-    runs-on: [self-hosted, ubuntu-latest]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
     needs: build
     permissions:
       contents: read
@@ -147,6 +188,9 @@ jobs:
           cache: "npm"
 
       - run: npm ci
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
 
       - name: Validate CHANGELOG.md (stable releases only)
         if: needs.build.outputs.release_type == 'stable'
@@ -160,26 +204,45 @@ jobs:
           echo "CHANGELOG.md contains section for v${BASE_VERSION} ✓"
 
       - run: npm run typecheck
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
 
       - run: timeout 120 npm test < /dev/null
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
+
+      - name: Install the pinned archgate
+        id: archgate
+        # The npm package is a launcher, not the tool: it downloads the
+        # release binary for this platform from the upstream GitHub release
+        # and caches it in ~/.archgate/bin. The gate script below then
+        # verifies that binary's SHA256 against the digest pinned in
+        # .archgate/archgate-digests.json and runs a verified COPY of it, so
+        # what executes is what was checked.
+        #
+        # This job is hosted, so there is no preinstalled archgate to reuse
+        # and no shared $HOME to be poisoned from.
+        run: |
+          npx archgate --version
+          BIN="$HOME/.archgate/bin/archgate"
+          if [ ! -x "$BIN" ]; then
+            echo "::error::archgate was not installed at $BIN"
+            exit 1
+          fi
+          echo "path=$BIN" >> "$GITHUB_OUTPUT"
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
 
       - name: Run archgate check
-        # archgate is preinstalled on the r3dlex self-hosted Linux/ARM64
-        # runners via scripts/provision-host.sh (Bun's --compile builds a
-        # native binary from source; upstream publishes no linux/arm64
-        # release asset). The binary is on the runner's PATH (see the
-        # runner's .path file), so we call it directly here.
-        #
-        # We do NOT use `npx archgate`: the npm shim resolves the CACHED
-        # ~/.archgate/bin/archgate first, so `npx archgate --version` reports
-        # the cached binary's version rather than the version in
-        # package.json — the repository's pin was never enforced. The
-        # gate script asserts EXPECTED_ARCHGATE_VERSION instead, repo-side.
-        #
-        # `archgate check` also exits 0 when it checked NOTHING (every ADR
-        # declared `rules: false` and no companion .rules.ts existed), so
-        # the gate script asserts the report's rule count too: a gate that
-        # checks zero rules fails instead of passing.
+        env:
+          ARCHGATE_BIN: ${{ steps.archgate.outputs.path }}
+        # The gate asserts the version from package.json (the single source
+        # of truth), the SHA256 of the binary it executes, and that the run
+        # actually checked at least one rule. `archgate check` exits 0 when
+        # it checked NOTHING, so the rule count has to be asserted too.
         run: scripts/archgate-gate.sh
 
   # ==========================================================================
@@ -201,11 +264,14 @@ jobs:
   # times, so these two jobs can die with the hosted zero-step signature
   # (empty runner_name, empty step list). That is the correct trade-off for
   # a credential-bearing job — a hosted runner's filesystem is thrown away
-  # with the job, so nothing survives to poison the next one. The build and
-  # test legs above carry no publish credential and stay on the fleet.
+  # with the job, so nothing survives to poison the next one. The build leg
+  # above carries no publish credential and stays on the fleet, and the test
+  # leg is hosted so that it verifies the bytes on the platform that
+  # publishes them.
   # ==========================================================================
   publish:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     needs: [build, test]
     permissions:
       contents: read
@@ -226,6 +292,9 @@ jobs:
           node-version: "22"
 
       - run: npm ci --omit=dev
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
 
       - name: Verify package.json version matches (stable only)
         if: needs.build.outputs.release_type == 'stable'
@@ -249,9 +318,15 @@ jobs:
 
       - name: Set publish version in package.json
         run: npm version "${{ needs.build.outputs.publish_version }}" --no-git-tag-version --allow-same-version
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
 
       - name: Pre-publish dry run (verify tarball contents)
         run: npm pack --dry-run
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
 
       # ── GitHub Packages (always, GITHUB_TOKEN) ──────────────────────────────
       - name: Setup Node for GitHub Packages
@@ -268,6 +343,8 @@ jobs:
           npm pkg set name="oh-my-githubcopilot"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
 
       - name: Publish to GitHub Packages (dry run)
         if: ${{ inputs.dry-run }}
@@ -277,6 +354,8 @@ jobs:
           npm pkg set name="oh-my-githubcopilot"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
 
       # ── npmjs.com (OIDC Trusted Publishing) ─────────────────────────────────
       - name: Setup Node for npmjs.com
@@ -296,16 +375,24 @@ jobs:
           else
             echo "already_published=false" >> "$GITHUB_OUTPUT"
           fi
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
 
       - name: Publish to npmjs.com
         if: ${{ !inputs.dry-run && steps.npm_check.outputs.already_published != 'true' }}
         run: npm publish --provenance --access public --ignore-scripts --tag ${{ needs.build.outputs.npm_tag }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
 
       - name: Publish to npmjs.com (dry run)
         if: ${{ inputs.dry-run == true }}
         run: npm publish --dry-run --ignore-scripts --tag ${{ needs.build.outputs.npm_tag }}
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
 
   # ==========================================================================
   # github-release — create the GitHub release and attach the tarball.
@@ -314,6 +401,7 @@ jobs:
   # ==========================================================================
   github-release:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     needs: [build, publish]
     if: ${{ needs.build.outputs.release_type == 'stable' && !inputs.dry-run }}
     permissions:
@@ -333,9 +421,15 @@ jobs:
           node-version: "22"
 
       - run: npm ci --omit=dev
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
 
       - name: Pack tarball for release attachment
         run: npm pack --ignore-scripts
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+          XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
 
       - name: Create GitHub Release
         run: |
