@@ -6,6 +6,14 @@
  * Enforces the ADR's Rules section:
  *   - the MCP server must be built on `@modelcontextprotocol/sdk`'s `Server`
  *   - `.mcp.json` must reference `dist/mcp/server.mjs` (never `.js`)
+ *
+ * The triple-slash directive above is REQUIRED by archgate 0.60.0: its
+ * built-in `syntax-check` rule reports "Missing triple-slash reference
+ * directive" as an error, and `archgate check` then exits non-zero. The
+ * directive points at `.archgate/rules.d.ts`, which `archgate init`
+ * generates and which is gitignored on purpose — it is a TypeScript
+ * compiler hint, and archgate loads this companion at runtime without
+ * typechecking it, so a fresh clone (no generated file) still passes.
  */
 
 const MCP_SERVER_SOURCE = "src/mcp/server.mts";
