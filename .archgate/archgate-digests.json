@@ -12,13 +12,19 @@
     "platform key = <uname -s lowercased>-<arch>, where x86_64/amd64 becomes",
     "x64 and aarch64/arm64 becomes arm64.",
     "",
+    "ONE linux-arm64 digest covers BOTH runners in the ubuntu-latest pool.",
+    "r3dlex-runner-3 and r3dlex-runner-4 are two runner instances on the same",
+    "Colima VM, running as the same user with the same HOME",
+    "(/home/redlexgilgamesh.guest), so they share one ~/.archgate/bin/archgate",
+    "file and therefore one digest.",
+    "",
     "When a digest has to change, the change is expected to be visible: the gate",
     "fails closed and prints the expected and the actual digest."
   ],
   "linux-arm64": {
     "sha256": "89116fdffd54673e86dc0f61d4b9721eb8657da5462f40b47ac04267b715daac",
     "version": "0.60.0",
-    "source": "built from source on the runner host (bun --compile); upstream publishes no linux/arm64 release asset"
+    "source": "built from source on the runner host (bun --compile); upstream publishes no linux/arm64 release asset; shared by r3dlex-runner-3 and r3dlex-runner-4"
   },
   "linux-x64": {
     "sha256": "bf4520c576c97d62d1d160701f407421f7ae6eb3b7cafc6e74214494297b66bc",
